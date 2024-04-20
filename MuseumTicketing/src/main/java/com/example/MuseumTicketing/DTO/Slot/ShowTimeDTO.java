@@ -1,9 +1,7 @@
 package com.example.MuseumTicketing.DTO.Slot;
 
-import lombok.Data;
-
 import java.time.LocalTime;
-@Data
+
 public class ShowTimeDTO {
     Integer id;
     LocalTime startTime;
