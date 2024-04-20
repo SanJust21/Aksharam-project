@@ -37,11 +37,43 @@ public interface ForeignerDetailsRepo extends JpaRepository<ForeignerDetails, Lo
     @Query("SELECT SUM(p.numberOfAdults + p.numberOfChildren) FROM PublicDetails p WHERE p.visitDate <= :currentDate AND p.visitStatus = true")
     Integer countVisitorsToDateOrNull(LocalDate currentDate);
 
+    default int countTotalForeignerTicketsWithticketId() {
+        Integer count = countTotalForeignerTicketsWithticketIdOrNull();
+        return count != null ? count : 0;
+    }
     @Query("SELECT COUNT(f) FROM ForeignerDetails f WHERE f.ticketId IS NOT NULL")
-    Integer countTotalForeignerTicketsWithticketId();
+    Integer countTotalForeignerTicketsWithticketIdOrNull();
 
+    default int countTotalForeignerTicketsForDate(LocalDate date) {
+        Integer count = countTotalForeignerTicketsForDateOrNull(date);
+        return count != null ? count : 0;
+    }
+
+    @Query("SELECT COUNT(p) FROM ForeignerDetails p WHERE p.visitDate = :date AND p.ticketId IS NOT NULL")
+    Integer countTotalForeignerTicketsForDateOrNull(@Param("date") LocalDate date);
+
+    default int countTotalForeignerTicketsForMonth(int month, int year) {
+        Integer count = countTotalForeignerTicketsForMonthOrNull(month, year);
+        return count != null ? count : 0;
+    }
+
+    @Query("SELECT COUNT(p) FROM ForeignerDetails p WHERE MONTH(p.visitDate) = :month AND YEAR(p.visitDate) = :year AND p.ticketId IS NOT NULL")
+    Integer countTotalForeignerTicketsForMonthOrNull(@Param("month") int month, @Param("year") int year);
+
+    default double calculateTotalForeignerIncome() {
+        Double count = calculateTotalForeignerIncomeOrNull();
+        return count != null ? count : 0;
+    }
     @Query("SELECT SUM(f.totalPrice) FROM ForeignerDetails f WHERE f.ticketId IS NOT NULL")
-    Double calculateTotalForeignerIncome();
+    Double calculateTotalForeignerIncomeOrNull();
+
+    default double calculateTotalForeignerIncomeForDate(LocalDate date) {
+        Double count = calculateTotalForeignerIncomeForDateOrNull(date);
+        return count != null ? count : 0;
+    }
+    @Query("SELECT SUM(f.totalPrice) FROM ForeignerDetails f WHERE f.visitDate = :date AND f.ticketId IS NOT NULL")
+    Double calculateTotalForeignerIncomeForDateOrNull(@Param("date") LocalDate date);
+
 
     default double safeCalculateTotalForeignerIncomeForMonth(int month, int year) {
         Double totalIncome = calculateTotalForeignerIncomeForMonth(month, year);
@@ -50,6 +82,8 @@ public interface ForeignerDetailsRepo extends JpaRepository<ForeignerDetails, Lo
 
     @Query("SELECT SUM(p.totalPrice) FROM ForeignerDetails p WHERE MONTH(p.visitDate) = :month AND YEAR(p.visitDate) = :year AND p.ticketId IS NOT NULL")
     Double calculateTotalForeignerIncomeForMonth(@Param("month") int month, @Param("year") int year);
+
+    ForeignerDetails findByBookingId(Integer bId);
 }
 
 

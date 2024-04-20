@@ -41,8 +41,11 @@ public class EmailService {
     private String senderEmail;
 
     public void sendQrCodeEmail(String paymentid, QrCodeResponse qrCodeResponse) {
+
+        String ticketId = extractTicketId(qrCodeResponse.getUserDetails());
+
         String subject = "Your Booking QR Code";
-        String text = "Thank you for booking! Please find your QR code below.";
+        String text = "Thank you for booking! Your Ticket ID is " + ticketId + ". Please find your QR code below.";
 
         try {
             String to = getEmailByPaymentid(paymentid);
@@ -111,5 +114,28 @@ public class EmailService {
          }
        return "Email not found!";
    }
+    private String extractTicketId(String userDetails) {
+
+        if (userDetails != null && !userDetails.isEmpty()) {
+            // Split the qrCodeDetails string by commas or any other delimiter used in formatting
+            String[] parts = userDetails.split(",");
+
+            for (String part : parts) {
+                // Trim the part to remove leading and trailing whitespace
+                String trimmedPart = part.trim();
+
+                if (trimmedPart.startsWith("Booking ID")) {
+                    // Extract the ticket ID from the part
+                    String[] keyValue = trimmedPart.split(":");
+                    if (keyValue.length == 2) {
+                        // Return the ticket ID after trimming leading and trailing whitespace
+                        return keyValue[1].trim();
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
    }
 

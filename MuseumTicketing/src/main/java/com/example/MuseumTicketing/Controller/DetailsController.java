@@ -21,6 +21,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/details")
+@CrossOrigin
 
 public class DetailsController {
 
@@ -41,14 +42,14 @@ public class DetailsController {
         this.foreignerDetailsService = foreignerDetailsService;
     }
 
-    @CrossOrigin(origins = AppConfig.BASE_URL)
+    //@CrossOrigin(origins = AppConfig.BASE_URL)
     @GetMapping("/loadPrice")
     public List<PriceRequest> getAllPrice() {
         return priceRequestService.getAllPrice();
     }
 
 
-    @CrossOrigin(origins = AppConfig.BASE_URL)
+   // @CrossOrigin(origins = AppConfig.BASE_URL)
     @PostMapping("/submit")
     public ResponseEntity<Map<String, Object>> submitDetails(@RequestBody DetailsRequest detailsRequest) {
 

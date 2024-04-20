@@ -22,6 +22,7 @@ import static org.hibernate.query.sqm.tree.SqmNode.log;
 
 @RestController
 @RequestMapping("/api/payment")
+@CrossOrigin
 public class PaymentController {
 
 
@@ -51,7 +52,7 @@ public class PaymentController {
         this.foreignerDetailsRepo = foreignerDetailsRepo;
     }
 
-    @CrossOrigin(origins = AppConfig.BASE_URL)
+    //@CrossOrigin(origins = AppConfig.BASE_URL)
     @PostMapping("/create-order")
     public ResponseEntity<Object> createOrder(@RequestBody OrderRequest orderRequest) {
         try {
@@ -93,7 +94,7 @@ public class PaymentController {
         }
     }
 
-    @CrossOrigin(origins = AppConfig.BASE_URL)
+    //@CrossOrigin(origins = AppConfig.BASE_URL)
     @PostMapping("/verify-payment")
     public ResponseEntity<Object> verifyPayment(
             @RequestBody VerifyPaymentRequest verifyPaymentRequest) {
@@ -106,33 +107,23 @@ public class PaymentController {
             boolean paymentVerified = paymentService.verifyPayment(orderId, paymentId, signature);
 
             if (paymentVerified) {
-                // Store paymentId in the corresponding table based on orderId
-//                Optional<InstitutionDetails> institutionDetails = institutionDetailsRepo.findByOrderId(orderId);
-//                Optional<PublicDetails> publicDetails = publicDetailsRepo.findByOrderId(orderId);
-//                Optional<ForeignerDetails> foreignerDetails = foreignerDetailsRepo.findByOrderId(orderId);
-//
-//                InstitutionDetails institutionDetailsEntity = institutionDetails.orElse(null);
-//                PublicDetails publicDetailsEntity = publicDetails.orElse(null);
-//                ForeignerDetails foreignerDetailsEntity = foreignerDetails.orElse(null);
-//
-//                // Update the paymentId based on the type of details
-//                if (institutionDetailsEntity != null) {
-//                    institutionDetailsEntity.setPaymentid(paymentId);
-//                    institutionDetailsEntity.setPaymentStatus(true);
-//                    institutionDetailsRepo.save(institutionDetailsEntity);
-//                } else if (publicDetailsEntity != null) {
-//                    publicDetailsEntity.setPaymentid(paymentId);
-//                    publicDetailsEntity.setPaymentStatus(true);
-//                    publicDetailsRepo.save(publicDetailsEntity);
-//                } else if (foreignerDetailsEntity != null) {
-//                    foreignerDetailsEntity.setPaymentid(paymentId);
-//                    foreignerDetailsEntity.setPaymentStatus(true);
-//                    foreignerDetailsRepo.save(foreignerDetailsEntity);
-//                }
-//                else {
-//                    return ResponseEntity.badRequest().body("No corresponding details found for orderId: " + orderId);
-//                }
-                return ResponseEntity.ok("Payment successful. Order ID: " + orderId + ", Payment ID: " + paymentId);
+                String ticketId = null;
+
+                Optional<InstitutionDetails> institutionDetails = institutionDetailsRepo.findByOrderId(orderId);
+                Optional<PublicDetails> publicDetails = publicDetailsRepo.findByOrderId(orderId);
+                Optional<ForeignerDetails> foreignerDetails = foreignerDetailsRepo.findByOrderId(orderId);
+
+                if (institutionDetails.isPresent()) {
+                    ticketId = institutionDetails.get().getTicketId();
+                } else if (publicDetails.isPresent()) {
+                    ticketId = publicDetails.get().getTicketId();
+                } else if (foreignerDetails.isPresent()) {
+                    ticketId = foreignerDetails.get().getTicketId();
+                } else {
+                    return ResponseEntity.badRequest().body("No corresponding details found for orderId: " + orderId);
+                }
+
+                return ResponseEntity.ok("Payment successful. Order ID: " + orderId + ", Payment ID: " + paymentId + ", Ticket ID: " + ticketId);
             } else {
                 return ResponseEntity.badRequest().body("Payment verification failed.");
             }

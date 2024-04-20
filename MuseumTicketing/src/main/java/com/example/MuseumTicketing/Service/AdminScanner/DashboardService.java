@@ -274,9 +274,48 @@ public class DashboardService {
         int totalPublicTickets = publicDetailsRepo.countTotalPublicTicketsWithticketId();
         int totalInstitutionTickets = institutionDetailsRepo.countTotalInstitutionTicketsWithticketId();
         int totalForeignerTickets = foreignerDetailsRepo.countTotalForeignerTicketsWithticketId();
+        int totalTickets = totalPublicTickets + totalInstitutionTickets + totalForeignerTickets;
 
-        return new TotalTicketsDTO(totalPublicTickets, totalInstitutionTickets, totalForeignerTickets);
+        return new TotalTicketsDTO(totalPublicTickets, totalInstitutionTickets, totalForeignerTickets, totalTickets);
     }
+
+    public TotalTicketsDTO getTotalTicketsForDate(LocalDate date) {
+        int totalPublicTickets = publicDetailsRepo.countTotalPublicTicketsForDate(date);
+        int totalInstitutionTickets = institutionDetailsRepo.countTotalInstitutionTicketsForDate(date);
+        int totalForeignerTickets = foreignerDetailsRepo.countTotalForeignerTicketsForDate(date);
+        int totalTickets = totalPublicTickets + totalInstitutionTickets + totalForeignerTickets;
+
+        return new TotalTicketsDTO(totalPublicTickets, totalInstitutionTickets, totalForeignerTickets, totalTickets);
+    }
+
+    public TotalTicketsDTO getTotalTicketsForMonth(Month month, int year) {
+        String monthName = month.toString();
+        int totalPublicTickets = publicDetailsRepo.countTotalPublicTicketsForMonth(month.getValue(), year);
+        int totalInstitutionTickets = institutionDetailsRepo.countTotalInstitutionTicketsForMonth(month.getValue(), year);
+        int totalForeignerTickets = foreignerDetailsRepo.countTotalForeignerTicketsForMonth(month.getValue(), year);
+        int totalTickets = totalPublicTickets + totalInstitutionTickets + totalForeignerTickets;
+
+        return new TotalTicketsDTO(monthName, totalPublicTickets, totalInstitutionTickets, totalForeignerTickets, totalTickets);
+    }
+
+    public List<TotalTicketsDTO> getTotalTicketsForYear(int year) {
+        List<TotalTicketsDTO> totalTicketsList = new ArrayList<>();
+
+        // Iterate over each month of the year
+        for (Month month : Month.values()) {
+            int monthValue = month.getValue();
+            int totalPublicTickets = publicDetailsRepo.countTotalPublicTicketsForMonth(monthValue, year);
+            int totalInstitutionTickets = institutionDetailsRepo.countTotalInstitutionTicketsForMonth(monthValue, year);
+            int totalForeignerTickets = foreignerDetailsRepo.countTotalForeignerTicketsForMonth(monthValue, year);
+            int totalTickets = totalPublicTickets + totalInstitutionTickets + totalForeignerTickets;
+
+            TotalTicketsDTO totalTicketsDTO = new TotalTicketsDTO(month.toString(), totalPublicTickets, totalInstitutionTickets, totalForeignerTickets, totalTickets);
+            totalTicketsList.add(totalTicketsDTO);
+        }
+
+        return totalTicketsList;
+    }
+
 
     public TotalIncomeDTO getTotalIncome() {
         double totalPublicIncome = publicDetailsRepo.calculateTotalPublicIncome();
@@ -287,6 +326,26 @@ public class DashboardService {
 
         return new TotalIncomeDTO(totalPublicIncome, totalInstitutionIncome, totalForeignerIncome, totalIncome);
     }
+
+    public TotalIncomeDTO getTotalIncomeForDate(LocalDate date) {
+        double totalPublicIncome = publicDetailsRepo.calculateTotalPublicIncomeForDate(date);
+        double totalInstitutionIncome = institutionDetailsRepo.calculateTotalInstitutionIncomeForDate(date);
+        double totalForeignerIncome = foreignerDetailsRepo.calculateTotalForeignerIncomeForDate(date);
+        double totalIncome = totalPublicIncome + totalInstitutionIncome + totalForeignerIncome;
+
+        return new TotalIncomeDTO(totalPublicIncome, totalInstitutionIncome, totalForeignerIncome, totalIncome);
+    }
+
+    public TotalIncomeDTO getTotalIncomeForMonth(Month month, int year) {
+        String monthName = month.toString();
+        double totalPublicIncome = publicDetailsRepo.safeCalculateTotalPublicIncomeForMonth(month.getValue(), year);
+        double totalInstitutionIncome = institutionDetailsRepo.safeCalculateTotalInstitutionIncomeForMonth(month.getValue(), year);
+        double totalForeignerIncome = foreignerDetailsRepo.safeCalculateTotalForeignerIncomeForMonth(month.getValue(), year);
+        double totalIncome = totalPublicIncome + totalInstitutionIncome + totalForeignerIncome;
+
+        return new TotalIncomeDTO(monthName, totalPublicIncome, totalInstitutionIncome, totalForeignerIncome, totalIncome);
+    }
+
     public List<TotalIncomeDTO> getTotalIncomeForYear(int year) {
         List<TotalIncomeDTO> totalIncomeList = new ArrayList<>();
 
@@ -297,7 +356,7 @@ public class DashboardService {
             double totalInstitutionIncome = institutionDetailsRepo.safeCalculateTotalInstitutionIncomeForMonth(monthValue, year);
             double totalForeignerIncome = foreignerDetailsRepo.safeCalculateTotalForeignerIncomeForMonth(monthValue, year);
             double totalIncome = totalPublicIncome + totalInstitutionIncome + totalForeignerIncome;
-            // Create TotalIncomeDTO object for the month
+
             TotalIncomeDTO totalIncomeDTO = new TotalIncomeDTO(month.toString(), totalPublicIncome, totalInstitutionIncome, totalForeignerIncome, totalIncome);
             totalIncomeList.add(totalIncomeDTO);
         }

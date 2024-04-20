@@ -16,6 +16,7 @@ import java.util.Base64;
 
 @RestController
 @RequestMapping("/api/qr")
+@CrossOrigin
 public class BookingQrController {
 
     @Autowired
@@ -23,7 +24,7 @@ public class BookingQrController {
 
     @Autowired
     private EmailService emailService;
-    @CrossOrigin(origins = AppConfig.BASE_URL)
+   // @CrossOrigin(origins = AppConfig.BASE_URL)
     @PostMapping("/book")
     public ResponseEntity<?> bookTicket(@RequestBody BookingQrRequest bookingQrRequest) {
         try {
@@ -44,7 +45,7 @@ public class BookingQrController {
         }
     }
 
-    @CrossOrigin(origins = AppConfig.BASE_URL)
+    //@CrossOrigin(origins = AppConfig.BASE_URL)
     @PostMapping("/mail")
     public ResponseEntity<?> sendPdfMail(@RequestBody BookingQrRequest bookingQrRequest) {
         try {

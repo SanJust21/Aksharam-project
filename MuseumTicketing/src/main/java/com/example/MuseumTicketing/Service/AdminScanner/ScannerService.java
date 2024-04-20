@@ -1,5 +1,6 @@
 package com.example.MuseumTicketing.Service.AdminScanner;
 
+import com.example.MuseumTicketing.DTO.AdminScanner.CustomResponse;
 import com.example.MuseumTicketing.DTO.DetailsRequest;
 import com.example.MuseumTicketing.Model.ForeignerDetails;
 import com.example.MuseumTicketing.Model.InstitutionDetails;
@@ -41,7 +42,20 @@ public class ScannerService {
         // Check if ticket is already scanned
         Optional<ScannedDetails> existingScan = scannedDetailsRepo.findByTicketId(ticketId);
         if (existingScan.isPresent()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Ticket already scanned.");
+            ScannedDetails existingScanDetails = existingScan.get();
+            Optional<ForeignerDetails> foreignerDetails = foreignerDetailsRepo.findByticketId(ticketId);
+            Optional<InstitutionDetails> institutionDetails = institutionDetailsRepo.findByticketId(ticketId);
+            Optional<PublicDetails> publicDetails = publicDetailsRepo.findByticketId(ticketId);
+
+            // Check if any details are found for the ticket ID
+            if (foreignerDetails.isPresent()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(convertToDetailsRequest(foreignerDetails.get()));
+            } else if (institutionDetails.isPresent()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(convertToDetailsRequest(institutionDetails.get()));
+            } else if (publicDetails.isPresent()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(convertToDetailsRequest(publicDetails.get()));
+            }
+            //return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new CustomResponse("Ticket already scanned.", HttpStatus.BAD_REQUEST.value()));
         }
 
         // Retrieve details based on ticketId
@@ -51,20 +65,20 @@ public class ScannerService {
 
 
         if (foreignerDetails.isEmpty() && institutionDetails.isEmpty() && publicDetails.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No details found for the provided ticket ID.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new CustomResponse("No details found for the provided ticket ID.", HttpStatus.NOT_FOUND.value()));
         }
 
         ScannedDetails scannedDetails = new ScannedDetails();
         scannedDetails.setTicketId(ticketId);
         scannedDetails.setScannedTime(scannedTime);
 
-//        if (foreignerDetails.isPresent() && !foreignerDetails.get().getVisitDate().isEqual(LocalDate.now())) {
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Visit date is different.");
-//        } else if (institutionDetails.isPresent() && !institutionDetails.get().getVisitDate().isEqual(LocalDate.now())) {
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Visit date is different.");
-//        } else if (publicDetails.isPresent() && !publicDetails.get().getVisitDate().isEqual(LocalDate.now())) {
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Visit date is different.");
-//        }
+        if (foreignerDetails.isPresent() && !foreignerDetails.get().getVisitDate().isEqual(LocalDate.now())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new CustomResponse("Visit date is different." + foreignerDetails.get().getVisitDate(), HttpStatus.BAD_REQUEST.value()) );
+        } else if (institutionDetails.isPresent() && !institutionDetails.get().getVisitDate().isEqual(LocalDate.now())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new CustomResponse("Visit date is different." + institutionDetails.get().getVisitDate(), HttpStatus.BAD_REQUEST.value()));
+        } else if (publicDetails.isPresent() && !publicDetails.get().getVisitDate().isEqual(LocalDate.now())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new CustomResponse("Visit date is different." + publicDetails.get().getVisitDate(), HttpStatus.BAD_REQUEST.value()));
+        }
 
         if (foreignerDetails.isPresent()) {
             DetailsRequest detailsRequest = convertToDetailsRequest(foreignerDetails.get());
@@ -151,7 +165,9 @@ public class ScannerService {
         detailsRequest.setBookDate(foreignerDetails.getBookDate());
         detailsRequest.setPaymentid(foreignerDetails.getPaymentid());
         detailsRequest.setVisitStatus(foreignerDetails.isVisitStatus());
-
+        detailsRequest.setTicketId(foreignerDetails.getTicketId());
+        detailsRequest.setPaymentStatus(foreignerDetails.isPaymentStatus());
+        detailsRequest.setTotalTickets(foreignerDetails.getNumberOfAdults()+foreignerDetails.getNumberOfChildren());
 
         return detailsRequest;
     }
@@ -174,6 +190,9 @@ public class ScannerService {
         detailsRequest.setBookDate(institutionDetails.getBookDate());
         detailsRequest.setPaymentid(institutionDetails.getPaymentid());
         detailsRequest.setVisitStatus(institutionDetails.isVisitStatus());
+        detailsRequest.setTicketId(institutionDetails.getTicketId());
+        detailsRequest.setPaymentStatus(institutionDetails.isPaymentStatus());
+        detailsRequest.setTotalTickets(institutionDetails.getNumberOfStudents()+ detailsRequest.getNumberOfTeachers());
 
         return detailsRequest;
     }
@@ -196,6 +215,9 @@ public class ScannerService {
         detailsRequest.setBookDate(publicDetails.getBookDate());
         detailsRequest.setPaymentid(publicDetails.getPaymentid());
         detailsRequest.setVisitStatus(publicDetails.isVisitStatus());
+        detailsRequest.setTicketId(publicDetails.getTicketId());
+        detailsRequest.setPaymentStatus(publicDetails.isPaymentStatus());
+        detailsRequest.setTotalTickets(publicDetails.getNumberOfAdults()+publicDetails.getNumberOfChildren()+publicDetails.getNumberOfSeniors());
 
         return detailsRequest;
     }

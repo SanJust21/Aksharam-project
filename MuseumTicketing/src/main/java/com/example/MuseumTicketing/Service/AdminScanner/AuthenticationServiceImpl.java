@@ -16,7 +16,9 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -220,9 +222,14 @@ public class AuthenticationServiceImpl implements AuthenticationService{
 
 
     public JwtAuthenticationResponse signin(SignInRequest signInRequest){
+        try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(signInRequest.getEmployeeId(), signInRequest.getPassword()));
-
-            var user = usersRepo.findByEmployeeId(signInRequest.getEmployeeId()).orElseThrow(() ->new IllegalArgumentException("Invalid Name or password"));
+        }catch (BadCredentialsException ex){
+            throw new IllegalArgumentException("Invalid Username or password!", ex);
+        }catch (AuthenticationException ex){
+            throw new IllegalArgumentException("Authentication failed!", ex);
+        }
+            var user = usersRepo.findByEmployeeId(signInRequest.getEmployeeId()).orElseThrow(() ->new IllegalArgumentException("User not found!"));
             var jwt = jwtService.generateToken(user);
             //var refreshToken = jwtService.generateRefreshToken(new HashMap<>(), user);
 

@@ -36,11 +36,43 @@ public interface InstitutionDetailsRepo extends JpaRepository<InstitutionDetails
     @Query("SELECT SUM(p.numberOfTeachers + p.numberOfStudents) FROM InstitutionDetails p WHERE p.visitDate <= :currentDate AND p.visitStatus = true")
     Integer countVisitorsToDateOrNull(LocalDate currentDate);
 
+    default int countTotalInstitutionTicketsWithticketId() {
+        Integer count = countTotalInstitutionTicketsWithticketIdOrNull();
+        return count != null ? count : 0;
+    }
     @Query("SELECT COUNT(i) FROM InstitutionDetails i WHERE i.ticketId IS NOT NULL")
-    Integer countTotalInstitutionTicketsWithticketId();
+    Integer countTotalInstitutionTicketsWithticketIdOrNull();
+
+    default int countTotalInstitutionTicketsForDate(LocalDate date) {
+        Integer count = countTotalInstitutionTicketsForDateOrNull(date);
+        return count != null ? count : 0;
+    }
+
+    @Query("SELECT COUNT(p) FROM InstitutionDetails p WHERE p.visitDate = :date AND p.ticketId IS NOT NULL")
+    Integer countTotalInstitutionTicketsForDateOrNull(@Param("date") LocalDate date);
+
+    default int countTotalInstitutionTicketsForMonth(int month, int year) {
+        Integer count = countTotalInstitutionTicketsForMonthOrNull(month, year);
+        return count != null ? count : 0;
+    }
+
+    @Query("SELECT COUNT(p) FROM InstitutionDetails p WHERE MONTH(p.visitDate) = :month AND YEAR(p.visitDate) = :year AND p.ticketId IS NOT NULL")
+    Integer countTotalInstitutionTicketsForMonthOrNull(@Param("month") int month, @Param("year") int year);
+
+    default double calculateTotalInstitutionIncome() {
+        Double count = calculateTotalInstitutionIncomeOrNull();
+        return count != null ? count : 0;
+    }
 
     @Query("SELECT SUM(i.totalPrice) FROM InstitutionDetails i WHERE i.ticketId IS NOT NULL")
-    Double calculateTotalInstitutionIncome();
+    Double calculateTotalInstitutionIncomeOrNull();
+
+    default double calculateTotalInstitutionIncomeForDate(LocalDate date) {
+        Double count = calculateTotalInstitutionIncomeForDateOrNull(date);
+        return count != null ? count : 0;
+    }
+    @Query("SELECT SUM(f.totalPrice) FROM InstitutionDetails f WHERE f.visitDate = :date AND f.ticketId IS NOT NULL")
+    Double calculateTotalInstitutionIncomeForDateOrNull(@Param("date") LocalDate date);
 
     default double safeCalculateTotalInstitutionIncomeForMonth(int month, int year) {
         Double totalIncome = calculateTotalInstitutionIncomeForMonth(month, year);
@@ -49,4 +81,6 @@ public interface InstitutionDetailsRepo extends JpaRepository<InstitutionDetails
 
     @Query("SELECT SUM(p.totalPrice) FROM InstitutionDetails p WHERE MONTH(p.visitDate) = :month AND YEAR(p.visitDate) = :year AND p.ticketId IS NOT NULL")
     Double calculateTotalInstitutionIncomeForMonth(@Param("month") int month, @Param("year") int year);
+
+    InstitutionDetails findByBookingId(Integer bId);
 }

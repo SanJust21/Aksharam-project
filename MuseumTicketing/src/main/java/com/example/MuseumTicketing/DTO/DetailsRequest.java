@@ -35,6 +35,16 @@ public class DetailsRequest {
     private String ticketId;
     private boolean paymentStatus;
 
+    public int getTotalTickets() {
+        return totalTickets;
+    }
+
+    public void setTotalTickets(int totalTickets) {
+        this.totalTickets = totalTickets;
+    }
+
+    private int totalTickets;
+
     public String getTicketId() {
         return ticketId;
     }
