@@ -8,5 +8,5 @@ public class ScanRequest {
 
     private String ticketId;
 
-    private LocalDateTime scannedTime;
+    private String scannedTime;
 }

@@ -59,6 +59,24 @@ public class PriceRequestService {
             throw new IllegalArgumentException("Price with ID " + id + " not found");
         }
     }
+
+    public void deletePriceByTypeAndCategory(String type, String category) {
+        priceRepo.deleteByTypeAndCategory(type, category);
+    }
+
+    public PriceRequest updatePriceByTypeAndCategory(String type, String category, PriceRequest priceRequest) {
+
+        Optional<Price> optionalPrice = priceRepo.findByTypeAndCategory(type, category);
+        if (optionalPrice.isPresent()) {
+            Price existingPrice = optionalPrice.get();
+            existingPrice.setPrice(priceRequest.getPrice());
+            Price updatedPrice = priceRepo.save(existingPrice);
+            return mapToPriceRequest(updatedPrice);
+        } else {
+            throw new IllegalArgumentException("Price with type " + type + " and category " + category + " not found");
+        }
+    }
+
     private PriceRequest mapToPriceRequest(Price price) {
         PriceRequest transfer = new PriceRequest();
         transfer.setId(price.getId());

@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Entity
 @Data
@@ -46,13 +47,17 @@ public class InstitutionDetails {
 
     private String ticketId;
 
+     private Integer bookingId;
+
+     private LocalTime slotName;
+
     @Column(name = "visit_status", nullable = false, columnDefinition = "boolean default false")
     private boolean visitStatus;
 
     @Column(name = "payment_status", nullable = false, columnDefinition = "boolean default false")
     private boolean paymentStatus;
 
-    public InstitutionDetails(String mobileNumber, String type, String email, String sessionId, String institutionName, String district, int numberOfStudents, int numberOfTeachers, LocalDate visitDate, double totalPrice, String orderId, String paymentid, String ticketId, LocalDate bookDate, boolean visitStatus, boolean paymentStatus) {
+    public InstitutionDetails(String mobileNumber, String type, String email, String sessionId, String institutionName, String district, int numberOfStudents, int numberOfTeachers, LocalDate visitDate, double totalPrice, String orderId, String paymentid, String ticketId, LocalDate bookDate, Integer bookingId,LocalTime slotName, boolean visitStatus, boolean paymentStatus) {
         this.mobileNumber = mobileNumber;
         this.type = type;
         this.email = email;
@@ -67,6 +72,8 @@ public class InstitutionDetails {
         this.paymentid = paymentid;
         this.ticketId = ticketId;
         this.bookDate = bookDate;
+        this.bookingId = bookingId;
+        this.slotName = slotName;
         this.visitStatus = visitStatus;
         this.paymentStatus = paymentStatus;
     }

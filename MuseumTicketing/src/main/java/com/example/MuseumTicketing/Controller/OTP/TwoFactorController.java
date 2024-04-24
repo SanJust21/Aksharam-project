@@ -11,6 +11,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/2factor")
+@CrossOrigin
 public class TwoFactorController {
 
     private final TwoFactorService twoFactorService;
@@ -21,7 +22,7 @@ public class TwoFactorController {
     }
 
 
-    @CrossOrigin(origins = AppConfig.BASE_URL)
+    //@CrossOrigin(origins = AppConfig.BASE_URL)
     @PostMapping("/generate-otp")
     public ResponseEntity<Map<String, String>> generateOtp(@RequestBody Map<String, String> requestBody) {
         try{
@@ -48,7 +49,7 @@ public class TwoFactorController {
         }
     }
 
-    @CrossOrigin(origins = AppConfig.BASE_URL)
+    //@CrossOrigin(origins = AppConfig.BASE_URL)
     @GetMapping("/resend-otp/{mobileNumber}")
     public ResponseEntity<Map<String, String>> resendOtp(@PathVariable String mobileNumber) {
         try {
@@ -71,7 +72,7 @@ public class TwoFactorController {
     }
 
 
-    @CrossOrigin(origins = AppConfig.BASE_URL)
+    //@CrossOrigin(origins = AppConfig.BASE_URL)
     @PostMapping("/validate-otp")
     public ResponseEntity<Map<String, String>> validateOtp(@RequestBody Map<String, String> requestBody) {
         try

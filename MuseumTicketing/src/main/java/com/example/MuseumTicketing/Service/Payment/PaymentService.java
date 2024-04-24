@@ -139,5 +139,36 @@ public class PaymentService {
             foreignerDetailsRepo.save(foreignerDetails);
         }
     }
+
+    public boolean initiateRefund(String orderId, String paymentId, double amount) throws RazorpayException {
+        try {
+            RazorpayClient razorpayClient = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
+
+            JSONObject refundRequest = new JSONObject();
+            refundRequest.put("payment_id", paymentId);
+            refundRequest.put("amount", amount * 100); // Amount in paisa
+
+            Refund refund = razorpayClient.payments.refund(refundRequest);
+
+            // Handle refund response
+            if ("processed".equals(refund.get("status"))) {
+                // Refund is successful, update your database or logic accordingly
+                updateRefundStatus(orderId, paymentId, amount);
+                return true;
+            } else {
+                // Refund failed, handle accordingly
+                return false;
+            }
+        } catch (RazorpayException e) {
+            e.printStackTrace();
+            throw new RazorpayException("Refund failed.", e);
+        }
+    }
+
+    private void updateRefundStatus(String orderId, String paymentId, double amount) {
+        // Implement logic to update refund status in your database
+        // You may want to mark the payment as refunded or update any other relevant information
+    }
+
 }
 

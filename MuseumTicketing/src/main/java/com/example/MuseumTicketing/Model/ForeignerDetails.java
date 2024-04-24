@@ -5,6 +5,8 @@ import lombok.Data;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
+
 @Entity
 @Data
 @Table(name = "_foreigner_details")
@@ -44,13 +46,17 @@ public class ForeignerDetails {
 
         private String ticketId;
 
+        private Integer bookingId;
+
+        private LocalTime slotName;
+
         @Column(name = "visit_status", nullable = false, columnDefinition = "boolean default false")
         private boolean visitStatus;
 
         @Column(name = "payment_status", nullable = false, columnDefinition = "boolean default false")
         private boolean paymentStatus;
 
-        public ForeignerDetails(String mobileNumber, String type, String email, String sessionId, String name, int numberOfAdults, int numberOfChildren, double totalPrice, LocalDate visitDate, String paymentid, String orderId, String ticketId, LocalDate bookDate, boolean visitStatus, boolean paymentStatus) {
+        public ForeignerDetails(String mobileNumber, String type, String email, String sessionId, String name, int numberOfAdults, int numberOfChildren, double totalPrice, LocalDate visitDate, String paymentid, String orderId, String ticketId, Integer bookingId, LocalTime slotName, LocalDate bookDate, boolean visitStatus, boolean paymentStatus) {
             this.mobileNumber = mobileNumber;
             this.type = type;
             this.email = email;
@@ -64,6 +70,8 @@ public class ForeignerDetails {
             this.orderId = orderId;
             this.ticketId = ticketId;
             this.bookDate = bookDate;
+            this.bookingId = bookingId;
+            this.slotName = slotName;
             this.visitStatus = visitStatus;
             this.paymentStatus = paymentStatus;
         }
