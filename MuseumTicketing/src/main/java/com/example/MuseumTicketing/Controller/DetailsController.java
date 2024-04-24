@@ -57,15 +57,16 @@ public class DetailsController {
             String sessionId = detailsRequest.getSessionId();
             String type = detailsRequest.getType();
             String mobileNumber = detailsRequest.getMobileNumber();
+            Integer bookingId = detailsRequest.getBookingId();
 
             //detailsService.submitAdditionalDetails(sessionId, type, detailsRequest);
             Object submittedDetails;
             if ("institution".equalsIgnoreCase(type)) {
-                submittedDetails= institutionDetailsService.submitAdditionalDetails(sessionId, mobileNumber, detailsRequest);
+                submittedDetails= institutionDetailsService.submitAdditionalDetails(sessionId, mobileNumber, detailsRequest, bookingId);
             } else if("public".equalsIgnoreCase(type)) {
-                submittedDetails = publicDetailsService.submitAdditionalDetails(sessionId, mobileNumber, detailsRequest);
+                submittedDetails = publicDetailsService.submitAdditionalDetails(sessionId, mobileNumber, detailsRequest, bookingId);
             }else {
-                submittedDetails = foreignerDetailsService.submitAdditionalDetails(sessionId, mobileNumber, detailsRequest);
+                submittedDetails = foreignerDetailsService.submitAdditionalDetails(sessionId, mobileNumber, detailsRequest, bookingId);
             }
 
 

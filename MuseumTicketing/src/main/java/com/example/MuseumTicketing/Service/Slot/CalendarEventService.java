@@ -74,6 +74,10 @@ public class CalendarEventService {
                                     }
                                 } else {
                                     log.info("payment id is present");
+                                    Booking booking = bookingRepo.findByBookingId(institutionDetails.getBookingId());
+                                    log.info("public bookingId"+institutionDetails.getBookingId());
+                                    log.info("booking : "+booking);
+                                    bookingRepo.delete(booking);
                                 }
                             } else {
                                 Booking booking = bookingRepo.findByBookingId(bId);
@@ -106,6 +110,10 @@ public class CalendarEventService {
                                     }
                                 } else {
                                     log.info("payment id is present");
+                                    Booking booking = bookingRepo.findByBookingId(publicDetails.getBookingId());
+                                    log.info("public bookingId"+publicDetails.getBookingId());
+                                    log.info("booking : "+booking);
+                                    bookingRepo.delete(booking);
                                 }
                             }else {
                                 Booking booking = bookingRepo.findByBookingId(bId);
@@ -136,6 +144,10 @@ public class CalendarEventService {
                                     }
                                 } else {
                                     log.info("payment id is present");
+                                    Booking booking = bookingRepo.findByBookingId(foreignerDetails.getBookingId());
+                                    log.info("public bookingId"+foreignerDetails.getBookingId());
+                                    log.info("booking : "+booking);
+                                    bookingRepo.delete(booking);
                                 }
                             } else {
                                 Booking booking = bookingRepo.findByBookingId(bId);
@@ -152,12 +164,12 @@ public class CalendarEventService {
         } else {
             List<CalendarEvent> savedEvent1 = new ArrayList<>();
 
-            ShowTime showTime = showTimeRepo.findById(102).orElseThrow();
-            ShowTime showTime1 = showTimeRepo.findById(103).orElseThrow();
-            ShowTime showTime2 = showTimeRepo.findById(104).orElseThrow();
-            ShowTime showTime3 = showTimeRepo.findById(105).orElseThrow();
-            ShowTime showTime4 = showTimeRepo.findById(106).orElseThrow();
-            ShowTime showTime5 = showTimeRepo.findById(107).orElseThrow();
+            ShowTime showTime = showTimeRepo.findById(1).orElseThrow();
+            ShowTime showTime1 = showTimeRepo.findById(2).orElseThrow();
+            ShowTime showTime2 = showTimeRepo.findById(3).orElseThrow();
+            ShowTime showTime3 = showTimeRepo.findById(4).orElseThrow();
+            ShowTime showTime4 = showTimeRepo.findById(5).orElseThrow();
+            ShowTime showTime5 = showTimeRepo.findById(6).orElseThrow();
 
             CalendarEvent calendarEvent1 = new CalendarEvent();
             calendarEvent1.setStartDate(date);

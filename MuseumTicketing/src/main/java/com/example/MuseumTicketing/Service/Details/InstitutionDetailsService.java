@@ -2,6 +2,7 @@ package com.example.MuseumTicketing.Service.Details;
 
 import com.example.MuseumTicketing.DTO.DetailsRequest;
 import com.example.MuseumTicketing.Model.InstitutionDetails;
+import com.example.MuseumTicketing.Model.PublicDetails;
 import com.example.MuseumTicketing.Repo.InstitutionDetailsRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,26 +21,30 @@ public class InstitutionDetailsService {
         this.institutionDetailsRepo = institutionDetailsRepo;
     }
 
-    public Object submitAdditionalDetails(String sessionId, String mobileNumber, DetailsRequest detailsRequest) {
+    public Object submitAdditionalDetails(String sessionId, String mobileNumber, DetailsRequest detailsRequest, Integer bookingId) {
         //Optional<InstitutionDetails> optionalDetails = institutionDetailsRepo.findByMobileNumber(mobileNumber);
-        InstitutionDetails institutionDetails;
+
 
         //if (optionalDetails.isPresent()) {
             //institutionDetails = optionalDetails.get();
         //} else {
-            institutionDetails = new InstitutionDetails();
+
         //    institutionDetails.setMobileNumber(mobileNumber);
        // }
+        InstitutionDetails institutionDetails= institutionDetailsRepo.findByBookingId(bookingId);
 
+        if (institutionDetails == null) {
+            throw new IllegalArgumentException("PublicDetails not found for booking ID: " + bookingId);
+        }
         institutionDetails.setSessionId(sessionId);
-        institutionDetails.setType(detailsRequest.getType());
+        //institutionDetails.setType(detailsRequest.getType());
         institutionDetails.setEmail(detailsRequest.getEmail());
         institutionDetails.setInstitutionName(detailsRequest.getInstitutionName());
         institutionDetails.setDistrict(detailsRequest.getDistrict());
         institutionDetails.setNumberOfStudents(detailsRequest.getNumberOfStudents());
         institutionDetails.setNumberOfTeachers(detailsRequest.getNumberOfTeachers());
         institutionDetails.setTotalPrice(detailsRequest.getTotalPrice());
-        institutionDetails.setVisitDate(detailsRequest.getVisitDate());
+        //institutionDetails.setVisitDate(detailsRequest.getVisitDate());
         institutionDetails.setMobileNumber(detailsRequest.getMobileNumber());
         institutionDetails.setBookDate(detailsRequest.getBookDate());
 

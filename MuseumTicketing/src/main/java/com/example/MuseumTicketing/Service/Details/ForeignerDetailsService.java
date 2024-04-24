@@ -19,14 +19,16 @@ public class ForeignerDetailsService {
             this.foreignerDetailsRepo = foreignerDetailsRepo;
         }
 
-        public Object submitAdditionalDetails(String sessionId, String mobileNumber, DetailsRequest detailsRequest) {
+        public Object submitAdditionalDetails(String sessionId, String mobileNumber, DetailsRequest detailsRequest, Integer bookingId) {
            // Optional<ForeignerDetails> optionalDetails = foreignerDetailsRepo.findByMobileNumber(mobileNumber);
-            ForeignerDetails foreignerDetails;
-
+            ForeignerDetails foreignerDetails = foreignerDetailsRepo.findByBookingId(bookingId);
+            if (foreignerDetails == null) {
+                throw new IllegalArgumentException("PublicDetails not found for booking ID: " + bookingId);
+            }
            // if (optionalDetails.isPresent()) {
                 //foreignerDetails = optionalDetails.get();
             //} else {
-                foreignerDetails = new ForeignerDetails();
+
             //    foreignerDetails.setMobileNumber(mobileNumber);
             //}
 
@@ -35,9 +37,9 @@ public class ForeignerDetailsService {
             foreignerDetails.setEmail(detailsRequest.getEmail());
             foreignerDetails.setNumberOfAdults(detailsRequest.getNumberOfAdults());
             foreignerDetails.setNumberOfChildren(detailsRequest.getNumberOfChildren());
-            foreignerDetails.setType(detailsRequest.getType());
+            //foreignerDetails.setType(detailsRequest.getType());
             foreignerDetails.setTotalPrice(detailsRequest.getTotalPrice());
-            foreignerDetails.setVisitDate(detailsRequest.getVisitDate());
+            //foreignerDetails.setVisitDate(detailsRequest.getVisitDate());
             foreignerDetails.setMobileNumber(detailsRequest.getMobileNumber());
             foreignerDetails.setBookDate(detailsRequest.getBookDate());
 

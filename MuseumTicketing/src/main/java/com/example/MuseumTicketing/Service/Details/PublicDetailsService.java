@@ -20,16 +20,21 @@ public class PublicDetailsService {
         this.publicDetailsRepo = publicDetailsRepo;
     }
 
-    public Object submitAdditionalDetails(String sessionId, String mobileNumber, DetailsRequest detailsRequest) {
+    public Object submitAdditionalDetails(String sessionId, String mobileNumber, DetailsRequest detailsRequest, Integer bookingId) {
         //Optional<PublicDetails> optionalDetails = publicDetailsRepo.findByMobileNumber(mobileNumber);
-        PublicDetails publicDetails;
+        //PublicDetails publicDetails;
 
         //if (optionalDetails.isPresent()) {
         //    publicDetails = optionalDetails.get();
         //} else {
-            publicDetails = new PublicDetails();
+         //   publicDetails = new PublicDetails();
         //    publicDetails.setMobileNumber(mobileNumber);
         //}
+        PublicDetails publicDetails = publicDetailsRepo.findByBookingId(bookingId);
+
+        if (publicDetails == null) {
+            throw new IllegalArgumentException("PublicDetails not found for booking ID: " + bookingId);
+        }
 
         publicDetails.setSessionId(sessionId);
         publicDetails.setName(detailsRequest.getName());
@@ -37,9 +42,9 @@ public class PublicDetailsService {
         publicDetails.setNumberOfAdults(detailsRequest.getNumberOfAdults());
         publicDetails.setNumberOfChildren(detailsRequest.getNumberOfChildren());
         publicDetails.setNumberOfSeniors(detailsRequest.getNumberOfSeniors());
-        publicDetails.setType(detailsRequest.getType());
+        //publicDetails.setType(detailsRequest.getType());
         publicDetails.setTotalPrice(detailsRequest.getTotalPrice());
-        publicDetails.setVisitDate(detailsRequest.getVisitDate());
+        //publicDetails.setVisitDate(detailsRequest.getVisitDate());
         publicDetails.setMobileNumber(detailsRequest.getMobileNumber());
         publicDetails.setBookDate(detailsRequest.getBookDate());
 

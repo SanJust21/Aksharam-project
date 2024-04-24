@@ -34,6 +34,15 @@ public class DetailsRequest {
     private boolean visitStatus;
     private String ticketId;
     private boolean paymentStatus;
+    private int bookingId;
+
+    public int getBookingId() {
+        return bookingId;
+    }
+
+    public void setBookingId(int bookingId) {
+        this.bookingId = bookingId;
+    }
 
     public int getTotalTickets() {
         return totalTickets;
