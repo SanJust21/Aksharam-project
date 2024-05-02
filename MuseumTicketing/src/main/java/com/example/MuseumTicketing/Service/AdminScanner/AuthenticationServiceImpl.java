@@ -223,14 +223,14 @@ public class AuthenticationServiceImpl implements AuthenticationService{
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(signInRequest.getEmployeeId(), signInRequest.getPassword()));
 
             var user = usersRepo.findByEmployeeId(signInRequest.getEmployeeId()).orElseThrow(() ->new IllegalArgumentException("Invalid Name or password"));
-            var jwt = jwtService.generateToken(user);
+            var jwt = jwtService.generateTokenAndFlag(user);
             //var refreshToken = jwtService.generateRefreshToken(new HashMap<>(), user);
 
-            JwtAuthenticationResponse jwtAuthenticationResponse = new JwtAuthenticationResponse();
+            //JwtAuthenticationResponse jwtAuthenticationResponse = new JwtAuthenticationResponse();
 
-            jwtAuthenticationResponse.setToken(jwt);
+            //jwtAuthenticationResponse.setToken(jwt);
             //jwtAuthenticationResponse.setRefreshToken(refreshToken);
-            return jwtAuthenticationResponse;
+            return jwt;
     }
 
 //    public JwtAuthenticationResponse refreshToken(RefreshTokenRequest refreshTokenRequest) {

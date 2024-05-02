@@ -38,7 +38,7 @@ public class PriceRequestService {
         price.setPrice(priceRequest.getPrice());
         price.setCategory(priceRequest.getCategory());
         Price savedPrice = priceRepo.save(price);
-        return mapToPriceRequest(savedPrice);
+        return mapToPriceRequestAdd(savedPrice);
     }
 
     public void deletePriceById(int id) {
@@ -85,7 +85,14 @@ public class PriceRequestService {
         transfer.setCategory(price.getCategory());
         return transfer;
     }
-
+    private PriceRequest mapToPriceRequestAdd(Price price) {
+        PriceRequest transfer = new PriceRequest();
+        transfer.setId(price.getId());
+        transfer.setPrice(price.getPrice());
+        transfer.setType(price.getType());
+        transfer.setCategory(price.getCategory());
+        return transfer;
+    }
 
 }
 

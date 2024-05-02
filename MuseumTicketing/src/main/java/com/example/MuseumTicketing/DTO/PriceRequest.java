@@ -12,7 +12,7 @@ import lombok.Data;
 public class PriceRequest {
 
 
-    private int id;
+   private int id;
 
     private String type;
 

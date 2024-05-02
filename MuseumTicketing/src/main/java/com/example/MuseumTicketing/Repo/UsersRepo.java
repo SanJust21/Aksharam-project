@@ -17,8 +17,9 @@ public interface UsersRepo extends JpaRepository<Users, Integer> {
 
     Users findByRole(Role role);
 
-    @Query("SELECT MAX(u.employeeId) FROM Users u")
+    @Query("SELECT MAX(u.employeeId) FROM Users u WHERE u.role = com.example.MuseumTicketing.Model.Role.EMPLOYEE")
     String findMaxEmployeeId();
+
 
     List<Users> findAllByRole(Role role);
 }

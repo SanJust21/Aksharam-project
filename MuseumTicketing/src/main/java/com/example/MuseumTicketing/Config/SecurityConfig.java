@@ -35,8 +35,11 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+
+    @Autowired
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    @Autowired
     private final UsersService usersService;
 
 
@@ -52,7 +55,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/stime/getSlot").permitAll()
                         .requestMatchers("/api/booking/**").permitAll()
-                        .requestMatchers("/api/calEve/**").permitAll()
+                        .requestMatchers("/api/calEve/eventCal").permitAll()
                         .requestMatchers("/api/admin").hasAnyAuthority(Role.ADMIN.name())
                         .requestMatchers("/api/admin/addEmployee").hasAnyAuthority(Role.ADMIN.name())
                         .requestMatchers("/api/admin/employees").hasAnyAuthority(Role.ADMIN.name())
@@ -69,6 +72,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/dashboard/**").hasAnyAuthority(Role.ADMIN.name())
                         .requestMatchers("/api/stime/updateShow/{id}").hasAnyAuthority(Role.ADMIN.name())
                         .requestMatchers("/api/stime/addstime").hasAnyAuthority(Role.ADMIN.name())
+                        .requestMatchers("/api/holidays/**").hasAnyAuthority(Role.ADMIN.name())
+                        .requestMatchers("/api/calEve/distinctDate").hasAnyAuthority(Role.ADMIN.name())
+                        .requestMatchers("/api/calEve/dateData").hasAnyAuthority(Role.ADMIN.name())
+                        .requestMatchers("/api/calEve/capacity/{id}").hasAnyAuthority(Role.ADMIN.name())
                         .requestMatchers("/api/scanner/**").hasAnyAuthority(Role.SCANNER.name())
                         .anyRequest().authenticated())
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

@@ -141,7 +141,7 @@ public class AdminController {
     }
 
     //@CrossOrigin(origins = AppConfig.BASE_URL)
-    @PostMapping("/deletePrice/{id}")
+    @DeleteMapping("/deletePrice/{id}")
     public void deletePrice(@PathVariable Integer id) {
         priceRequestService.deletePriceById(id);
     }
