@@ -45,4 +45,8 @@ public class HolidaysService {
             return holidaysRepo.save(existingData);
         }
     }
+
+    public void deleteHolidaysById(int id) {
+        holidaysRepo.deleteById(id);
+    }
 }

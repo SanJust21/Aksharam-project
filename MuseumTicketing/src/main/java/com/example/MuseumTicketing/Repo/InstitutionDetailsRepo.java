@@ -83,4 +83,6 @@ public interface InstitutionDetailsRepo extends JpaRepository<InstitutionDetails
     Double calculateTotalInstitutionIncomeForMonth(@Param("month") int month, @Param("year") int year);
 
     InstitutionDetails findByBookingId(Integer bId);
+
+    List<InstitutionDetails> findAll();
 }

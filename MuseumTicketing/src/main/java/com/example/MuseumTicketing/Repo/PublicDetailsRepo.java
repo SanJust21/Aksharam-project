@@ -82,6 +82,8 @@ public interface PublicDetailsRepo extends JpaRepository<PublicDetails, Long> {
     Double calculateTotalPublicIncomeForMonth(@Param("month") int month, @Param("year") int year);
 
     PublicDetails findByBookingId(Integer bId);
+
+    List<PublicDetails> findAll();
 }
 
 

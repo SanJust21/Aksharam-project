@@ -87,7 +87,7 @@ public interface ForeignerDetailsRepo extends JpaRepository<ForeignerDetails, Lo
     ForeignerDetails findByBookingId(Integer bId);
 
 
-
+   List<ForeignerDetails> findAll();
 }
 
 

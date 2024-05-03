@@ -5,6 +5,14 @@ import com.example.MuseumTicketing.DTO.AdminScanner.CategoryVisitorDTO;
 import com.example.MuseumTicketing.DTO.AdminScanner.TotalIncomeDTO;
 import com.example.MuseumTicketing.DTO.AdminScanner.TotalTicketsDTO;
 import com.example.MuseumTicketing.DTO.DetailsRequest;
+import com.example.MuseumTicketing.Model.ForeignerDetails;
+import com.example.MuseumTicketing.Model.InstitutionDetails;
+import com.example.MuseumTicketing.Model.PublicDetails;
+import com.example.MuseumTicketing.Model.ShowTime;
+import com.example.MuseumTicketing.Repo.ForeignerDetailsRepo;
+import com.example.MuseumTicketing.Repo.InstitutionDetailsRepo;
+import com.example.MuseumTicketing.Repo.PublicDetailsRepo;
+import com.example.MuseumTicketing.Repo.ShowTimeRepo;
 import com.example.MuseumTicketing.Service.AdminScanner.DashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -12,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.Month;
 import java.util.List;
 
@@ -22,6 +31,14 @@ import java.util.List;
 public class DashboardController {
 
     private final DashboardService dashboardService;
+
+    private final ShowTimeRepo showTimeRepo;
+
+    private final PublicDetailsRepo publicDetailsRepo;
+
+    private final InstitutionDetailsRepo institutionDetailsRepo;
+
+    private final ForeignerDetailsRepo foreignerDetailsRepo;
 
    // @CrossOrigin(origins = AppConfig.BASE_URL)
     @GetMapping("/currentDayList")
@@ -145,6 +162,17 @@ public class DashboardController {
             @RequestParam int year) {
         List<TotalIncomeDTO> totalIncomeList = dashboardService.getTotalIncomeForYear(year);
         return ResponseEntity.ok(totalIncomeList);
+    }
+
+    @GetMapping("/peakSlot")
+    public ResponseEntity<List<LocalTime>> findPeakSlot() {
+
+        List<ShowTime> showTimes = showTimeRepo.findAll();
+        List<PublicDetails> publicDetails = publicDetailsRepo.findAll();
+        List<InstitutionDetails> institutionDetails = institutionDetailsRepo.findAll();
+        List<ForeignerDetails> foreignerDetails = foreignerDetailsRepo.findAll();
+
+        return ResponseEntity.ok(dashboardService.findPeakSlot(showTimes, publicDetails, institutionDetails, foreignerDetails));
     }
 
 

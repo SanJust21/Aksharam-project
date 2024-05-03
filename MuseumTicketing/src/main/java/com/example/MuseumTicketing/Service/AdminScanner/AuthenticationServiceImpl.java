@@ -17,6 +17,8 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -219,10 +221,11 @@ public class AuthenticationServiceImpl implements AuthenticationService{
     }
 
 
-    public JwtAuthenticationResponse signin(SignInRequest signInRequest){
+    public JwtAuthenticationResponse signin(SignInRequest signInRequest) {
+        try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(signInRequest.getEmployeeId(), signInRequest.getPassword()));
 
-            var user = usersRepo.findByEmployeeId(signInRequest.getEmployeeId()).orElseThrow(() ->new IllegalArgumentException("Invalid Name or password"));
+            var user = usersRepo.findByEmployeeId(signInRequest.getEmployeeId()).orElseThrow(() -> new IllegalArgumentException("Invalid Name or password"));
             var jwt = jwtService.generateTokenAndFlag(user);
             //var refreshToken = jwtService.generateRefreshToken(new HashMap<>(), user);
 
@@ -231,8 +234,10 @@ public class AuthenticationServiceImpl implements AuthenticationService{
             //jwtAuthenticationResponse.setToken(jwt);
             //jwtAuthenticationResponse.setRefreshToken(refreshToken);
             return jwt;
+        } catch (AuthenticationException ex) {
+            throw new IllegalArgumentException("Invalid Name or Password");
+        }
     }
-
 //    public JwtAuthenticationResponse refreshToken(RefreshTokenRequest refreshTokenRequest) {
 //        String userName = jwtService.extractUserName(refreshTokenRequest.getToken());
 //        Users user = usersRepo.findByEmployeeId(userName).orElseThrow();

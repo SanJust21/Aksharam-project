@@ -5,10 +5,7 @@ import com.example.MuseumTicketing.DTO.AdminScanner.CategoryVisitorDTO;
 import com.example.MuseumTicketing.DTO.AdminScanner.TotalIncomeDTO;
 import com.example.MuseumTicketing.DTO.AdminScanner.TotalTicketsDTO;
 import com.example.MuseumTicketing.DTO.DetailsRequest;
-import com.example.MuseumTicketing.Model.ForeignerDetails;
-import com.example.MuseumTicketing.Model.InstitutionDetails;
-import com.example.MuseumTicketing.Model.PublicDetails;
-import com.example.MuseumTicketing.Model.ScannedDetails;
+import com.example.MuseumTicketing.Model.*;
 import com.example.MuseumTicketing.Repo.ForeignerDetailsRepo;
 import com.example.MuseumTicketing.Repo.InstitutionDetailsRepo;
 import com.example.MuseumTicketing.Repo.PublicDetailsRepo;
@@ -17,10 +14,14 @@ import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.Month;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class DashboardService {
@@ -362,6 +363,86 @@ public class DashboardService {
         }
 
         return totalIncomeList;
+    }
+
+    public List<LocalTime> findPeakSlot(List<ShowTime> showTimes, List<PublicDetails> publicDetails, List<InstitutionDetails> institutionDetails, List<ForeignerDetails> foreignerDetails) {
+        // Create a map to store the count of visitors for each slot
+        Map<LocalTime, Integer> visitorsPerSlot = new HashMap<>();
+
+        // Iterate through each record in the PublicDetails table
+        for (PublicDetails publicDetail : publicDetails) {
+            processVisitor(visitorsPerSlot, publicDetail);
+        }
+
+        // Iterate through each record in the InstitutionDetails table
+        for (InstitutionDetails institutionDetail : institutionDetails) {
+            processVisitor(visitorsPerSlot, institutionDetail);
+        }
+
+        for (ForeignerDetails foreignerDetail : foreignerDetails) {
+            processVisitor(visitorsPerSlot, foreignerDetail);
+        }
+
+        // Find the slot(s) with the highest number of visitors
+        return findPeakSlots(visitorsPerSlot);
+    }
+
+    // Utility method to process visitor details and update visitors per slot
+    private void processVisitor(Map<LocalTime, Integer> visitorsPerSlot, PublicDetails visitorDetails) {
+        // If visit status is false, skip this visitor
+        if (visitorDetails.getSlotName() == null) {
+            return;
+        }
+
+        // Get the slot time for the visitor
+        LocalTime slotTime = visitorDetails.getSlotName();
+
+        // Increment the visitor count for the slot time
+        visitorsPerSlot.put(slotTime, visitorsPerSlot.getOrDefault(slotTime, 0) + 1);
+    }
+
+    // Overloaded method to process visitor details from InstitutionDetails
+    private void processVisitor(Map<LocalTime, Integer> visitorsPerSlot, InstitutionDetails visitorDetails) {
+        // If visit status is false, skip this visitor
+        if (visitorDetails.getSlotName() == null) {
+            return;
+        }
+
+        // Get the slot time for the visitor
+        LocalTime slotTime = visitorDetails.getSlotName();
+
+        // Increment the visitor count for the slot time
+        visitorsPerSlot.put(slotTime, visitorsPerSlot.getOrDefault(slotTime, 0) + 1);
+    }
+
+    private void processVisitor(Map<LocalTime, Integer> visitorsPerSlot, ForeignerDetails visitorDetails) {
+        // If visit status is false, skip this visitor
+        if (visitorDetails.getSlotName() == null) {
+            return;
+        }
+
+        // Get the slot time for the visitor
+        LocalTime slotTime = visitorDetails.getSlotName();
+
+        // Increment the visitor count for the slot time
+        visitorsPerSlot.put(slotTime, visitorsPerSlot.getOrDefault(slotTime, 0) + 1);
+    }
+
+
+    // Utility method to find the slot(s) with the highest number of visitors
+    private List<LocalTime> findPeakSlots(Map<LocalTime, Integer> visitorsPerSlot) {
+        int maxVisitors = visitorsPerSlot.values().stream()
+                .mapToInt(Integer::intValue)
+                .max()
+                .orElse(0);
+
+        // Collect all slots with the maximum number of visitors into a list
+        List<LocalTime> peakSlots = visitorsPerSlot.entrySet().stream()
+                .filter(entry -> entry.getValue() == maxVisitors)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+
+        return peakSlots;
     }
 
 }

@@ -46,7 +46,11 @@ public class EmailService {
         String ticketId = extractTicketId(qrCodeResponse.getUserDetails());
 
         String subject = "Your Booking QR Code";
-        String text = "Thank you for booking! Your Ticket ID is " + ticketId + ". Please find your QR code below.";
+        String text = "Dear User,\n\n";
+        text += "Thank you for booking!\n";
+        text+= "Your Ticket ID is <b>" + ticketId + "</b>.\n";
+        text+= "Please find your QR code below.\n\n";
+        text+= "Best regards,\nYour Museum Ticketing Team";
 
         try {
             String to = getEmailByPaymentid(paymentid);
@@ -61,7 +65,13 @@ public class EmailService {
 
 
             // Embed the QR code image in the email
-            helper.addInline("qrCodeImage", new ByteArrayResource(qrCodeResponse.getQrCodeImage()), "image/png");
+            ByteArrayResource qrCodeResource = new ByteArrayResource(qrCodeResponse.getQrCodeImage()) {
+                @Override
+                public String getFilename() {
+                    return ticketId + ".png";
+                }
+            };
+            helper.addInline("qrCodeImage", qrCodeResource, "image/png");
 
             javaMailSender.send(mimeMessage);
         } catch (MessagingException e) {
@@ -72,7 +82,8 @@ public class EmailService {
 
     public void sendTicketEmail(byte[] pdfData, String paymentid) {
         String subject = "Your Ticket PDF!";
-        String text = "Thank you for booking! Please find your ticket PDF attached.";
+        String text = "Dear User,\n\n";
+        text +="Thank you for booking! Please find your ticket PDF attached.";
 
         try {
 

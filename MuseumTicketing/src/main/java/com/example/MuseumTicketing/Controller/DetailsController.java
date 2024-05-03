@@ -45,11 +45,38 @@ public class DetailsController {
     //@CrossOrigin(origins = AppConfig.BASE_URL)
     @GetMapping("/loadPrice")
     public List<PriceRequest> getAllPrice() {
+
         return priceRequestService.getAllPrice();
     }
 
+//    @GetMapping("/loadPrice")
+//    public Map<String, Map<String, Integer>> getAllPrice() {
+//        List<PriceRequest> priceRequests = priceRequestService.getAllPrice();
+//
+//        // Creating a map to store the price information
+//        Map<String, Map<String, Integer>> priceMap = new HashMap<>();
+//
+//        // Looping through each PriceRequest and populating the price map
+//        for (PriceRequest priceRequest : priceRequests) {
+//            String category = priceRequest.getCategory();
+//            String type = priceRequest.getType();
+//            int price = priceRequest.getPrice();
+//
+//            // If the category is not already present in the price map, add it
+//            if (!priceMap.containsKey(category)) {
+//                priceMap.put(category, new HashMap<>());
+//            }
+//
+//            // Add the type and price to the nested map
+//            priceMap.get(category).put(type, price);
+//        }
+//
+//        return priceMap;
+//    }
 
-   // @CrossOrigin(origins = AppConfig.BASE_URL)
+
+
+    // @CrossOrigin(origins = AppConfig.BASE_URL)
     @PostMapping("/submit")
     public ResponseEntity<Map<String, Object>> submitDetails(@RequestBody DetailsRequest detailsRequest) {
 

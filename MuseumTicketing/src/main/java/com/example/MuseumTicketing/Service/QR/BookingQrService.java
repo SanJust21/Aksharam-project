@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.LocalTime;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -140,42 +141,51 @@ public class BookingQrService {
 
 
     private String createBookingInfo(InstitutionDetails institutionDetails) {
-
+        LocalTime slotName = institutionDetails.getSlotName();
         return String.format(
-                "Name of Institution: %s, Students: %d, Teachers: %d, Date: %s, Amount: %.2f, Booking ID: %s",
+                "Name of Institution: %s, Students: %d, Teachers: %d, Date: %s, Amount: %.2f, Booking ID: %s, Slot Name: %02d:%02d:%02d",
                 institutionDetails.getInstitutionName(),
                 institutionDetails.getNumberOfStudents(),
                 institutionDetails.getNumberOfTeachers(),
                 institutionDetails.getVisitDate(),
                 institutionDetails.getTotalPrice(),
-                institutionDetails.getTicketId()
+                institutionDetails.getTicketId(),
+                slotName.getHour(),
+                slotName.getMinute(),
+                slotName.getSecond()
         );
     }
 
     private String createBookingInfo(PublicDetails publicDetails) {
-
+        LocalTime slotName = publicDetails.getSlotName();
         return String.format(
-                "Name: %s, Adults: %d, Children: %d, Seniors: %d, Date: %s, Amount: %.2f, Booking ID: %s",
+                "Name: %s, Adults: %d, Children: %d, Seniors: %d, Date: %s, Amount: %.2f, Booking ID: %s, Slot Name: %02d:%02d:%02d",
                 publicDetails.getName(),
                 publicDetails.getNumberOfAdults(),
                 publicDetails.getNumberOfChildren(),
                 publicDetails.getNumberOfSeniors(),
                 publicDetails.getVisitDate(),
                 publicDetails.getTotalPrice(),
-                publicDetails.getTicketId()
+                publicDetails.getTicketId(),
+                slotName.getHour(),
+                slotName.getMinute(),
+                slotName.getSecond()
         );
     }
 
     private String createBookingInfo(ForeignerDetails foreignerDetails) {
-
+        LocalTime slotName = foreignerDetails.getSlotName();
         return String.format(
-                "Name: %s, Adults: %d, Children: %d, Date: %s, Amount: %.2f, Booking ID: %s",
+                "Name: %s, Adults: %d, Children: %d, Date: %s, Amount: %.2f, Booking ID: %s, Slot Name: %02d:%02d:%02d",
                 foreignerDetails.getName(),
                 foreignerDetails.getNumberOfAdults(),
                 foreignerDetails.getNumberOfChildren(),
                 foreignerDetails.getVisitDate(),
                 foreignerDetails.getTotalPrice(),
-                foreignerDetails.getTicketId()
+                foreignerDetails.getTicketId(),
+                slotName.getHour(),
+                slotName.getMinute(),
+                slotName.getSecond()
         );
     }
 
