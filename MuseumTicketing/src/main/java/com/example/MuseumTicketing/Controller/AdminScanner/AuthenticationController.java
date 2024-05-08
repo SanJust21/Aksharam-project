@@ -24,8 +24,17 @@ public class AuthenticationController {
 
    // @CrossOrigin(origins = AppConfig.BASE_URL)
     @PostMapping("/signup")
-    public ResponseEntity<Users> signup(@RequestBody SignUpRequest signUpRequest){
-        return ResponseEntity.ok(authenticationService.signup(signUpRequest));
+    public ResponseEntity<?> signup(@RequestBody SignUpRequest signUpRequest){
+        try {
+            ResponseEntity<?> users = authenticationService.signup(signUpRequest);
+            return ResponseEntity.ok(users);
+        } catch (IllegalArgumentException ex) {
+            CustomResponse customResponse = new CustomResponse("Name and email are required", HttpStatus.BAD_REQUEST.value());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(customResponse);
+        } catch (Exception ex) {
+            CustomResponse customResponse = new CustomResponse("Error occurred during signup", HttpStatus.INTERNAL_SERVER_ERROR.value());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(customResponse);
+        }
     }
 
     //@CrossOrigin(origins = AppConfig.BASE_URL)

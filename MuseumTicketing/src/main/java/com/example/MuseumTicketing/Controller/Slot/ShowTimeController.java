@@ -1,9 +1,11 @@
 package com.example.MuseumTicketing.Controller.Slot;
 
+import com.example.MuseumTicketing.DTO.AdminScanner.CustomResponse;
 import com.example.MuseumTicketing.DTO.Slot.ShowTimeDTO;
 import com.example.MuseumTicketing.Model.ShowTime;
 import com.example.MuseumTicketing.Service.Slot.ShowTimeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,8 +21,14 @@ public class ShowTimeController {
 
     @PostMapping(path = "/addstime")
     public ResponseEntity<?> addShowTime(@RequestBody ShowTimeDTO showTimeDTO) {
-        ShowTime showTime = showTimeService.addShowTime(showTimeDTO);
-        return ResponseEntity.ok(showTime);
+        try {
+            ShowTime showTime = showTimeService.addShowTime(showTimeDTO);
+            return ResponseEntity.ok(showTime);
+        } catch (IllegalArgumentException e) {
+            // Handle the error here
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new CustomResponse(e.getMessage(), HttpStatus.BAD_REQUEST.value()));
+        }
     }
 
     @PostMapping(path = "/addSlots")

@@ -17,6 +17,9 @@ public class ShowTimeService {
     @Autowired
     private ShowTimeRepo showTimeRepo;
     public ShowTime addShowTime(ShowTimeDTO showTimeDTO) {
+        if (showTimeRepo.existsByStartTimeAndEndTime(showTimeDTO.getStartTime(), showTimeDTO.getEndTime())) {
+            throw new IllegalArgumentException("Slot time already exists");
+        }
         ShowTime showTime = new ShowTime();
         showTime.setId(showTimeDTO.getId());
         showTime.setStartTime(showTimeDTO.getStartTime());

@@ -14,7 +14,7 @@ import java.util.List;
 
 public interface AuthenticationService {
 
-    Users signup(SignUpRequest signUpRequest);
+    ResponseEntity<?> signup(SignUpRequest signUpRequest);
 
     JwtAuthenticationResponse signin(SignInRequest signInRequest);
 

@@ -22,4 +22,6 @@ public interface UsersRepo extends JpaRepository<Users, Integer> {
 
 
     List<Users> findAllByRole(Role role);
+
+    boolean existsByEmployeeId(String newEmployeeId);
 }

@@ -40,8 +40,17 @@ public class AdminController {
 
     //@CrossOrigin(origins = AppConfig.BASE_URL)
     @PostMapping("/addEmployee")
-    public ResponseEntity<Users> signup(@RequestBody SignUpRequest signUpRequest){
-        return ResponseEntity.ok(authenticationService.signup(signUpRequest));
+    public ResponseEntity<?> signup(@RequestBody SignUpRequest signUpRequest){
+        try {
+            ResponseEntity<?> users = authenticationService.signup(signUpRequest);
+            return ResponseEntity.ok(users);
+        } catch (IllegalArgumentException ex) {
+            CustomResponse customResponse = new CustomResponse("Name and email are required", HttpStatus.BAD_REQUEST.value());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(customResponse);
+        } catch (Exception ex) {
+            CustomResponse customResponse = new CustomResponse("Error occurred during signup", HttpStatus.INTERNAL_SERVER_ERROR.value());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(customResponse);
+        }
     }
 
 
@@ -136,20 +145,38 @@ public class AdminController {
     }
    // @CrossOrigin(origins = AppConfig.BASE_URL)
     @PostMapping("/addPrice")
-    public PriceRequest addPrice(@RequestBody PriceRequest priceRequest) {
-        return priceRequestService.addPrice(priceRequest);
+    public ResponseEntity<?> addPrice(@RequestBody PriceRequest priceRequest) {
+        try {
+            PriceRequest addedPrice = priceRequestService.addPrice(priceRequest);
+            return ResponseEntity.ok(addedPrice);
+        } catch (IllegalArgumentException e) {
+            CustomResponse customResponse = new CustomResponse("Price with the same type and category already exists", HttpStatus.BAD_REQUEST.value());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(customResponse);
+        }
     }
 
     //@CrossOrigin(origins = AppConfig.BASE_URL)
     @DeleteMapping("/deletePrice/{id}")
-    public void deletePrice(@PathVariable Integer id) {
-        priceRequestService.deletePriceById(id);
+    public ResponseEntity<?> deletePrice(@PathVariable Integer id) {
+        try {
+            priceRequestService.deletePriceById(id);
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new CustomResponse(e.getMessage(), HttpStatus.NOT_FOUND.value()));
+        }
     }
 
     //@CrossOrigin(origins = AppConfig.BASE_URL)
     @PutMapping("/updatePrice/{id}")
-    public PriceRequest updatePrice(@PathVariable Integer id, @RequestBody PriceRequest priceRequest) {
-        return priceRequestService.updatePrice(id, priceRequest);
+    public ResponseEntity<?> updatePrice(@PathVariable Integer id, @RequestBody PriceRequest priceRequest) {
+        try {
+            PriceRequest updatedPrice = priceRequestService.updatePrice(id, priceRequest);
+            return ResponseEntity.ok(updatedPrice);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new CustomResponse(e.getMessage(), HttpStatus.NOT_FOUND.value()));
+        }
     }
 
     @PostMapping("/deletePrice")

@@ -33,6 +33,14 @@ public class PriceRequestService {
         return priceReq ;
     }
     public PriceRequest addPrice(PriceRequest priceRequest) {
+        String type = priceRequest.getType().toLowerCase();
+        String category = priceRequest.getCategory().toLowerCase();
+
+        // Check if a price with the same type and category already exists (case-insensitive)
+        Optional<Price> existingPrice = priceRepo.findByTypeIgnoreCaseAndCategoryIgnoreCase(type, category);
+        if (existingPrice.isPresent()) {
+            throw new IllegalArgumentException("Price with type " + type + " and category " + category + " already exists");
+        }
         Price price = new Price();
         price.setType(priceRequest.getType());
         price.setPrice(priceRequest.getPrice());

@@ -5,11 +5,11 @@ import lombok.Data;
 @Data
 public class CustomResponse {
     private String message;
-    private int errorCode;
+    private int code;
 
     public CustomResponse(String message, int errorCode) {
         this.message = message;
-        this.errorCode = errorCode;
+        this.code = errorCode;
     }
 
 }

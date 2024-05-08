@@ -1,10 +1,10 @@
 package com.example.MuseumTicketing.Service.AdminScanner;
 
+import com.example.MuseumTicketing.DTO.AdminScanner.CustomResponse;
 import com.example.MuseumTicketing.DTO.AdminScanner.JwtAuthenticationResponse;
 //import com.example.MuseumTicketing.DTO.AdminScanner.RefreshTokenRequest;
 import com.example.MuseumTicketing.DTO.AdminScanner.SignInRequest;
 import com.example.MuseumTicketing.DTO.AdminScanner.SignUpRequest;
-import com.example.MuseumTicketing.DTO.DetailsRequest;
 import com.example.MuseumTicketing.Model.*;
 import com.example.MuseumTicketing.Repo.UsersRepo;
 import com.example.MuseumTicketing.Service.Details.ForeignerDetailsService;
@@ -14,11 +14,11 @@ import com.example.MuseumTicketing.Service.Jwt.JwtService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -53,31 +53,49 @@ public class AuthenticationServiceImpl implements AuthenticationService{
     private final String FOLDER_PATH = "C:/Users/azhym/Desktop/Museum Employees/";
 
 
-    public Users signup(SignUpRequest signUpRequest){
+    public ResponseEntity<?> signup(SignUpRequest signUpRequest){
+        try {
+            // Validate SignUpRequest object for null values
+            if (signUpRequest == null ||
+                    signUpRequest.getName() == null ||
+                    signUpRequest.getEmail() == null ||
+                    signUpRequest.getImage() == null ||
+                    signUpRequest.getPhoneNo() == null ||
+                    signUpRequest.getTempAddress() == null ||
+                    signUpRequest.getPermAddress() == null) {
+                throw new IllegalArgumentException("All fields are required");
+            }
 
-        Users users = new Users();
+            Users users = new Users();
 
-        String employeeId = generateEmployeeId();
-        users.setEmployeeId(employeeId);
+            String employeeId = generateEmployeeId();
+            users.setEmployeeId(employeeId);
 
-        //String password = generateRandomPassword();
-        String password = "password";
-        users.setPassword(passwordEncoder.encode(password));
-        //users.setPassword(password);
+            //String password = generateRandomPassword();
+            String password = "password";
+            users.setPassword(passwordEncoder.encode(password));
+            //users.setPassword(password);
 
 
-        users.setEmail(signUpRequest.getEmail());
-        users.setName(signUpRequest.getName());
-        //users.setEmployeeId(signUpRequest.getEmployeeId());
-        users.setImage(signUpRequest.getImage());
-        users.setPhoneNo(signUpRequest.getPhoneNo());
-        users.setTempAddress(signUpRequest.getTempAddress());
-        users.setPermAddress(signUpRequest.getPermAddress());
-        users.setRole(Role.EMPLOYEE);
-        //users.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
+            users.setEmail(signUpRequest.getEmail());
+            users.setName(signUpRequest.getName());
+            //users.setEmployeeId(signUpRequest.getEmployeeId());
+            users.setImage(signUpRequest.getImage());
+            users.setPhoneNo(signUpRequest.getPhoneNo());
+            users.setTempAddress(signUpRequest.getTempAddress());
+            users.setPermAddress(signUpRequest.getPermAddress());
+            users.setRole(Role.EMPLOYEE);
+            //users.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
 
-        return usersRepo.save(users);
-
+            Users savedUser = usersRepo.save(users);
+            return ResponseEntity.ok(savedUser);
+        }catch (IllegalArgumentException ex) {
+            CustomResponse customResponse = new CustomResponse("Name and email are required", HttpStatus.BAD_REQUEST.value());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(customResponse);
+        } catch (Exception ex) {
+            CustomResponse customResponse = new CustomResponse("Error occurred during signup", HttpStatus.INTERNAL_SERVER_ERROR.value());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(customResponse);
+        }
     }
 
     private String generateEmployeeId() {
@@ -97,8 +115,9 @@ public class AuthenticationServiceImpl implements AuthenticationService{
         // Increment the latest employee ID
         lastNumericId++;
 
-        // Construct the new employee ID
-        return "EMP" + lastNumericId;
+        String newEmployeeId = "EMP" + String.format("%05d", lastNumericId);
+
+        return newEmployeeId;
     }
 
     private String generateRandomPassword() {

@@ -46,11 +46,11 @@ public class EmailService {
         String ticketId = extractTicketId(qrCodeResponse.getUserDetails());
 
         String subject = "Your Booking QR Code";
-        String text = "Dear User,\n\n";
-        text += "Thank you for booking!\n";
-        text+= "Your Ticket ID is <b>" + ticketId + "</b>.\n";
-        text+= "Please find your QR code below.\n\n";
-        text+= "Best regards,\nYour Museum Ticketing Team";
+        String text = "Dear User,<br><br>";
+        text += "Thank you for booking!<br>";
+        text+= "Your Ticket ID is <b>" + ticketId + "</b>.<br>";
+        text+= "Please find your QR code below.<br><br>";
+        text+= "Best regards,<br>Your Museum Ticketing Team!";
 
         try {
             String to = getEmailByPaymentid(paymentid);

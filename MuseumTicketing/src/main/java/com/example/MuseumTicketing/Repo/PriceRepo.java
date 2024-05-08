@@ -17,5 +17,7 @@ public interface PriceRepo extends JpaRepository<Price, Integer>{
     void deleteByTypeAndCategory(String type, String category);
 
     Optional<Price> findByTypeAndCategory(String type, String category);
+
+    Optional<Price> findByTypeIgnoreCaseAndCategoryIgnoreCase(String type, String category);
 }
 
