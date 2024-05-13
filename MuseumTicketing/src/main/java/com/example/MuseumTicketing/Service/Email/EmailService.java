@@ -23,6 +23,11 @@ import jakarta.mail.internet.MimeMultipart;
 
 import org.springframework.mail.javamail.MimeMessageHelper;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+
 @Service
 public class EmailService {
 
@@ -63,6 +68,22 @@ public class EmailService {
             helper.setSubject(subject);
             helper.setText(text, true);
 
+//            ByteArrayInputStream bis = new ByteArrayInputStream(qrCodeResponse.getQrCodeImage());
+//            BufferedImage bufferedImage = ImageIO.read(bis);
+//
+//            // Create a ByteArrayOutputStream to store the PNG image data
+//            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//
+//            // Write the BufferedImage as PNG to the ByteArrayOutputStream
+//            ImageIO.write(bufferedImage, "png", baos);
+//
+//            // Convert the ByteArrayOutputStream to byte array
+//            byte[] pngImageData = baos.toByteArray();
+//
+//            // Close streams
+//            bis.close();
+//            baos.close();
+
 
             // Embed the QR code image in the email
             ByteArrayResource qrCodeResource = new ByteArrayResource(qrCodeResponse.getQrCodeImage()) {
@@ -81,9 +102,15 @@ public class EmailService {
     }
 
     public void sendTicketEmail(byte[] pdfData, String paymentid) {
+
+        String ticketId = getTicketIdByPaymentid(paymentid);
+
         String subject = "Your Ticket PDF!";
-        String text = "Dear User,\n\n";
-        text +="Thank you for booking! Please find your ticket PDF attached.";
+        String text = "Dear User,<br><br>";
+        text += "Thank you for booking!<br>";
+        text+= "Your Ticket ID is <b>" + ticketId + "</b>.<br>";
+        text+= "Please find your QR code below.<br><br>";
+        text+= "Best regards,<br>Your Museum Ticketing Team!";
 
         try {
 
@@ -97,13 +124,14 @@ public class EmailService {
 
             // Set sender email address
             helper.setFrom(new InternetAddress(senderEmail));
+            helper.setTo(to);
 
             // Set subject and text
             helper.setSubject(subject);
-            helper.setText(text);
+            helper.setText(text, true);
 
             // Attach PDF to the email
-            helper.addAttachment("ticket.pdf", new ByteArrayResource(pdfData));
+            helper.addAttachment("Ticket.pdf", new ByteArrayResource(pdfData));
 
             // Send the email
             javaMailSender.send(mimeMessage);
@@ -126,6 +154,20 @@ public class EmailService {
          }
        return "Email not found!";
    }
+
+    private String getTicketIdByPaymentid(String paymentId) {
+
+
+        if (institutionDetailsRepo.existsByPaymentid(paymentId)) {
+            return institutionDetailsRepo.findByPaymentid(paymentId).getTicketId();
+        } else if (publicDetailsRepo.existsByPaymentid(paymentId)) {
+            return publicDetailsRepo.findByPaymentid(paymentId).getTicketId();
+        }else if (foreignerDetailsRepo.existsByPaymentid(paymentId)) {
+            return foreignerDetailsRepo.findByPaymentid(paymentId).getTicketId();
+        }
+        return "No ticket Id!";
+    }
+
     private String extractTicketId(String userDetails) {
 
         if (userDetails != null && !userDetails.isEmpty()) {

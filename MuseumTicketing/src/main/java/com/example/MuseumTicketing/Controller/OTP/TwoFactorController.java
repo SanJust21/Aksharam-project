@@ -43,9 +43,9 @@ public class TwoFactorController {
 
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("status", "error");
-            errorResponse.put("message", "Failed to generate OTP. " + e.getMessage());
+            errorResponse.put("message", "Failed to generate OTP.");
 
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
 
@@ -65,9 +65,9 @@ public class TwoFactorController {
 
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("status", "error");
-            errorResponse.put("message", "Failed to resend OTP. " + e.getMessage());
+            errorResponse.put("message", "Failed to resend OTP.");
 
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
 
@@ -97,9 +97,9 @@ public class TwoFactorController {
 
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("status", "error");
-            errorResponse.put("message", "Failed to validate OTP. " + e.getMessage());
+            errorResponse.put("message", "OTP Mismatch.");
 
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
 }

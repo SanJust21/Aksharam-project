@@ -28,4 +28,6 @@ public interface CalendarRepo extends JpaRepository<CalendarEvent, Integer> {
 
     @Query("SELECT DISTINCT c.startDate FROM CalendarEvent c")
     List<LocalDate> findDistinctStartDate();
+
+    CalendarEvent findByStartDateAndStartTime(LocalDate date, LocalTime startTime);
 }

@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -42,6 +43,8 @@ public class CalendarEventService {
 
             LocalDate startDate = excal.get(0).getStartDate();
             List<CalendarEvent> calendarEventsAll = new ArrayList<>();
+
+
             for (CalendarEvent event : excal) {
                 if (event.getStartDate().equals(startDate)) {
 
@@ -67,8 +70,10 @@ public class CalendarEventService {
                                     if (event != null && expiredBooking.getTickets() != null) {
                                         Integer capacity = event.getCapacity();
                                         Integer ticket = expiredBooking.getTickets();
+                                        log.info("Before updating capacity: {}", event);
                                         event.setCapacity(capacity + ticket);
                                         calendarRepo.save(event);
+                                        log.info("After updating capacity: {}", event);
                                         bookingRepo.delete(expiredBooking);
 
                                         log.info("institution Data : "+institutionDetails);
@@ -103,8 +108,10 @@ public class CalendarEventService {
                                     if (event != null && expiredBooking.getTickets() != null) {
                                         Integer capacity = event.getCapacity();
                                         Integer ticket = expiredBooking.getTickets();
+                                        log.info("Before updating capacity: {}", event);
                                         event.setCapacity(capacity + ticket);
                                         calendarRepo.save(event);
+                                        log.info("After updating capacity: {}", event);
                                         bookingRepo.delete(expiredBooking);
 
                                         log.info("public Data : "+publicDetails);
@@ -137,8 +144,10 @@ public class CalendarEventService {
                                     if (event != null && expiredBooking.getTickets() != null) {
                                         Integer capacity = event.getCapacity();
                                         Integer ticket = expiredBooking.getTickets();
+                                        log.info("Before updating capacity: {}", event);
                                         event.setCapacity(capacity + ticket);
                                         calendarRepo.save(event);
+                                        log.info("After updating capacity: {}", event);
                                         bookingRepo.delete(expiredBooking);
 
                                         log.info("foreigner Data : "+foreignerDetails);
@@ -243,17 +252,21 @@ public class CalendarEventService {
 
             for (Integer slotId : slotIds){
                 ShowTime showTime = showTimeRepo.findById(slotId).orElseThrow();
-                if (showTime.getStatus()){
+                if (showTime.getStatus()) {
                     CalendarEvent calendarEvent = new CalendarEvent();
-                    calendarEvent.setStartDate(date);
-                    LocalDate endDate = calendarEvent.getStartDate().plusDays(1);
-                    calendarEvent.setEndDate(endDate);
-                    calendarEvent.setStartTime(showTime.getStartTime());
-                    calendarEvent.setEndTime(showTime.getEndTime());
-                    calendarEvent.setCapacity(showTime.getCapacity());
-                    calendarEvent.setStatus(showTime.getStatus());
-                    CalendarEvent savedEvent = calendarRepo.save(calendarEvent);
-                    savedEvent1.add(savedEvent);
+
+                        calendarEvent.setStartDate(date);
+                        LocalDate endDate = calendarEvent.getStartDate().plusDays(1);
+                        calendarEvent.setEndDate(endDate);
+                        calendarEvent.setStartTime(showTime.getStartTime());
+                        calendarEvent.setEndTime(showTime.getEndTime());
+                        calendarEvent.setCapacity(showTime.getCapacity());
+                        calendarEvent.setStatus(showTime.getStatus());
+                        calendarEvent.setTotalCapacity(showTime.getTotalCapacity());
+                        CalendarEvent savedEvent = calendarRepo.save(calendarEvent);
+                        savedEvent1.add(savedEvent);
+
+
                 }else {
                     log.info("Slot with ID {} is disabled and will not be added to the calendar."+ slotId);
                 }
