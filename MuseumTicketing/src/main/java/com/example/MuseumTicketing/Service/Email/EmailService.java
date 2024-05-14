@@ -7,6 +7,12 @@ import com.example.MuseumTicketing.Model.PublicDetails;
 import com.example.MuseumTicketing.Repo.ForeignerDetailsRepo;
 import com.example.MuseumTicketing.Repo.InstitutionDetailsRepo;
 import com.example.MuseumTicketing.Repo.PublicDetailsRepo;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
@@ -27,6 +33,8 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 
 @Service
 public class EmailService {
@@ -68,37 +76,40 @@ public class EmailService {
             helper.setSubject(subject);
             helper.setText(text, true);
 
-//            ByteArrayInputStream bis = new ByteArrayInputStream(qrCodeResponse.getQrCodeImage());
-//            BufferedImage bufferedImage = ImageIO.read(bis);
-//
-//            // Create a ByteArrayOutputStream to store the PNG image data
-//            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//
-//            // Write the BufferedImage as PNG to the ByteArrayOutputStream
-//            ImageIO.write(bufferedImage, "png", baos);
-//
-//            // Convert the ByteArrayOutputStream to byte array
-//            byte[] pngImageData = baos.toByteArray();
-//
-//            // Close streams
-//            bis.close();
-//            baos.close();
+            ByteArrayInputStream bis = new ByteArrayInputStream(qrCodeResponse.getQrCodeImage());
+            BufferedImage bufferedImage = ImageIO.read(bis);
 
+            // Create a ByteArrayOutputStream to store the PNG image data
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-            // Embed the QR code image in the email
-            ByteArrayResource qrCodeResource = new ByteArrayResource(qrCodeResponse.getQrCodeImage()) {
+            // Write the BufferedImage as PNG to the ByteArrayOutputStream
+            ImageIO.write(bufferedImage, "png", baos);
+
+            // Convert the ByteArrayOutputStream to byte array
+            byte[] pngImageData = baos.toByteArray();
+
+            // Close streams
+            bis.close();
+            baos.close();
+            //sendTicketEmailWithPDF(paymentid, qrCodeResponse.getUserDetails());
+
+             //Embed the QR code image in the email
+            ByteArrayResource qrCodeResource = new ByteArrayResource(pngImageData) {
                 @Override
                 public String getFilename() {
                     return ticketId + ".png";
                 }
             };
-            helper.addInline("qrCodeImage", qrCodeResource, "image/png");
+            //helper.addInline("qrCodeImage", qrCodeResource, "image/png");
+            helper.addAttachment(ticketId + ".png", qrCodeResource);
 
             javaMailSender.send(mimeMessage);
         } catch (MessagingException e) {
             e.printStackTrace();
 
-            }
+            } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void sendTicketEmail(byte[] pdfData, String paymentid) {
@@ -136,6 +147,51 @@ public class EmailService {
             // Send the email
             javaMailSender.send(mimeMessage);
         } catch (MessagingException e) {
+            e.printStackTrace();
+            // Handle exception
+        }
+    }
+
+    public byte[] generateTicketPDF(String ticketId, String bookingDetails) throws IOException {
+        try (PDDocument document = new PDDocument()) {
+            PDPage page = new PDPage();
+            document.addPage(page);
+
+            try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
+                // Add logo image
+                BufferedImage logoImage = ImageIO.read(new File("C:/Users/azhym/Pictures/Screenshots/Aksharam Logo.png"));
+                PDImageXObject logoXObject = LosslessFactory.createFromImage(document, logoImage);
+                contentStream.drawImage(logoXObject, 50, 700);
+
+                // Add ticket ID
+                contentStream.beginText();
+                contentStream.setFont(PDType1Font.HELVETICA, 12);
+                contentStream.newLineAtOffset(50, 650);
+                contentStream.showText("Ticket ID: " + ticketId);
+                contentStream.endText();
+
+                // Add booking details
+                contentStream.beginText();
+                contentStream.setFont(PDType1Font.HELVETICA, 12);
+                contentStream.newLineAtOffset(50, 630);
+                contentStream.showText(bookingDetails);
+                contentStream.endText();
+            }
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            document.save(outputStream);
+            return outputStream.toByteArray();
+        }
+    }
+
+    public void sendTicketEmailWithPDF(String paymentid, String bookingDetails) {
+        try {
+            String ticketId = getTicketIdByPaymentid(paymentid);
+            byte[] pdfData = generateTicketPDF(ticketId, bookingDetails);
+
+            // Send email with PDF attachment
+            sendTicketEmail(pdfData, paymentid);
+        } catch (IOException e) {
             e.printStackTrace();
             // Handle exception
         }
