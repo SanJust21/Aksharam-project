@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
@@ -70,6 +71,13 @@ public class AdminController {
         return ResponseEntity.ok(scanners);
     }
 
+    @GetMapping("/employees-and-scanners")
+    public ResponseEntity<List<Users>> getAllEmployeesAndScanners() {
+        List<Users> roles = authenticationService.getAllUsersByRoles(Arrays.asList(Role.EMPLOYEE, Role.SCANNER));
+        roles.sort(Comparator.comparingLong(Users::getId));
+        return ResponseEntity.ok(roles);
+    }
+
    // @CrossOrigin(origins = AppConfig.BASE_URL)
     @GetMapping("/allTickets")
     public ResponseEntity<List<Object>> getAllTickets() {
@@ -110,6 +118,12 @@ public class AdminController {
     @DeleteMapping("/delete/{employeeId}")
     public ResponseEntity<String> deleteEmployee(@PathVariable String employeeId) {
         String  message = authenticationService.deleteEmployee(employeeId);
+        return ResponseEntity.ok(message);
+    }
+
+    @DeleteMapping("/delete-by-name/{name}")
+    public ResponseEntity<String> deleteEmployeeByName(@PathVariable String name) {
+        String message = authenticationService.deleteEmployeeByName(name);
         return ResponseEntity.ok(message);
     }
 

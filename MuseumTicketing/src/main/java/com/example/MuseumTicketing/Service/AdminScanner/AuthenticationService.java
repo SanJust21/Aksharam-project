@@ -35,4 +35,9 @@ public interface AuthenticationService {
     byte[] downloadImageFromFileSystem(String employeeId) throws IOException;
 
     List<Object> getAllTickets();
+
+    List<Users> getAllUsersByRoles(List<Role> list);
+
+    String deleteEmployeeByName(String name);
+
 }

@@ -12,6 +12,7 @@ import com.example.MuseumTicketing.Service.Details.InstitutionDetailsService;
 import com.example.MuseumTicketing.Service.Details.PublicDetailsService;
 import com.example.MuseumTicketing.Service.Jwt.JwtService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.http.HttpStatus;
@@ -27,10 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -100,7 +98,8 @@ public class AuthenticationServiceImpl implements AuthenticationService{
 
     private String generateEmployeeId() {
         // Retrieve the latest employee ID from the database
-        String lastEmployeeId = usersRepo.findMaxEmployeeId();
+        List<Role> roles = Arrays.asList(Role.EMPLOYEE, Role.SCANNER);
+        String lastEmployeeId = usersRepo.findMaxEmployeeId(roles);
 
         if (lastEmployeeId == null || lastEmployeeId.isEmpty()) {
             return "EMP10001";
@@ -119,6 +118,7 @@ public class AuthenticationServiceImpl implements AuthenticationService{
 
         return newEmployeeId;
     }
+
 
     private String generateRandomPassword() {
         // Generate a random alphanumeric password with a length of 8 characters
@@ -146,6 +146,10 @@ public class AuthenticationServiceImpl implements AuthenticationService{
 
     public List<Users> getAllUsersByRole(Role role) {
         return usersRepo.findAllByRole(role);
+    }
+
+    public List<Users> getAllUsersByRoles(List<Role> roles) {
+        return usersRepo.findAllByRoleIn(roles);
     }
 
 
@@ -177,6 +181,17 @@ public class AuthenticationServiceImpl implements AuthenticationService{
 
         usersRepo.delete(existingUser);
         return "Employee details deleted successfully!";
+    }
+
+    @Transactional
+    public String deleteEmployeeByName(String name) {
+        Optional<Users> user = usersRepo.findByName(name);
+        if (user.isPresent()) {
+            usersRepo.deleteByName(name);
+            return "Employee deleted successfully";
+        } else {
+            return "Employee not found";
+        }
     }
 
     public String updateEmployeeRole(String employeeId, Role newRole, String newPassword) {

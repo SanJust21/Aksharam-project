@@ -3,6 +3,7 @@ import lombok.Data;
 import lombok.Getter;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Data
 public class DetailsRequest {
@@ -35,6 +36,15 @@ public class DetailsRequest {
     private String ticketId;
     private boolean paymentStatus;
     private int bookingId;
+    private LocalTime slotName;
+
+    public LocalTime getSlotName() {
+        return slotName;
+    }
+
+    public void setSlotName(LocalTime slotName) {
+        this.slotName = slotName;
+    }
 
     public int getBookingId() {
         return bookingId;

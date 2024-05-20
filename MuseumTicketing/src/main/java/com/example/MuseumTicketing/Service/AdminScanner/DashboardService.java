@@ -124,6 +124,7 @@ public class DashboardService {
         detailsRequest.setVisitStatus(foreignerDetails.isVisitStatus());
         detailsRequest.setPaymentStatus(foreignerDetails.isPaymentStatus());
         detailsRequest.setTicketId(foreignerDetails.getTicketId());
+        detailsRequest.setSlotName(foreignerDetails.getSlotName());
 
 
         return detailsRequest;
@@ -148,6 +149,7 @@ public class DashboardService {
         detailsRequest.setVisitStatus(institutionDetails.isVisitStatus());
         detailsRequest.setPaymentStatus(institutionDetails.isPaymentStatus());
         detailsRequest.setTicketId(institutionDetails.getTicketId());
+        detailsRequest.setSlotName(institutionDetails.getSlotName());
 
         return detailsRequest;
     }
@@ -170,6 +172,7 @@ public class DashboardService {
         detailsRequest.setVisitStatus(publicDetails.isVisitStatus());
         detailsRequest.setPaymentStatus(publicDetails.isPaymentStatus());
         detailsRequest.setTicketId(publicDetails.getTicketId());
+        detailsRequest.setSlotName(publicDetails.getSlotName()                                                                                                                                                                                                                                                       );
 
         return detailsRequest;
     }
@@ -181,8 +184,8 @@ public class DashboardService {
         int totalPublicVisitors = getTotalVisitorsForCategory(publicDetailsRepo.findByVisitDate(date), "Public");
         visitorDTOs.add(new CategoryVisitorDTO("Public", totalPublicVisitors));
 
-        // Get total visitors for institution category
-        int totalInstitutionVisitors = getTotalVisitorsForCategory(institutionDetailsRepo.findByVisitDate(date), "Institution");
+         // Get total visitors for institution category
+                int totalInstitutionVisitors = getTotalVisitorsForCategory(institutionDetailsRepo.findByVisitDate(date), "Institution");
         visitorDTOs.add(new CategoryVisitorDTO("Institution", totalInstitutionVisitors));
 
         // Get total visitors for foreigner category
