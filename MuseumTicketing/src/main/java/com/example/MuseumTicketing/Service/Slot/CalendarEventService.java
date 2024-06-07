@@ -19,6 +19,8 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class CalendarEventService {
+
+    private final Object lock = new Object();
     @Autowired
     private ShowTimeRepo showTimeRepo;
     @Autowired
@@ -36,144 +38,188 @@ public class CalendarEventService {
 
 
     public ResponseEntity<List<CalendarEvent>> createCalendar(LocalDate date, List<Integer> slotIds) {
+        synchronized (lock) {
+            List<CalendarEvent> excal = calendarRepo.findByStartDate(date);
+            log.info("excal:" + excal);
+            if (!excal.isEmpty()) {
 
-        List<CalendarEvent> excal = calendarRepo.findByStartDate(date);
-
-        if (!excal.isEmpty()) {
-
-            LocalDate startDate = excal.get(0).getStartDate();
-            List<CalendarEvent> calendarEventsAll = new ArrayList<>();
+              //  LocalDate startDate = excal.get(0).getStartDate();
+                LocalDate startDate = date;
+                List<CalendarEvent> calendarEventsAll = new ArrayList<>();
 
 
-            for (CalendarEvent event : excal) {
-                if (event.getStartDate().equals(startDate)) {
+                for (CalendarEvent event : excal) {
+                    if (event.getStartDate().equals(startDate)) {
 
-                    List<Booking> expiredBookings = bookingRepo.findByExpireTimeBefore(LocalDateTime.now());
+                        List<Booking> expiredBookings = bookingRepo.findByExpireTimeBefore(LocalDateTime.now())
+                                .stream()
+                                .filter(booking -> booking.getVisitDate().equals(date))
+                                .collect(Collectors.toList());;
 
-                    for (Booking expiredBooking : expiredBookings) {
-                        Integer bId = expiredBooking.getBookingId();
+                        for (Booking expiredBooking : expiredBookings) {
+                            Integer bId = expiredBooking.getBookingId();
 
-                        if ("institution".equals(expiredBooking.getCategory())) {
+                            if ("institution".equals(expiredBooking.getCategory())) {
 
-                            InstitutionDetails institutionDetails = institutionDetailsRepo.findByBookingId(bId);
-                            Integer expId = expiredBooking.getBookingId();
-                            Integer instiutionId = institutionDetails.getBookingId();
+                                InstitutionDetails institutionDetails = institutionDetailsRepo.findByBookingId(bId);
+                                Integer expId = expiredBooking.getBookingId();
+                                Integer instiutionId = institutionDetails.getBookingId();
 
-                            if (expId.equals(instiutionId)) {
-                                String paymentId = institutionDetails.getPaymentid();
-                                if (paymentId == null) {
-                                    LocalDate visitDate = institutionDetails.getVisitDate();
-                                    LocalTime slotName = institutionDetails.getSlotName();
+                                if (expId.equals(instiutionId)) {
+                                    String paymentId = institutionDetails.getPaymentid();
+                                    if (paymentId == null) {
+                                        LocalDate visitDate = institutionDetails.getVisitDate();
+                                        LocalTime slotName = institutionDetails.getSlotName();
 
-                                    event = calendarRepo.findFirstByStartDateAndStartTime(visitDate, slotName);
+                                        event = calendarRepo.findFirstByStartDateAndStartTime(visitDate, slotName);
 
-                                    if (event != null && expiredBooking.getTickets() != null) {
-                                        Integer capacity = event.getCapacity();
-                                        Integer ticket = expiredBooking.getTickets();
-                                        log.info("Before updating capacity: {}", event);
-                                        event.setCapacity(capacity + ticket);
-                                        calendarRepo.save(event);
-                                        log.info("After updating capacity: {}", event);
-                                        bookingRepo.delete(expiredBooking);
+                                        if (event != null && expiredBooking.getTickets() != null) {
+                                            Integer capacity = event.getCapacity();
+                                            Integer ticket = expiredBooking.getTickets();
+                                            log.info("Before updating capacity: {}", event);
+                                            event.setCapacity(capacity + ticket);
+                                            calendarRepo.save(event);
+                                            log.info("After updating capacity: {}", event);
+                                            bookingRepo.delete(expiredBooking);
 
-                                        log.info("institution Data : "+institutionDetails);
-                                        institutionDetailsRepo.delete(institutionDetails);
+                                            log.info("institution Data : " + institutionDetails);
+                                            institutionDetailsRepo.delete(institutionDetails);
+                                        }
+                                    } else {
+                                        log.info("payment id is present");
+                                        Booking booking = bookingRepo.findByBookingId(institutionDetails.getBookingId());
+                                        log.info("public bookingId" + institutionDetails.getBookingId());
+                                        log.info("booking : " + booking);
+                                        bookingRepo.delete(booking);
                                     }
                                 } else {
-                                    log.info("payment id is present");
-                                    Booking booking = bookingRepo.findByBookingId(institutionDetails.getBookingId());
-                                    log.info("public bookingId"+institutionDetails.getBookingId());
-                                    log.info("booking : "+booking);
+                                    Booking booking = bookingRepo.findByBookingId(bId);
+                                    log.info("instituId : " + institutionDetails.getId());
+                                    bookingRepo.delete(booking);
+                                }
+                            } else if ("public".equals(expiredBooking.getCategory())) {
+
+                                PublicDetails publicDetails = publicDetailsRepo.findByBookingId(bId);
+                                Integer expId = expiredBooking.getBookingId();
+                                Integer publicId = publicDetails.getBookingId();
+
+                                if (expId.equals(publicId)) {
+                                    String paymentId = publicDetails.getPaymentid();
+                                    if (paymentId == null) {
+                                        LocalDate visitDate = publicDetails.getVisitDate();
+                                        LocalTime slotName = publicDetails.getSlotName();
+
+                                        event = calendarRepo.findFirstByStartDateAndStartTime(visitDate, slotName);
+
+                                        if (event != null && expiredBooking.getTickets() != null) {
+                                            Integer capacity = event.getCapacity();
+                                            Integer ticket = expiredBooking.getTickets();
+                                            log.info("Before updating capacity: {}", event);
+                                            event.setCapacity(capacity + ticket);
+                                            calendarRepo.save(event);
+                                            log.info("After updating capacity: {}", event);
+                                            bookingRepo.delete(expiredBooking);
+
+                                            log.info("public Data : " + publicDetails);
+                                            publicDetailsRepo.delete(publicDetails);
+                                        }
+                                    } else {
+                                        log.info("payment id is present");
+                                        Booking booking = bookingRepo.findByBookingId(publicDetails.getBookingId());
+                                        log.info("public bookingId" + publicDetails.getBookingId());
+                                        log.info("booking : " + booking);
+                                        bookingRepo.delete(booking);
+                                    }
+                                } else {
+                                    Booking booking = bookingRepo.findByBookingId(bId);
                                     bookingRepo.delete(booking);
                                 }
                             } else {
-                                Booking booking = bookingRepo.findByBookingId(bId);
-                                log.info("instituId : "+institutionDetails.getId());
-                                bookingRepo.delete(booking);
-                            }
-                        } else if ("public".equals(expiredBooking.getCategory())) {
 
-                            PublicDetails publicDetails = publicDetailsRepo.findByBookingId(bId);
-                            Integer expId = expiredBooking.getBookingId();
-                            Integer publicId = publicDetails.getBookingId();
+                                ForeignerDetails foreignerDetails = foreignerDetailsRepo.findByBookingId(bId);
+                                Integer expId = expiredBooking.getBookingId();
+                                Integer foreignerId = foreignerDetails.getBookingId();
+                                if (expId.equals(foreignerId)) {
+                                    String paymentId = foreignerDetails.getPaymentid();
+                                    if (paymentId == null) {
+                                        LocalDate visitDate = foreignerDetails.getVisitDate();
+                                        LocalTime slotName = foreignerDetails.getSlotName();
 
-                            if (expId.equals(publicId)) {
-                                String paymentId = publicDetails.getPaymentid();
-                                if (paymentId == null) {
-                                    LocalDate visitDate = publicDetails.getVisitDate();
-                                    LocalTime slotName = publicDetails.getSlotName();
+                                        event = calendarRepo.findFirstByStartDateAndStartTime(visitDate, slotName);
 
-                                    event = calendarRepo.findFirstByStartDateAndStartTime(visitDate, slotName);
+                                        if (event != null && expiredBooking.getTickets() != null) {
+                                            Integer capacity = event.getCapacity();
+                                            Integer ticket = expiredBooking.getTickets();
+                                            log.info("Before updating capacity: {}", event);
+                                            event.setCapacity(capacity + ticket);
+                                            calendarRepo.save(event);
+                                            log.info("After updating capacity: {}", event);
+                                            bookingRepo.delete(expiredBooking);
 
-                                    if (event != null && expiredBooking.getTickets() != null) {
-                                        Integer capacity = event.getCapacity();
-                                        Integer ticket = expiredBooking.getTickets();
-                                        log.info("Before updating capacity: {}", event);
-                                        event.setCapacity(capacity + ticket);
-                                        calendarRepo.save(event);
-                                        log.info("After updating capacity: {}", event);
-                                        bookingRepo.delete(expiredBooking);
-
-                                        log.info("public Data : "+publicDetails);
-                                        publicDetailsRepo.delete(publicDetails);
+                                            log.info("foreigner Data : " + foreignerDetails);
+                                            foreignerDetailsRepo.delete(foreignerDetails);
+                                        }
+                                    } else {
+                                        log.info("payment id is present");
+                                        Booking booking = bookingRepo.findByBookingId(foreignerDetails.getBookingId());
+                                        log.info("public bookingId" + foreignerDetails.getBookingId());
+                                        log.info("booking : " + booking);
+                                        bookingRepo.delete(booking);
                                     }
                                 } else {
-                                    log.info("payment id is present");
-                                    Booking booking = bookingRepo.findByBookingId(publicDetails.getBookingId());
-                                    log.info("public bookingId"+publicDetails.getBookingId());
-                                    log.info("booking : "+booking);
+                                    Booking booking = bookingRepo.findByBookingId(bId);
                                     bookingRepo.delete(booking);
                                 }
-                            }else {
-                                Booking booking = bookingRepo.findByBookingId(bId);
-                                bookingRepo.delete(booking);
-                            }
-                        } else {
-
-                            ForeignerDetails foreignerDetails = foreignerDetailsRepo.findByBookingId(bId);
-                            Integer expId = expiredBooking.getBookingId();
-                            Integer foreignerId = foreignerDetails.getBookingId();
-                            if (expId.equals(foreignerId)) {
-                                String paymentId = foreignerDetails.getPaymentid();
-                                if (paymentId == null) {
-                                    LocalDate visitDate = foreignerDetails.getVisitDate();
-                                    LocalTime slotName = foreignerDetails.getSlotName();
-
-                                    event = calendarRepo.findFirstByStartDateAndStartTime(visitDate, slotName);
-
-                                    if (event != null && expiredBooking.getTickets() != null) {
-                                        Integer capacity = event.getCapacity();
-                                        Integer ticket = expiredBooking.getTickets();
-                                        log.info("Before updating capacity: {}", event);
-                                        event.setCapacity(capacity + ticket);
-                                        calendarRepo.save(event);
-                                        log.info("After updating capacity: {}", event);
-                                        bookingRepo.delete(expiredBooking);
-
-                                        log.info("foreigner Data : "+foreignerDetails);
-                                        foreignerDetailsRepo.delete(foreignerDetails);
-                                    }
-                                } else {
-                                    log.info("payment id is present");
-                                    Booking booking = bookingRepo.findByBookingId(foreignerDetails.getBookingId());
-                                    log.info("public bookingId"+foreignerDetails.getBookingId());
-                                    log.info("booking : "+booking);
-                                    bookingRepo.delete(booking);
-                                }
-                            } else {
-                                Booking booking = bookingRepo.findByBookingId(bId);
-                                bookingRepo.delete(booking);
                             }
                         }
+                        calendarEventsAll.add(event);
+                        log.info("event:" + event);
                     }
-                    calendarEventsAll.add(event);
                 }
-            }
+//
+                // Integrate the new part to handle creating calendar events with given slotIds
+                List<CalendarEvent> savedEvents = new ArrayList<>();
 
-            return ResponseEntity.ok(calendarEventsAll);
+                for (Integer slotId : slotIds) {
+                    ShowTime showTime = showTimeRepo.findById(slotId).orElseThrow();
+                    boolean slotExists = excal.stream()
+                            .anyMatch(existingEvent -> existingEvent.getStartTime().equals(showTime.getStartTime()));
 
-        } else {
-            List<CalendarEvent> savedEvent1 = new ArrayList<>();
+                    if (!slotExists) {
+                        if (showTime.getStatus()) {
+                            CalendarEvent calendarEvent = new CalendarEvent();
+                            calendarEvent.setStartDate(date);
+                            LocalDate endDate = calendarEvent.getStartDate().plusDays(1);
+                            calendarEvent.setEndDate(endDate);
+                            calendarEvent.setStartTime(showTime.getStartTime());
+                            calendarEvent.setEndTime(showTime.getEndTime());
+                            calendarEvent.setCapacity(showTime.getCapacity());
+                            calendarEvent.setStatus(showTime.getStatus());
+                            calendarEvent.setTotalCapacity(showTime.getTotalCapacity());
+
+                            CalendarEvent savedEvent = calendarRepo.save(calendarEvent);
+                            savedEvents.add(savedEvent);
+                        } else {
+                            log.info("Slot with ID {} is disabled and will not be added to the calendar.", slotId);
+                        }
+                    }
+                }
+
+                if (!savedEvents.isEmpty()) {
+                    calendarEventsAll.addAll(savedEvents);
+                    log.info("Allevents:"+ calendarEventsAll);
+                }
+                // Ensure the response only includes events with the correct startDate
+//                List<CalendarEvent> filteredEvents = calendarEventsAll.stream()
+//                        .filter(event -> event.getStartDate().equals(date))
+//                        .collect(Collectors.toList());
+//
+                log.info("Allevents:"+ calendarEventsAll);
+                return ResponseEntity.ok(calendarEventsAll);
+
+
+            } else {
+                List<CalendarEvent> savedEvent1 = new ArrayList<>();
 
 //            ShowTime showTime = showTimeRepo.findById(1).orElseThrow();
 //            ShowTime showTime1 = showTimeRepo.findById(2).orElseThrow();
@@ -250,10 +296,10 @@ public class CalendarEventService {
 //            CalendarEvent saveEv6 = calendarRepo.save(calendarEvent6);
 //            savedEvent1.add(saveEv6);
 
-            for (Integer slotId : slotIds){
-                ShowTime showTime = showTimeRepo.findById(slotId).orElseThrow();
-                if (showTime.getStatus()) {
-                    CalendarEvent calendarEvent = new CalendarEvent();
+                for (Integer slotId : slotIds) {
+                    ShowTime showTime = showTimeRepo.findById(slotId).orElseThrow();
+                    if (showTime.getStatus()) {
+                        CalendarEvent calendarEvent = new CalendarEvent();
 
                         calendarEvent.setStartDate(date);
                         LocalDate endDate = calendarEvent.getStartDate().plusDays(1);
@@ -267,16 +313,16 @@ public class CalendarEventService {
                         savedEvent1.add(savedEvent);
 
 
-                }else {
-                    log.info("Slot with ID {} is disabled and will not be added to the calendar."+ slotId);
+                    } else {
+                        log.info("Slot with ID {} is disabled and will not be added to the calendar." + slotId);
+                    }
                 }
+
+                return ResponseEntity.ok(savedEvent1);
             }
 
-            return ResponseEntity.ok(savedEvent1);
         }
-
     }
-
 
     public List<CalendarEvent> getEventDetails(LocalDate date) {
         return calendarRepo.findByStartDate(date);
