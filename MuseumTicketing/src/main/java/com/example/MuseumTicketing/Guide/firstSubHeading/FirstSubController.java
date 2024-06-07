@@ -40,7 +40,7 @@ public class FirstSubController {
                                             @RequestBody MainDTO mainDTO){
         try {
 
-            if (uId == null || uId.isEmpty()) {
+            if (uId == null || uId.isEmpty()|| "undefined".equalsIgnoreCase(uId)) {
                 return new ResponseEntity<>("ID is required!", HttpStatus.BAD_REQUEST);
             }
 

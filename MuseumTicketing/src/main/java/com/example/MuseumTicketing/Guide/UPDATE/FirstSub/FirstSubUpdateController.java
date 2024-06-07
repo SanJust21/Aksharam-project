@@ -52,7 +52,7 @@ public class FirstSubUpdateController {
     public ResponseEntity<?> firstDataUpdate(@PathVariable String uId,
                                             @RequestBody MainDTO mainDTO){
         try {
-            if (uId==null || uId.isEmpty()){
+            if (uId==null || uId.isEmpty()||"undefined".equalsIgnoreCase(uId)){
                 return new ResponseEntity<>("ID is required", HttpStatus.BAD_REQUEST);
             }else {
                 Optional<FirstSubMalayalam> firstSubMalayalam =firstSubMalayalamRepo.findByfsUid(uId);
@@ -88,7 +88,7 @@ public class FirstSubUpdateController {
             @RequestParam String commonId) {
 
         try {
-            if (commonId == null || imgIds.isEmpty() || files.length != imgIds.size()) {
+            if (commonId == null || imgIds.isEmpty() || files.length != imgIds.size()||"undefined".equalsIgnoreCase(commonId)) {
                 return new ResponseEntity<>("Common ID, image IDs, and files are required, and the number of files must match the number of image IDs", HttpStatus.BAD_REQUEST);
             } else {
                 List<ImgSubFirst> existingImgDataList = imgSubFirstRepo.findByCommonId(commonId);
@@ -113,7 +113,7 @@ public class FirstSubUpdateController {
                                         @RequestParam Integer mtId,
                                         @RequestParam MultipartFile[] files) {
         try {
-            if (uId == null || mtId == null) {
+            if (uId == null || mtId == null ||uId.isEmpty()||"undefined".equalsIgnoreCase(uId)) {
                 return new ResponseEntity<>("Topic ID, Media Type ID required", HttpStatus.BAD_REQUEST);
             }
 

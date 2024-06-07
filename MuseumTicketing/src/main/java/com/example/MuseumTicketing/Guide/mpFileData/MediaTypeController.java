@@ -27,7 +27,7 @@ public class MediaTypeController {
                                                          @RequestParam MultipartFile[] files){
         try {
 
-            if (uId == null || mtId == null ) {
+            if (uId == null || mtId == null ||uId.isEmpty()||"undefined".equalsIgnoreCase(uId)) {
                 return new ResponseEntity<>("Topic ID, Media Type ID required", HttpStatus.BAD_REQUEST);
             }
 
@@ -66,7 +66,7 @@ public class MediaTypeController {
                                                          @RequestParam MultipartFile[] files){
         try {
 
-            if (uId == null || mtId == null ) {
+            if (uId == null || mtId == null ||uId.isEmpty()||"undefined".equalsIgnoreCase(uId)) {
                 return new ResponseEntity<>("Topic ID, Media Type ID required", HttpStatus.BAD_REQUEST);
             }
 
@@ -105,7 +105,7 @@ public class MediaTypeController {
                                                           @RequestParam MultipartFile[] files){
         try {
 
-            if (uId == null || mtId == null ) {
+            if (uId == null || mtId == null ||uId.isEmpty()||"undefined".equalsIgnoreCase(uId)) {
                 return new ResponseEntity<>("Topic ID, Media Type ID required", HttpStatus.BAD_REQUEST);
             }
 

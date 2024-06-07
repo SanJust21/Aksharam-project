@@ -44,7 +44,7 @@ public class MainUpdateController {
     public ResponseEntity<?> mainDataUpdate(@PathVariable String uId,
                                             @RequestBody MainDTO mainDTO){
         try {
-            if (uId==null || uId.isEmpty()){
+            if (uId==null || uId.isEmpty()|| "undefined".equalsIgnoreCase(uId)){
                 return new ResponseEntity<>("ID is required", HttpStatus.BAD_REQUEST);
             }else {
                 Optional<MainTitleMal> mainTitleMal =mainTitleMalRepo.findBymMalUid(uId);
@@ -103,7 +103,7 @@ public class MainUpdateController {
             @RequestParam String commonId) {
 
         try {
-            if (commonId == null || imgIds.isEmpty() || files.length != imgIds.size()) {
+            if (commonId == null || imgIds.isEmpty() || files.length != imgIds.size()||"undefined".equalsIgnoreCase(commonId)) {
                 return new ResponseEntity<>("Common ID, image IDs, and files are required, and the number of files must match the number of image IDs", HttpStatus.BAD_REQUEST);
             } else {
                 List<ImgData> existingImgDataList = imgRepo.findByCommonId(commonId);
@@ -130,7 +130,7 @@ public class MainUpdateController {
                                         @RequestParam MultipartFile[] files){
         try {
 
-            if (uId == null || mtId == null ) {
+            if (uId == null || mtId == null ||uId.isEmpty()||"undefined".equalsIgnoreCase(uId)) {
                 return new ResponseEntity<>("Topic ID, Media Type ID required", HttpStatus.BAD_REQUEST);
             }
 
