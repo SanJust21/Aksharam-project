@@ -40,7 +40,7 @@ public class SecondSubController {
                                              @RequestBody MainDTO mainDTO){
         try {
 
-            if (uId == null || uId.isEmpty()) {
+            if (uId == null || uId.isEmpty()|| "undefined".equalsIgnoreCase(uId) || uId.isBlank()) {
                 return new ResponseEntity<>("ID is required", HttpStatus.BAD_REQUEST);
             }
 
@@ -72,6 +72,10 @@ public class SecondSubController {
     public ResponseEntity<?>generateCommonSs(@RequestParam String englishId,
                                              @RequestParam String malId){
         try {
+            if (englishId == null || englishId.isEmpty()|| "undefined".equalsIgnoreCase(englishId) || englishId.isBlank() ||
+                    malId==null || malId.isEmpty()|| "undefined".equalsIgnoreCase(malId) || malId.isBlank()) {
+                return new ResponseEntity<>("ID is required!", HttpStatus.BAD_REQUEST);
+            }
             return secondSubService.generateCommonSs(englishId,malId);
         }catch (Exception e){
             e.printStackTrace();

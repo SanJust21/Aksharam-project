@@ -40,7 +40,7 @@ public class FirstSubController {
                                             @RequestBody MainDTO mainDTO){
         try {
 
-            if (uId == null || uId.isEmpty()|| "undefined".equalsIgnoreCase(uId)) {
+            if (uId == null || uId.isEmpty()|| "undefined".equalsIgnoreCase(uId) || uId.isBlank()) {
                 return new ResponseEntity<>("ID is required!", HttpStatus.BAD_REQUEST);
             }
 
@@ -104,6 +104,10 @@ public class FirstSubController {
     private ResponseEntity<?> generateCommonId(@RequestParam String engId,
                                                @RequestParam String malId){
         try {
+            if (engId == null || engId.isEmpty()|| "undefined".equalsIgnoreCase(engId) || engId.isBlank() ||
+            malId==null || malId.isEmpty()|| "undefined".equalsIgnoreCase(malId) || malId.isBlank()) {
+                return new ResponseEntity<>("ID is required!", HttpStatus.BAD_REQUEST);
+            }
             return firstSubService.generateCommonIdFs(engId,malId);
         }catch (Exception e){
             e.printStackTrace();

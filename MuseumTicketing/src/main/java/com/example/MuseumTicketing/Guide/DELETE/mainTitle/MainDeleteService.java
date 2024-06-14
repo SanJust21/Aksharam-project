@@ -106,123 +106,123 @@ public class MainDeleteService {
 
 
     @Transactional
-    public void deleteByCommonId(String commonId) {
-        // Fetch CommonIdQRCode entity
-        Optional<CommonIdQRCode> commonIdQRCode = commonIdQRCodeRepo.findByCommonId(commonId);
-        if (!commonIdQRCode.isPresent()) {
-            throw new EntityNotFoundException("CommonIdQRCode not found for commonId: " + commonId);
-        }
-
-        CommonIdQRCode commonIdQRCode1 = commonIdQRCode.get();
-        String mEngUid = commonIdQRCode1.getEngId();
-        String mMalUid = commonIdQRCode1.getMalId();
-
-        log.info("Fetching fsUids for mEngUid: {}", mEngUid);
-        List<FirstSubEnglish> englishFirstSubList = firstSubEnglishRepo.findByMainUid(mEngUid);
-        List<String> englishFsUids = englishFirstSubList.stream()
-                .map(FirstSubEnglish::getFsUid)
-                .collect(Collectors.toList());
-        log.info("Fetched English fsUids: {}", englishFsUids);
-
-        log.info("Fetching fsUids for mMalUid: {}", mMalUid);
-        List<FirstSubMalayalam> malayalamFirstSubList = firstSubMalayalamRepo.findByMainUid(mMalUid);
-        List<String> malayalamFsUids = malayalamFirstSubList.stream()
-                .map(FirstSubMalayalam::getFsUid)
-                .collect(Collectors.toList());
-        log.info("Fetched Malayalam fsUids: {}", malayalamFsUids);
-
-        // Find all ssUids from SecondSubEnglish and SecondSubMalayalam entities
-        List<String> englishSsUids = new ArrayList<>();
-        for (String fsUid : englishFsUids) {
-            englishSsUids.addAll(secondSubEnglishRepo.findAllByFsUid(fsUid).stream()
-                    .map(SecondSubEnglish::getSsUid)
-                    .collect(Collectors.toList()));
-        }
-        log.info("English ssUids: {}", englishSsUids);
-
-        List<String> malayalamSsUids = new ArrayList<>();
-        for (String fsUid : malayalamFsUids) {
-            malayalamSsUids.addAll(secondSubMalayalamRepo.findAllByFsUid(fsUid).stream()
-                    .map(SecondSubMalayalam::getSsUid)
-                    .collect(Collectors.toList()));
-        }
-        log.info("Malayalam ssUids: {}", malayalamSsUids);
-
-        // Delete main title entities related to mEngUid and mMalUid
-        mainTitleEngRepo.deleteBymEngUid(mEngUid);
-        mainTitleMalRepo.deleteBymMalUid(mMalUid);
-
-        //imgRepo.deleteByCommonId(commonId);
-        deleteIfPresent(() ->deleteImagesByCommonId(commonId));
-
-        //imgSubFirstRepo.deleteByCommonId(commonId);
-        deleteIfPresent(() ->deleteImagesFirstByCommonId(commonId));
-
-        //imgSubSecondRepo.deleteByCommonId(commonId);
-        deleteIfPresent(() ->deleteImagesSecondByCommonId(commonId));
-
-        // Delete MP3 entities related to mEngUid and mMalUid
-        //mp3Repo.deleteByDtId(mEngUid);
-        deleteIfPresent(() ->deleteMp3ByDtId(mEngUid));
-        //mp3Repo.deleteByDtId(mMalUid);
-        deleteIfPresent(() ->deleteMp3ByDtId(mMalUid));
-
-        // Delete MP4 entities related to mEngUid and mMalUid
-        //mp4DataRepo.deleteByDtId(mEngUid);
-        deleteIfPresent(() ->deleteMp4ByDtId(mEngUid));
-        //mp4DataRepo.deleteByDtId(mMalUid);
-        deleteIfPresent(() ->deleteMp4ByDtId(mMalUid));
-
-         // Delete first subheading entities related to mEngUid and mMalUid
-        deleteIfPresent(() ->firstSubEnglishRepo.deleteByMainUid(mEngUid));
-        deleteIfPresent(() ->firstSubMalayalamRepo.deleteByMainUid(mMalUid));
-
-        //mp3Data1Repo.deleteByMainEngId(mEngUid);
-        //mp3Data1Repo.deleteByMainMalId(mMalUid);
-
-        deleteIfPresent(() ->deleteMp3FirstByMainEngId(mEngUid));
-        deleteIfPresent(() ->deleteMp3FirstByMainMalId(mMalUid));
-
-        // Delete MP4 entities related to mEngUid and mMalUid
-//        mp4Data1Repo.deleteByMainEngId(mEngUid);
-//        mp4Data1Repo.deleteByMainMalId(mMalUid);
-        deleteIfPresent(() ->deleteMp4FirstByMainEngId(mEngUid));
-        deleteIfPresent(() ->deleteMp4FirstByMainMalId(mMalUid));
-
-
-        // Delete second subheading entities related to each fsUid
-        for (String fsUid : englishFsUids) {
-            deleteIfPresent(() ->secondSubEnglishRepo.deleteByFsUid(fsUid));
-        }
-
-        for (String fsUid : malayalamFsUids) {
-            deleteIfPresent(() ->secondSubMalayalamRepo.deleteByFsUid(fsUid));
-        }
-
-        // Delete mp3Data2 and mp4Data2 entities related to each ssUid
-        for (String ssUid : englishSsUids) {
-            //mp3Data2Repo.deleteByDtId(ssUid);
-            deleteIfPresent(() ->deleteMp3SecondByDtId(ssUid));
-            //mp4Data2Repo.deleteByDtId(ssUid);
-            deleteIfPresent(() ->deleteMp4SecondByDtId(ssUid));
-        }
-
-        for (String ssUid : malayalamSsUids) {
-            //mp3Data2Repo.deleteByDtId(ssUid);
-            deleteIfPresent(() ->deleteMp3SecondByDtId(ssUid));
-            //mp4Data2Repo.deleteByDtId(ssUid);
-            deleteIfPresent(() ->deleteMp4SecondByDtId(ssUid));
-        }
-
-        // Delete QR code from S3
-        String qrCodeName = commonIdQRCode1.getFName();
-        if (qrCodeName != null && !qrCodeName.isEmpty()) {
-            deleteImageFromS3(qrCodeName);
-        }
-
-        // Finally, delete the CommonIdQRCode entity
-        commonIdQRCodeRepo.deleteByCommonId(commonId);
-    }
+//    public void deleteByCommonId(String commonId) {
+//        // Fetch CommonIdQRCode entity
+//        Optional<CommonIdQRCode> commonIdQRCode = commonIdQRCodeRepo.findByCommonId(commonId);
+//        if (!commonIdQRCode.isPresent()) {
+//            throw new EntityNotFoundException("CommonIdQRCode not found for commonId: " + commonId);
+//        }
+//
+//        CommonIdQRCode commonIdQRCode1 = commonIdQRCode.get();
+//        String mEngUid = commonIdQRCode1.getEngId();
+//        String mMalUid = commonIdQRCode1.getMalId();
+//
+//        log.info("Fetching fsUids for mEngUid: {}", mEngUid);
+//        List<FirstSubEnglish> englishFirstSubList = firstSubEnglishRepo.findByMainUid(mEngUid);
+//        List<String> englishFsUids = englishFirstSubList.stream()
+//                .map(FirstSubEnglish::getFsUid)
+//                .collect(Collectors.toList());
+//        log.info("Fetched English fsUids: {}", englishFsUids);
+//
+//        log.info("Fetching fsUids for mMalUid: {}", mMalUid);
+//        List<FirstSubMalayalam> malayalamFirstSubList = firstSubMalayalamRepo.findByMainUid(mMalUid);
+//        List<String> malayalamFsUids = malayalamFirstSubList.stream()
+//                .map(FirstSubMalayalam::getFsUid)
+//                .collect(Collectors.toList());
+//        log.info("Fetched Malayalam fsUids: {}", malayalamFsUids);
+//
+//        // Find all ssUids from SecondSubEnglish and SecondSubMalayalam entities
+//        List<String> englishSsUids = new ArrayList<>();
+//        for (String fsUid : englishFsUids) {
+//            englishSsUids.addAll(secondSubEnglishRepo.findAllByFsUid(fsUid).stream()
+//                    .map(SecondSubEnglish::getSsUid)
+//                    .collect(Collectors.toList()));
+//        }
+//        log.info("English ssUids: {}", englishSsUids);
+//
+//        List<String> malayalamSsUids = new ArrayList<>();
+//        for (String fsUid : malayalamFsUids) {
+//            malayalamSsUids.addAll(secondSubMalayalamRepo.findAllByFsUid(fsUid).stream()
+//                    .map(SecondSubMalayalam::getSsUid)
+//                    .collect(Collectors.toList()));
+//        }
+//        log.info("Malayalam ssUids: {}", malayalamSsUids);
+//
+//        // Delete main title entities related to mEngUid and mMalUid
+//        mainTitleEngRepo.deleteBymEngUid(mEngUid);
+//        mainTitleMalRepo.deleteBymMalUid(mMalUid);
+//
+//        //imgRepo.deleteByCommonId(commonId);
+//        deleteIfPresent(() ->deleteImagesByCommonId(commonId));
+//
+//        //imgSubFirstRepo.deleteByCommonId(commonId);
+//        deleteIfPresent(() ->deleteImagesFirstByCommonId(commonId));
+//
+//        //imgSubSecondRepo.deleteByCommonId(commonId);
+//        deleteIfPresent(() ->deleteImagesSecondByCommonId(commonId));
+//
+//        // Delete MP3 entities related to mEngUid and mMalUid
+//        //mp3Repo.deleteByDtId(mEngUid);
+//        deleteIfPresent(() ->deleteMp3ByDtId(mEngUid));
+//        //mp3Repo.deleteByDtId(mMalUid);
+//        deleteIfPresent(() ->deleteMp3ByDtId(mMalUid));
+//
+//        // Delete MP4 entities related to mEngUid and mMalUid
+//        //mp4DataRepo.deleteByDtId(mEngUid);
+//        deleteIfPresent(() ->deleteMp4ByDtId(mEngUid));
+//        //mp4DataRepo.deleteByDtId(mMalUid);
+//        deleteIfPresent(() ->deleteMp4ByDtId(mMalUid));
+//
+//         // Delete first subheading entities related to mEngUid and mMalUid
+//        deleteIfPresent(() ->firstSubEnglishRepo.deleteByMainUid(mEngUid));
+//        deleteIfPresent(() ->firstSubMalayalamRepo.deleteByMainUid(mMalUid));
+//
+//        //mp3Data1Repo.deleteByMainEngId(mEngUid);
+//        //mp3Data1Repo.deleteByMainMalId(mMalUid);
+//
+//        deleteIfPresent(() ->deleteMp3FirstByMainEngId(mEngUid));
+//        deleteIfPresent(() ->deleteMp3FirstByMainMalId(mMalUid));
+//
+//        // Delete MP4 entities related to mEngUid and mMalUid
+////        mp4Data1Repo.deleteByMainEngId(mEngUid);
+////        mp4Data1Repo.deleteByMainMalId(mMalUid);
+//        deleteIfPresent(() ->deleteMp4FirstByMainEngId(mEngUid));
+//        deleteIfPresent(() ->deleteMp4FirstByMainMalId(mMalUid));
+//
+//
+//        // Delete second subheading entities related to each fsUid
+//        for (String fsUid : englishFsUids) {
+//            deleteIfPresent(() ->secondSubEnglishRepo.deleteByFsUid(fsUid));
+//        }
+//
+//        for (String fsUid : malayalamFsUids) {
+//            deleteIfPresent(() ->secondSubMalayalamRepo.deleteByFsUid(fsUid));
+//        }
+//
+//        // Delete mp3Data2 and mp4Data2 entities related to each ssUid
+//        for (String ssUid : englishSsUids) {
+//            //mp3Data2Repo.deleteByDtId(ssUid);
+//            deleteIfPresent(() ->deleteMp3SecondByDtId(ssUid));
+//            //mp4Data2Repo.deleteByDtId(ssUid);
+//            deleteIfPresent(() ->deleteMp4SecondByDtId(ssUid));
+//        }
+//
+//        for (String ssUid : malayalamSsUids) {
+//            //mp3Data2Repo.deleteByDtId(ssUid);
+//            deleteIfPresent(() ->deleteMp3SecondByDtId(ssUid));
+//            //mp4Data2Repo.deleteByDtId(ssUid);
+//            deleteIfPresent(() ->deleteMp4SecondByDtId(ssUid));
+//        }
+//
+//        // Delete QR code from S3
+//        String qrCodeName = commonIdQRCode1.getFName();
+//        if (qrCodeName != null && !qrCodeName.isEmpty()) {
+//            deleteImageFromS3(qrCodeName);
+//        }
+//
+//        // Finally, delete the CommonIdQRCode entity
+//        commonIdQRCodeRepo.deleteByCommonId(commonId);
+//    }
 
     private void deleteIfPresent(Runnable deleteFunction) {
         try {
@@ -415,5 +415,129 @@ public class MainDeleteService {
         }
     }
 
+    @Transactional
+    public int deleteByCommonId(String commonId) {
+        try {
+            // Fetch CommonIdQRCode entity
+            Optional<CommonIdQRCode> commonIdQRCode = commonIdQRCodeRepo.findByCommonId(commonId);
+            if (!commonIdQRCode.isPresent()) {
+                throw new EntityNotFoundException("CommonIdQRCode not found for commonId: " + commonId);
+            }
 
+            CommonIdQRCode commonIdQRCode1 = commonIdQRCode.get();
+            String mEngUid = commonIdQRCode1.getEngId();
+            String mMalUid = commonIdQRCode1.getMalId();
+
+            log.info("Fetching fsUids for mEngUid: {}", mEngUid);
+            List<FirstSubEnglish> englishFirstSubList = firstSubEnglishRepo.findByMainUid(mEngUid);
+            List<String> englishFsUids = englishFirstSubList.stream()
+                    .map(FirstSubEnglish::getFsUid)
+                    .collect(Collectors.toList());
+            log.info("Fetched English fsUids: {}", englishFsUids);
+
+            log.info("Fetching fsUids for mMalUid: {}", mMalUid);
+            List<FirstSubMalayalam> malayalamFirstSubList = firstSubMalayalamRepo.findByMainUid(mMalUid);
+            List<String> malayalamFsUids = malayalamFirstSubList.stream()
+                    .map(FirstSubMalayalam::getFsUid)
+                    .collect(Collectors.toList());
+            log.info("Fetched Malayalam fsUids: {}", malayalamFsUids);
+
+            // Find all ssUids from SecondSubEnglish and SecondSubMalayalam entities
+            List<String> englishSsUids = new ArrayList<>();
+            for (String fsUid : englishFsUids) {
+                englishSsUids.addAll(secondSubEnglishRepo.findAllByFsUid(fsUid).stream()
+                        .map(SecondSubEnglish::getSsUid)
+                        .collect(Collectors.toList()));
+            }
+            log.info("English ssUids: {}", englishSsUids);
+
+            List<String> malayalamSsUids = new ArrayList<>();
+            for (String fsUid : malayalamFsUids) {
+                malayalamSsUids.addAll(secondSubMalayalamRepo.findAllByFsUid(fsUid).stream()
+                        .map(SecondSubMalayalam::getSsUid)
+                        .collect(Collectors.toList()));
+            }
+            log.info("Malayalam ssUids: {}", malayalamSsUids);
+
+            // Delete main title entities related to mEngUid and mMalUid
+            mainTitleEngRepo.deleteBymEngUid(mEngUid);
+            mainTitleMalRepo.deleteBymMalUid(mMalUid);
+
+            //imgRepo.deleteByCommonId(commonId);
+            deleteIfPresent(() ->deleteImagesByCommonId(commonId));
+
+            //imgSubFirstRepo.deleteByCommonId(commonId);
+            deleteIfPresent(() ->deleteImagesFirstByCommonId(commonId));
+
+            //imgSubSecondRepo.deleteByCommonId(commonId);
+            deleteIfPresent(() ->deleteImagesSecondByCommonId(commonId));
+
+            // Delete MP3 entities related to mEngUid and mMalUid
+            //mp3Repo.deleteByDtId(mEngUid);
+            deleteIfPresent(() ->deleteMp3ByDtId(mEngUid));
+            //mp3Repo.deleteByDtId(mMalUid);
+            deleteIfPresent(() ->deleteMp3ByDtId(mMalUid));
+
+            // Delete MP4 entities related to mEngUid and mMalUid
+            //mp4DataRepo.deleteByDtId(mEngUid);
+            deleteIfPresent(() ->deleteMp4ByDtId(mEngUid));
+            //mp4DataRepo.deleteByDtId(mMalUid);
+            deleteIfPresent(() ->deleteMp4ByDtId(mMalUid));
+
+            // Delete first subheading entities related to mEngUid and mMalUid
+            deleteIfPresent(() ->firstSubEnglishRepo.deleteByMainUid(mEngUid));
+            deleteIfPresent(() ->firstSubMalayalamRepo.deleteByMainUid(mMalUid));
+
+            //mp3Data1Repo.deleteByMainEngId(mEngUid);
+            //mp3Data1Repo.deleteByMainMalId(mMalUid);
+
+            deleteIfPresent(() ->deleteMp3FirstByMainEngId(mEngUid));
+            deleteIfPresent(() ->deleteMp3FirstByMainMalId(mMalUid));
+
+            // Delete MP4 entities related to mEngUid and mMalUid
+//        mp4Data1Repo.deleteByMainEngId(mEngUid);
+//        mp4Data1Repo.deleteByMainMalId(mMalUid);
+            deleteIfPresent(() ->deleteMp4FirstByMainEngId(mEngUid));
+            deleteIfPresent(() ->deleteMp4FirstByMainMalId(mMalUid));
+
+
+            // Delete second subheading entities related to each fsUid
+            for (String fsUid : englishFsUids) {
+                deleteIfPresent(() ->secondSubEnglishRepo.deleteByFsUid(fsUid));
+            }
+
+            for (String fsUid : malayalamFsUids) {
+                deleteIfPresent(() ->secondSubMalayalamRepo.deleteByFsUid(fsUid));
+            }
+
+            // Delete mp3Data2 and mp4Data2 entities related to each ssUid
+            for (String ssUid : englishSsUids) {
+                //mp3Data2Repo.deleteByDtId(ssUid);
+                deleteIfPresent(() ->deleteMp3SecondByDtId(ssUid));
+                //mp4Data2Repo.deleteByDtId(ssUid);
+                deleteIfPresent(() ->deleteMp4SecondByDtId(ssUid));
+            }
+
+            for (String ssUid : malayalamSsUids) {
+                //mp3Data2Repo.deleteByDtId(ssUid);
+                deleteIfPresent(() ->deleteMp3SecondByDtId(ssUid));
+                //mp4Data2Repo.deleteByDtId(ssUid);
+                deleteIfPresent(() ->deleteMp4SecondByDtId(ssUid));
+            }
+
+            // Delete QR code from S3
+            String qrCodeName = commonIdQRCode1.getFName();
+            if (qrCodeName != null && !qrCodeName.isEmpty()) {
+                deleteImageFromS3(qrCodeName);
+            }
+
+            // Finally, delete the CommonIdQRCode entity
+            commonIdQRCodeRepo.deleteByCommonId(commonId);
+            return 1;
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return 0;
+
+    }
 }

@@ -43,13 +43,14 @@ public class SecondSubService {
 
     public ResponseEntity<?> addSubDataEnglish(String uId, MainDTO mainDTO) {
         try {
-
-            Optional<SecondSubEnglish> existingTitle = secondSubEnglishRepo.findBytitle(mainDTO.getTitle());
+            Optional<SecondSubEnglish> existingTitle = secondSubEnglishRepo.findBytitleIgnoreCase(mainDTO.getTitle());
             if (existingTitle.isPresent()){
-                String titleData = mainDTO.getTitle();
-                return new ResponseEntity<>(titleData+" is already exist in the database",HttpStatus.CONFLICT);
+                SecondSubEnglish secondSubEnglish = existingTitle.get();
+                if (secondSubEnglish.getFsUid().equals(uId)){
+                    String titleData = mainDTO.getTitle();
+                    return new ResponseEntity<>(titleData+" is already exist in the database",HttpStatus.CONFLICT);
+                }
             }
-
             String randomId = alphaNumeric.generateRandomNumber();
             SecondSubEnglish secondSubEnglish = new SecondSubEnglish();
             secondSubEnglish.setSsUid(randomId);
@@ -68,12 +69,14 @@ public class SecondSubService {
     public ResponseEntity<?> addSubDataMalayalam(String uId, MainDTO mainDTO) {
         try {
 
-            Optional<SecondSubMalayalam> existingTitle = secondSubMalayalamRepo.findBytitle(mainDTO.getTitle());
+            Optional<SecondSubMalayalam> existingTitle = secondSubMalayalamRepo.findBytitleIgnoreCase(mainDTO.getTitle());
             if (existingTitle.isPresent()){
-                String titleData = mainDTO.getTitle();
-                return new ResponseEntity<>(titleData+" is already exist in the database",HttpStatus.CONFLICT);
+                SecondSubMalayalam secondSubMalayalam = existingTitle.get();
+                if (secondSubMalayalam.getFsUid().equals(uId) && secondSubMalayalam.getTitle().equalsIgnoreCase(mainDTO.getTitle())){
+                    String titleData = mainDTO.getTitle();
+                    return new ResponseEntity<>(titleData+" is already exist in the database",HttpStatus.CONFLICT);
+                }
             }
-
             String randomId = alphaNumeric.generateRandomNumber();
             SecondSubMalayalam secondSubMalayalam = new SecondSubMalayalam();
             secondSubMalayalam.setSsUid(randomId);

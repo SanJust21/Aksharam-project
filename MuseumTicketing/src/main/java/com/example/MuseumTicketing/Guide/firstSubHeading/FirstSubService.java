@@ -74,12 +74,14 @@ public class FirstSubService {
     public ResponseEntity<?> addSubDataMalayalam(String uId, MainDTO mainDTO) {
         try {
 
-            Optional<FirstSubMalayalam> existingTitle = firstSubMalayalamRepo.findBytitle(mainDTO.getTitle());
+            Optional<FirstSubMalayalam> existingTitle = firstSubMalayalamRepo.findBytitleIgnoreCase(mainDTO.getTitle());
             if (existingTitle.isPresent()){
-                String titleData = mainDTO.getTitle();
-                return new ResponseEntity<>(titleData+" is already exist in the database",HttpStatus.CONFLICT);
+                FirstSubMalayalam firstSubMalayalam = existingTitle.get();
+                if (firstSubMalayalam.getMainUid().equals(uId)){
+                    String titleData = mainDTO.getTitle();
+                    return new ResponseEntity<>(titleData+" is already exist in the database",HttpStatus.CONFLICT);
+                }
             }
-
             String randomId = alphaNumeric.generateRandomNumber();
             FirstSubMalayalam firstSubMalayalam = new FirstSubMalayalam();
             firstSubMalayalam.setFsUid(randomId);
@@ -97,11 +99,13 @@ public class FirstSubService {
 
     public ResponseEntity<?> addSubDataEnglish(String uId, MainDTO mainDTO) {
         try {
-
-            Optional<FirstSubEnglish> existingTitle = firstSubEnglishRepo.findBytitle(mainDTO.getTitle());
+            Optional<FirstSubEnglish> existingTitle = firstSubEnglishRepo.findBytitleIgnoreCase(mainDTO.getTitle());
             if (existingTitle.isPresent()){
-                String titleData = mainDTO.getTitle();
-                return new ResponseEntity<>(titleData+" is already exist in the database",HttpStatus.CONFLICT);
+                FirstSubEnglish firstSubEnglish = existingTitle.get();
+                if (firstSubEnglish.getMainUid().equals(uId)){
+                    String titleData = mainDTO.getTitle();
+                    return new ResponseEntity<>(titleData+" is already exist in the database",HttpStatus.CONFLICT);
+                }
             }
 
             String randomId = alphaNumeric.generateRandomNumber();
@@ -219,6 +223,8 @@ public class FirstSubService {
                     combinedDataSub.setReferenceUrl(firstSubEnglish1.getRef());
                     combinedDataSub.setFsMalId(fsMalId);
                     combinedDataSub.setFsCommonId(id);
+                    combinedDataSub.setuId(firstSubEnglish1.getFsUid());
+                    combinedDataSub.setmUid(firstSubEnglish1.getMainUid());
 
                     List<ImgSubFirst> imgSubFirsts = imgSubFirstRepo.findByEngId(firstSubEnglish1.getFsUid());
                     imgSubFirsts.sort(Comparator.comparing(ImgSubFirst::getImgID));
@@ -297,8 +303,10 @@ public class FirstSubService {
                     combinedDataSub.setFsEngId(fsEngId);
                     combinedDataSub.setFsCommonId(commonIdFs.getFsCommonId());
                     combinedDataSub.setFsMalId(commonIdFs.getFsMalId());
+                    combinedDataSub.setuId(firstSubMalayalam1.getFsUid());
+                    combinedDataSub.setmUid(firstSubMalayalam1.getMainUid());
 
-                    List<ImgSubFirst> imgSubFirsts = imgSubFirstRepo.findByEngId(firstSubMalayalam1.getFsUid());
+                    List<ImgSubFirst> imgSubFirsts = imgSubFirstRepo.findBymalId(firstSubMalayalam1.getFsUid());
                     imgSubFirsts.sort(Comparator.comparing(ImgSubFirst::getImgID));
                     combinedDataSub.setImgDataList(imgSubFirsts);
 
@@ -343,6 +351,7 @@ public class FirstSubService {
                         combinedDataSubSub.setMp4Data2List(mp4Data2List);
                         combinedDataSubSubList.add(combinedDataSubSub);
                     });
+                    combinedDataSub.setCombinedDataSubSubList(combinedDataSubSubList);
                     combinedDataSubList.add(combinedDataSub);
                 }
                 return new ResponseEntity<>(combinedDataSubList,HttpStatus.OK);

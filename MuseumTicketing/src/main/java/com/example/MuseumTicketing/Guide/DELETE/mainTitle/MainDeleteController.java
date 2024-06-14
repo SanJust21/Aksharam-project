@@ -82,33 +82,18 @@ public class MainDeleteController {
     @Autowired
     private CommonIdQRCodeRepo commonIdQRCodeRepo;
 
-
-//    @DeleteMapping("/delete/{commonId}")
-//    public ResponseEntity<String> deleteByCommonId(@PathVariable String commonId) {
-//        mainDeleteService.deleteByCommonId(commonId);
-//        return ResponseEntity.ok("Deleted all entities associated with commonId: " + commonId);
-//    }
     @DeleteMapping("/delete/{commonId}")
     public ResponseEntity<String> deleteByCommonId(@PathVariable String commonId) {
-        if (commonId == null || "undefined".equalsIgnoreCase(commonId)|| commonId.isEmpty()) {
+        if (commonId == null || "undefined".equalsIgnoreCase(commonId)||commonId.isEmpty()) {
             return new ResponseEntity<>("Common ID is required", HttpStatus.BAD_REQUEST);
-        }else {
-            Optional<MainTitleMal> mainTitleMal = mainTitleMalRepo.findBymMalUid(commonId);
-            MainTitleEng mainTitleEng = mainTitleEngRepo.findBymEngUid(commonId);
-            if (mainTitleMal.isPresent()){
-                MainTitleMal mainTitleMal1 =mainTitleMal.get();
-                if (mainTitleMal1.getMMalUid().equals(commonId)){
-                    mainDeleteService.deleteByCommonId(commonId);
-                    return ResponseEntity.ok("Deleted all entities associated with commonId: " + commonId);
-                }
-            }else if (mainTitleEng.getMEngUid().equals(commonId)){
-                mainDeleteService.deleteByCommonId(commonId);
-                return ResponseEntity.ok("Deleted all entities associated with commonId: " + commonId);
-            }else {
-                return new ResponseEntity<>("CommonId "+commonId+" is not present in Database",HttpStatus.NOT_FOUND);
-            }
         }
-        return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+        int count = mainDeleteService.deleteByCommonId(commonId);
+        if (count>0){
+            return ResponseEntity.ok("Deleted all entities associated with commonId: " + commonId);
+        }else {
+            return new ResponseEntity<>("No Data associated with commonId: "+commonId,HttpStatus.NOT_FOUND);
+        }
+
     }
 
     @DeleteMapping(path = "/stringDelete/{uId}")

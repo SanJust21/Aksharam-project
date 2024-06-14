@@ -210,7 +210,6 @@ public class FirstSubDeleteService {
         }
         return 0;
     }
-
     private void deleteDataFromS3(List<String> fileNamesToDelete) {
         for (String fileName : fileNamesToDelete){
             try {
