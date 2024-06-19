@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping(path = "/mediaData")
+@RequestMapping(path = "/api/mediaData")
 @CrossOrigin
 public class MediaTypeController {
     @Autowired

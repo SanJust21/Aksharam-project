@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping(path = "/DataEntry2")
+@RequestMapping(path = "/api/DataEntry2")
 @CrossOrigin
 public class FirstSubController {
     @Autowired

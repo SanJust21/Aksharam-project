@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping(path = "/imgData")
+@RequestMapping(path = "/api/imgData")
 @CrossOrigin
 @Slf4j
 public class ImgController {

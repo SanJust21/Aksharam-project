@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping(path = "/fileType")
+@RequestMapping(path = "/api/fileType")
 @CrossOrigin
 public class FileTypeController {
     @Autowired

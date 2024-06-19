@@ -37,7 +37,7 @@ import java.util.Optional;
 
 
 @RestController
-@RequestMapping(path = "/deleteMain")
+@RequestMapping(path = "/api/deleteMain")
 @CrossOrigin
 public class MainDeleteController {
     @Autowired

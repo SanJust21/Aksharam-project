@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(path = "/deleteByFirstSub")
+@RequestMapping(path = "/api/deleteByFirstSub")
 @CrossOrigin
 public class FirstSubDeleteController {
     @Autowired

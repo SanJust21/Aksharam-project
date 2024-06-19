@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping(path = "/updateSecondSub")
+@RequestMapping(path = "/api/updateSecondSub")
 @CrossOrigin
 public class SecondSubUpdateController {
     @Autowired

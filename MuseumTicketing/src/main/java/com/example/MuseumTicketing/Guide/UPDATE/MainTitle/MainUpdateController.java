@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping(path = "/updateMain")
+@RequestMapping(path = "/api/updateMain")
 @CrossOrigin
 public class MainUpdateController {
     @Autowired

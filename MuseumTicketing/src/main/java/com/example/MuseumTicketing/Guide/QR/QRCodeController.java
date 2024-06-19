@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/qrcode")
+@RequestMapping("/api/qrcode")
 @CrossOrigin
 public class QRCodeController {
 
