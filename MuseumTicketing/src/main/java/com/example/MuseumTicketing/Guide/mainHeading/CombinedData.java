@@ -13,9 +13,9 @@ public class CombinedData {
     private String description;
     private String referenceUrl;
     private String uId;
-
     private String commonId;
     private String qrCodeUrl;
+    private byte[] qrCodeImage;
     private String malId;
     private String engId;
 
@@ -44,6 +44,7 @@ public class CombinedData {
     public void setTitle(String title) {
         this.title = title;
     }
+
 
     public String getDescription() {
         return description;
@@ -124,4 +125,13 @@ public class CombinedData {
     public void setCombinedDataSubList(List<CombinedDataSub> combinedDataSubList) {
         this.combinedDataSubList = combinedDataSubList;
     }
+
+    public byte[] getQrCodeImage() {
+        return qrCodeImage;
+    }
+
+    public void setQrCodeImage(byte[] qrCodeImage) {
+        this.qrCodeImage = qrCodeImage;
+    }
 }
+

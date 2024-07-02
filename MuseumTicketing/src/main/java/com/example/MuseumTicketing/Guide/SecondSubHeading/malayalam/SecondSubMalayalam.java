@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
+import java.nio.charset.StandardCharsets;
+
 @Data
 @Entity
 @Table(name = "secondSubMal")
@@ -17,10 +19,11 @@ public class SecondSubMalayalam {
     @Column(name = "title")
     private String title;
 
-    @Column(name = "description", length = 6000)
+    @Column(name = "description", length = 100000)
     private String description;
 
-    @Column(name = "ref")
+
+    @Column(name = "ref", length = 10000)
     private String ref;
 
     @Column(name = "ssUid")

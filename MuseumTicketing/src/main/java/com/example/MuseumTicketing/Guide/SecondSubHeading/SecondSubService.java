@@ -56,6 +56,7 @@ public class SecondSubService {
             secondSubEnglish.setSsUid(randomId);
             secondSubEnglish.setFsUid(uId);
             secondSubEnglish.setTitle(mainDTO.getTitle());
+
             secondSubEnglish.setDescription(mainDTO.getDescription());
             secondSubEnglish.setRef(mainDTO.getReferenceURL());
             secondSubEnglishRepo.save(secondSubEnglish);
@@ -82,6 +83,7 @@ public class SecondSubService {
             secondSubMalayalam.setSsUid(randomId);
             secondSubMalayalam.setFsUid(uId);
             secondSubMalayalam.setTitle(mainDTO.getTitle());
+
             secondSubMalayalam.setDescription(mainDTO.getDescription());
             secondSubMalayalam.setRef(mainDTO.getReferenceURL());
             secondSubMalayalamRepo.save(secondSubMalayalam);

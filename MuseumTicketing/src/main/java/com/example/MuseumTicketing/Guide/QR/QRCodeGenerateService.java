@@ -81,6 +81,7 @@ public class QRCodeGenerateService {
         commonIdQRCode.setEngId(mEngUid);
         commonIdQRCode.setFName(fileName);
         commonIdQRCode.setQrCodeUrl(fileUrl);
+        commonIdQRCode.setQrCodeImage(qrCode);
 
 
         commonIdQRCodeRepo.save(commonIdQRCode);

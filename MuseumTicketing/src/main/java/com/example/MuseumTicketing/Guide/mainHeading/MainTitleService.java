@@ -46,6 +46,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -147,6 +148,7 @@ public class MainTitleService {
             MainTitleMal mtMal = new MainTitleMal();
             mtMal.setMMalUid(randomId);
             mtMal.setTitle(mainDTO.getTitle());
+
             mtMal.setDescription(mainDTO.getDescription());
             mtMal.setRef(mainDTO.getReferenceURL());
             mtMalRepo.save(mtMal);
@@ -178,6 +180,7 @@ public class MainTitleService {
                     combinedData1.setQrCodeUrl(commonIdQRCode.get().getQrCodeUrl());
                     combinedData1.setEngId(commonIdQRCode.get().getEngId());
                     combinedData1.setMalId(commonIdQRCode.get().getMalId());
+                    combinedData1.setQrCodeImage(commonIdQRCode.get().getQrCodeImage());
                 }
 
                 List<ImgData> imgData =imgRepo.findByengId(mainTitleEng.getMEngUid());
@@ -221,6 +224,7 @@ public class MainTitleService {
                     combinedData.setQrCodeUrl(commonIdQRCode.get().getQrCodeUrl());
                     combinedData.setEngId(commonIdQRCode.get().getEngId());
                     combinedData.setMalId(commonIdQRCode.get().getMalId());
+                    combinedData.setQrCodeImage(commonIdQRCode.get().getQrCodeImage());
                 }
 
                 List<ImgData> imgData =imgRepo.findBymalId(mainTitleMal.getMMalUid());
@@ -262,6 +266,7 @@ public class MainTitleService {
                     combinedData1.setQrCodeUrl(commonIdQRCode.get().getQrCodeUrl());
                     combinedData1.setEngId(commonIdQRCode.get().getEngId());
                     combinedData1.setMalId(commonIdQRCode.get().getMalId());
+                    combinedData1.setQrCodeImage(commonIdQRCode.get().getQrCodeImage());
                 }
 
                 List<FirstSubEnglish> firstSubEnglishList = firstSubEnglishRepo.findByMainUid(mainId);
@@ -382,6 +387,7 @@ public class MainTitleService {
                     combinedData.setQrCodeUrl(commonIdQRCode.get().getQrCodeUrl());
                     combinedData.setEngId(commonIdQRCode.get().getEngId());
                     combinedData.setMalId(commonIdQRCode.get().getMalId());
+                    combinedData.setQrCodeImage(commonIdQRCode.get().getQrCodeImage());
                 }
 
                 List<FirstSubMalayalam> firstSubMalayalamList = firstSubMalayalamRepo.findByMainUid(mainId);

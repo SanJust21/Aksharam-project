@@ -27,5 +27,9 @@ public class CommonIdQRCode {
     @Column(name = "qr_code_url")
     private String qrCodeUrl;
 
+    @Lob
+    @Column(name = "qr_code_image")
+    private byte[] qrCodeImage;
+
 
 }
