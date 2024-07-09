@@ -69,77 +69,120 @@ public class ImgService {
         }
         return convertedFile;
     }
-    public ImgData uploadJPG(MultipartFile file, String englishUId, String malUid, String commonId) {
+    public ImgData uploadJPG(MultipartFile file, String englishUId, String malUid, String commonId, MultipartFile bg) {
         File fileObj = convertMultiPartFileToFile(file);
-        String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
+        String fileName = System.currentTimeMillis()+"_"+file.getOriginalFilename();
         s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
         fileObj.delete();
         String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
-        ImgData imgData = new ImgData(fileName,fileUrl,englishUId,malUid,commonId);
+
+        File fileObj2 = convertMultiPartFileToFile(bg);
+        String bgFileName = System.currentTimeMillis()+"_"+bg.getOriginalFilename();
+        s3Client.putObject(new PutObjectRequest(bucketName,bgFileName,fileObj2));
+        fileObj2.delete();
+        String bgFileUrl = s3Client.getUrl(bucketName,bgFileName).toString();
+
+        ImgData imgData = new ImgData(fileName,fileUrl,bgFileName,bgFileUrl,englishUId,malUid,commonId);
         imgRepo.save(imgData);
         return imgData;
     }
 
-    public ImgSubFirst uploadData1(MultipartFile file, String englishUId, String malUid, String commonId) {
+
+//    public ImgSubFirst uploadData1(MultipartFile file, String englishUId, String malUid, String commonId) {
+//        File fileObj = convertMultiPartFileToFile(file);
+//        String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
+//        s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+//        fileObj.delete();
+//        String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+//
+//        ImgSubFirst imgSubFirst = new ImgSubFirst(fileName,fileUrl,englishUId,malUid, commonId);
+//        Optional<FirstSubEnglish> firstSubEnglishOptional = firstSubEnglishRepo.findByfsUid(englishUId);
+//        if (firstSubEnglishOptional.isPresent()){
+//            FirstSubEnglish firstSubEnglish = firstSubEnglishOptional.get();
+//            String uId = firstSubEnglish.getMainUid();
+//            imgSubFirst.setMainEngUid(uId);
+//
+//        }else {
+//            log.info(" Eng id is null");
+//        }
+//        Optional<FirstSubMalayalam> firstSubMalayalamOptional =firstSubMalayalamRepo.findByfsUid(malUid);
+//        if (firstSubMalayalamOptional.isPresent()){
+//            FirstSubMalayalam firstSubMalayalam = firstSubMalayalamOptional.get();
+//            String uId = firstSubMalayalam.getMainUid();
+//            imgSubFirst.setMainMalUid(uId);
+//
+//        }else {
+//            log.info("Mal id is null");
+//        }
+//
+//
+//        imgSubFirstRepo.save(imgSubFirst);
+//        return imgSubFirst;
+//    }
+
+    public ImgSubFirst uploadData1(MultipartFile file, String englishUId, String malUid, String commonId, MultipartFile bg) {
         File fileObj = convertMultiPartFileToFile(file);
-        String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
+        String fileName = System.currentTimeMillis()+"_"+file.getOriginalFilename();
         s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
         fileObj.delete();
         String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
 
-        ImgSubFirst imgSubFirst = new ImgSubFirst(fileName,fileUrl,englishUId,malUid, commonId);
-        Optional<FirstSubEnglish> firstSubEnglishOptional = firstSubEnglishRepo.findByfsUid(englishUId);
-        if (firstSubEnglishOptional.isPresent()){
-            FirstSubEnglish firstSubEnglish = firstSubEnglishOptional.get();
-            String uId = firstSubEnglish.getMainUid();
-            imgSubFirst.setMainEngUid(uId);
-
-        }else {
-            log.info(" Eng id is null");
-        }
-        Optional<FirstSubMalayalam> firstSubMalayalamOptional =firstSubMalayalamRepo.findByfsUid(malUid);
-        if (firstSubMalayalamOptional.isPresent()){
-            FirstSubMalayalam firstSubMalayalam = firstSubMalayalamOptional.get();
-            String uId = firstSubMalayalam.getMainUid();
-            imgSubFirst.setMainMalUid(uId);
-
-        }else {
-            log.info("Mal id is null");
-        }
-
-
-        imgSubFirstRepo.save(imgSubFirst);
-        return imgSubFirst;
+        File fileObj2 = convertMultiPartFileToFile(bg);
+        String bgFileName = System.currentTimeMillis()+"_"+file.getOriginalFilename();
+        s3Client.putObject(new PutObjectRequest(bucketName,bgFileName,fileObj2));
+        fileObj2.delete();
+        String bgFileUrl = s3Client.getUrl(bucketName,bgFileName).toString();
+        ImgSubFirst imgSubFirst1 = new ImgSubFirst(fileName,fileUrl,bgFileName,bgFileUrl,englishUId,malUid,commonId);
+        imgSubFirstRepo.save(imgSubFirst1);
+        return imgSubFirst1;
     }
 
-    public ImgSubSecond uploadData2(MultipartFile file, String englishUId, String malUid, String commonId) {
+    public ImgSubSecond uploadData2(MultipartFile file, String englishUId, String malUid, String commonId, MultipartFile bg) {
         File fileObj = convertMultiPartFileToFile(file);
-        String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
+        String fileName =  System.currentTimeMillis()+"_"+file.getOriginalFilename();
         s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
         fileObj.delete();
         String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
-        ImgSubSecond imgSubSecond = new ImgSubSecond(fileName,fileUrl,englishUId,malUid,commonId);
 
-        Optional<SecondSubEnglish> secondSubEnglishOptional = secondSubEnglishRepo.findByssUid(englishUId);
-        if (secondSubEnglishOptional.isPresent()){
-            SecondSubEnglish secondSubEnglish = secondSubEnglishOptional.get();
-            String uId = secondSubEnglish.getFsUid();
-            imgSubSecond.setFsEngUid(uId);
-
-        }else {
-            log.info(" Eng id is null");
-        }
-        Optional<SecondSubMalayalam> secondSubMalayalamOptional = secondSubMalayalamRepo.findByssUid(malUid);
-        if (secondSubMalayalamOptional.isPresent()){
-            SecondSubMalayalam secondSubMalayalam = secondSubMalayalamOptional.get();
-            String uId = secondSubMalayalam.getFsUid();
-            imgSubSecond.setFsMalUid(uId);
-        }else {
-            log.info("Mal id is null");
-        }
-        imgSubSecondRepo.save(imgSubSecond);
-        return imgSubSecond;
+        File fileObj2 = convertMultiPartFileToFile(bg);
+        String bgFileName = System.currentTimeMillis()+"_"+bg.getOriginalFilename();
+        s3Client.putObject(new PutObjectRequest(bucketName,bgFileName,fileObj2));
+        fileObj2.delete();
+        String bgFileUrl = s3Client.getUrl(bucketName,bgFileName).toString();
+        ImgSubSecond imgSubSecond1 = new ImgSubSecond(fileName,fileUrl,bgFileName,bgFileUrl,englishUId,malUid,commonId);
+        imgSubSecondRepo.save(imgSubSecond1);
+        return imgSubSecond1;
     }
+
+//    public ImgSubSecond uploadData2(MultipartFile file, String englishUId, String malUid, String commonId) {
+//        File fileObj = convertMultiPartFileToFile(file);
+//        String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
+//        s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+//        fileObj.delete();
+//        String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+//        ImgSubSecond imgSubSecond = new ImgSubSecond(fileName,fileUrl,englishUId,malUid,commonId);
+//
+//        Optional<SecondSubEnglish> secondSubEnglishOptional = secondSubEnglishRepo.findByssUid(englishUId);
+//        if (secondSubEnglishOptional.isPresent()){
+//            SecondSubEnglish secondSubEnglish = secondSubEnglishOptional.get();
+//            String uId = secondSubEnglish.getFsUid();
+//            imgSubSecond.setFsEngUid(uId);
+//
+//        }else {
+//            log.info(" Eng id is null");
+//        }
+//        Optional<SecondSubMalayalam> secondSubMalayalamOptional = secondSubMalayalamRepo.findByssUid(malUid);
+//        if (secondSubMalayalamOptional.isPresent()){
+//            SecondSubMalayalam secondSubMalayalam = secondSubMalayalamOptional.get();
+//            String uId = secondSubMalayalam.getFsUid();
+//            imgSubSecond.setFsMalUid(uId);
+//        }else {
+//            log.info("Mal id is null");
+//        }
+//        imgSubSecondRepo.save(imgSubSecond);
+//        return imgSubSecond;
+//    }
+
 //
 //    public ImgData updateMainJPG(MultipartFile file, String englishUId, String malUid) {
 //        try {
@@ -167,6 +210,7 @@ public class ImgService {
 //        return new ImgData("No Data","No Data","No Data","No Data");
 //    }
 
+
     public ImgData updateMainJPG(MultipartFile file, Integer imgId, String commonId) {
         try {
             Optional<ImgData> existingImgDataOptional = imgRepo.findById(imgId);
@@ -191,7 +235,7 @@ public class ImgService {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return new ImgData("No Data", "No Data", "No Data", "No Data", "No Data");
+        return new ImgData("No Data", "No Data", "No Data", "No Data", "No Data","No Data","No Data");
     }
 
 
@@ -256,7 +300,7 @@ public class ImgService {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return new ImgSubFirst("No Data", "No Data", "No Data", "No Data", "No Data");
+        return new ImgSubFirst("No Data", "No Data", "No Data", "No Data", "No Data","No Data","No Data");
     }
 
 
@@ -375,8 +419,7 @@ public class ImgService {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return new ImgSubSecond("No Data", "No Data", "No Data", "No Data", "No Data");
+        return new ImgSubSecond("No Data", "No Data", "No Data", "No Data", "No Data", "No Data", "No Data");
     }
-
 
 }

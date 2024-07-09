@@ -40,4 +40,5 @@ public interface AuthenticationService {
 
     String deleteEmployeeByName(String name);
 
+    JwtAuthenticationResponse signinScanner(SignInRequest signInRequest);
 }

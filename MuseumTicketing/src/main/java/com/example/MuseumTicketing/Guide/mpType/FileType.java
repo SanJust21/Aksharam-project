@@ -12,6 +12,6 @@ public class FileType {
     @Column(name = "id")
     private Integer id;
 
-    @Column(name = "fileType")
+    @Column(name = "`fileType`")
     private String fileType;
 }

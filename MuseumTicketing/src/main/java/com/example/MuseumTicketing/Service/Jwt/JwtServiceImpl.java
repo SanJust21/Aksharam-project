@@ -45,6 +45,7 @@ public class JwtServiceImpl implements JwtService {
         String token = generateToken(userDetails);
        // String role = extractUserRoleFromToken(token);
         boolean isAdmin = checkIfAdmin(userDetails);
+        String sessionId = userDetails.getUsername();
         log.info("User Authorities: " + userDetails.getAuthorities());
 
         //boolean isAdmin = role.equalsIgnoreCase("ADMIN");
@@ -52,6 +53,7 @@ public class JwtServiceImpl implements JwtService {
         JwtAuthenticationResponse response = new JwtAuthenticationResponse();
         response.setToken(token);
         response.setAdmin(isAdmin);
+        response.setSessionId(sessionId);
         return response;
     }
 

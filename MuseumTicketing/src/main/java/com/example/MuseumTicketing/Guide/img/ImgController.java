@@ -50,6 +50,7 @@ public class ImgController {
 
     @PostMapping(path = "/uploadImg")
     public ResponseEntity<?> uploadData(@RequestParam(value = "file") MultipartFile[] files,
+                                                    @RequestParam(value = "bgFile") MultipartFile bg,
                                                     @RequestParam String englishUId,
                                                     @RequestParam String malUid) throws IOException, WriterException {
 
@@ -66,13 +67,14 @@ public class ImgController {
 
         List<ImgData> responses = new ArrayList<>();
         for (MultipartFile file : files){
-            responses.add(imgService.uploadJPG(file,englishUId,malUid,commonId));
+            responses.add(imgService.uploadJPG(file,englishUId,malUid,commonId,bg));
         }
         return new ResponseEntity<>(responses,HttpStatus.OK);
     }
 
     @PostMapping(path = "/uploadImg1")
     public ResponseEntity<?> uploadData1(@RequestParam MultipartFile[] files,
+                                         @RequestParam(value = "bgFile") MultipartFile bg,
                                                         @RequestParam String englishUId,
                                                         @RequestParam String malUid){
         try {
@@ -114,7 +116,7 @@ public class ImgController {
             String commonId = commonIdQRCode.getCommonId();
             List<ImgSubFirst> imgSubFirsts = new ArrayList<>();
             for (MultipartFile file : files){
-                imgSubFirsts.add(imgService.uploadData1(file,englishUId,malUid, commonId));
+                imgSubFirsts.add(imgService.uploadData1(file,englishUId,malUid, commonId,bg));
             }
             return new ResponseEntity<>(imgSubFirsts,HttpStatus.OK);
         }catch (Exception e){
@@ -126,6 +128,7 @@ public class ImgController {
 
     @PostMapping(path = "/uploadImg2")
     public ResponseEntity<?>uploadData2(@RequestParam MultipartFile[] files,
+                                        @RequestParam(value = "bgFile") MultipartFile bg,
                                                          @RequestParam String englishUId,
                                                          @RequestParam String malUid){
         try {
@@ -196,7 +199,7 @@ public class ImgController {
 
             List<ImgSubSecond> imgSubSeconds = new ArrayList<>();
             for (MultipartFile file : files){
-                imgSubSeconds.add(imgService.uploadData2(file,englishUId,malUid,commonId));
+                imgSubSeconds.add(imgService.uploadData2(file,englishUId,malUid,commonId,bg));
             }
             return new ResponseEntity<>(imgSubSeconds,HttpStatus.OK);
         }catch (Exception e){

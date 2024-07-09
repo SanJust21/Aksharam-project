@@ -194,6 +194,23 @@ public class AuthenticationServiceImpl implements AuthenticationService{
         }
     }
 
+    @Override
+    public JwtAuthenticationResponse signinScanner(SignInRequest signInRequest) {
+        try {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(signInRequest.getEmployeeId(),signInRequest.getPassword()));
+
+            var user = usersRepo.findByEmployeeId(signInRequest.getEmployeeId()).orElseThrow(() -> new IllegalArgumentException("Invalid Name or Password"));
+
+            if (user.getRole() != Role.SCANNER){
+                throw new IllegalArgumentException("User is a scanner");
+            }
+            var jwt = jwtService.generateTokenAndFlag(user);
+            return jwt;
+        }catch (AuthenticationException ex){
+            throw new IllegalArgumentException("Invalid Name or Password");
+        }
+    }
+
     public String updateEmployeeRole(String employeeId, Role newRole, String newPassword) {
         Users user = usersRepo.findByEmployeeId(employeeId)
                 .orElseThrow(() -> new EntityNotFoundException("Employee not found with ID: " + employeeId));

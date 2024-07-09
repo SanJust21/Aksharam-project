@@ -55,4 +55,15 @@ public class AuthenticationController {
 //    public ResponseEntity<JwtAuthenticationResponse> refresh(@RequestBody RefreshTokenRequest refreshTokenRequest){
 //        return ResponseEntity.ok(authenticationService.refreshToken(refreshTokenRequest));
 //    }
+
+    @PostMapping("/signin/scanner")
+    public ResponseEntity<?> signinScanner(@RequestBody SignInRequest signInRequest){
+        try {
+            JwtAuthenticationResponse response = authenticationService.signinScanner(signInRequest);
+            return ResponseEntity.ok(response);
+        }catch (IllegalArgumentException ex){
+            CustomResponse customResponse = new CustomResponse("User is not a scanner!",HttpStatus.UNAUTHORIZED.value());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(customResponse);
+        }
+    }
 }

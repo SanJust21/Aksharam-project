@@ -8,5 +8,6 @@ public class JwtAuthenticationResponse {
     private String token;
 
     private boolean isAdmin;
+    private String sessionId;
 
 }
