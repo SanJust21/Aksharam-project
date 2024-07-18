@@ -2,8 +2,6 @@ package com.example.MuseumTicketing.Service.Slot;
 
 import com.example.MuseumTicketing.Model.*;
 import com.example.MuseumTicketing.Repo.*;
-import com.example.MuseumTicketing.newFile.Model.*;
-import com.example.MuseumTicketing.newFile.Repo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

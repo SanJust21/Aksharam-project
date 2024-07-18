@@ -15,7 +15,6 @@ import com.example.MuseumTicketing.appGuide.img.main.ImgDataMain;
 import com.example.MuseumTicketing.appGuide.img.main.ImgDataMainRepo;
 import com.example.MuseumTicketing.appGuide.mainPara.CombinedPara;
 import com.example.MuseumTicketing.appGuide.mainPara.first.*;
-import com.example.MuseumTicketing.newFile.appGuide.mainPara.first.*;
 import com.example.MuseumTicketing.appGuide.mainPara.main.MainTopicEng;
 import com.example.MuseumTicketing.appGuide.mainPara.main.MainTopicEngRepo;
 import com.example.MuseumTicketing.appGuide.mainPara.main.MainTopicMal;

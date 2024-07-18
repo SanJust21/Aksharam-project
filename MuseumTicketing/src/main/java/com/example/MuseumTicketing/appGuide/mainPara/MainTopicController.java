@@ -2,8 +2,6 @@ package com.example.MuseumTicketing.appGuide.mainPara;
 
 import com.example.MuseumTicketing.Guide.Language.DataType;
 import com.example.MuseumTicketing.Guide.Language.DataTypeRepo;
-import com.example.MuseumTicketing.appGuide.mainPara.Topics.TopicData;
-import com.example.MuseumTicketing.appGuide.mainPara.Topics.TopicRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,8 +17,6 @@ public class MainTopicController {
     private MainTopicService mainTopicService;
     @Autowired
     private DataTypeRepo dataTypeRepo;
-    @Autowired
-    private TopicRepo topicRepo;
 
 
     @PostMapping(path = "/mainPara")

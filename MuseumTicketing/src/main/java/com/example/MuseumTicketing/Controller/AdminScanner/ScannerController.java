@@ -8,7 +8,6 @@ import com.example.MuseumTicketing.Repo.InstitutionDetailsRepo;
 import com.example.MuseumTicketing.Repo.PublicDetailsRepo;
 import com.example.MuseumTicketing.Repo.UsersRepo;
 import com.example.MuseumTicketing.Service.AdminScanner.ScannerService;
-import com.example.MuseumTicketing.newFile.Model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
