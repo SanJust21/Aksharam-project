@@ -19,4 +19,6 @@ public class PriceRequest {
     private int price;
 
     private String category;
+
+    //
 }
