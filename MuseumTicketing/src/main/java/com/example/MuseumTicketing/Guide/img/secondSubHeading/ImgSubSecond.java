@@ -21,11 +21,6 @@ public class ImgSubSecond {
     @Column(name = "fUrl")
     private String fUrl;
 
-    @Column(name = "bgName")
-    private String bgName;
-
-    @Column(name ="bgUrl")
-    private String bgUrl;
 
     @Column(name = "engId")
     private String engId;
@@ -61,28 +56,13 @@ public class ImgSubSecond {
             fsMalUid="No Data";
         }if (commonId==null){
             commonId="No Data";
-        }if (bgName==null){
-            bgName="No Data";
-        }if (bgUrl==null){
-            bgUrl="No Data";
         }
     }
 
-    public ImgSubSecond(String fName, String fUrl, String bgName, String bgUrl, String engId, String malId, String commonId) {
+    public ImgSubSecond(String fName, String fUrl, String commonId) {
         this.fName = fName;
         this.fUrl = fUrl;
-        this.bgName = bgName;
-        this.bgUrl = bgUrl;
-        this.engId = engId;
-        this.malId = malId;
         this.commonId = commonId;
     }
 
-    //    public ImgSubSecond(String fName, String fUrl, String engId, String malId, String commonId) {
-//        this.fName = fName;
-//        this.fUrl = fUrl;
-//        this.engId = engId;
-//        this.malId = malId;
-//        this.commonId = commonId;
-//    }
 }

@@ -7,4 +7,6 @@ public class OrderRequest {
 
     private double amount;
     private String sessionId;
+    private String uniqueId;
+
 }

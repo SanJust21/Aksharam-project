@@ -1,11 +1,22 @@
 package com.example.MuseumTicketing.Guide.img;
 
+import com.example.MuseumTicketing.Guide.SecondSubHeading.english.SecondSubEnglish;
+import com.example.MuseumTicketing.Guide.SecondSubHeading.english.SecondSubEnglishRepo;
+import com.example.MuseumTicketing.Guide.SecondSubHeading.malayalam.SecondSubMalayalam;
+import com.example.MuseumTicketing.Guide.SecondSubHeading.malayalam.SecondSubMalayalamRepo;
+import com.example.MuseumTicketing.Guide.firstSubHeading.FScommonId.FsCommonIdRepo;
+import com.example.MuseumTicketing.Guide.firstSubHeading.english.FirstSubEnglish;
+import com.example.MuseumTicketing.Guide.firstSubHeading.english.FirstSubEnglishRepo;
+import com.example.MuseumTicketing.Guide.firstSubHeading.malayalam.FirstSubMalayalam;
+import com.example.MuseumTicketing.Guide.firstSubHeading.malayalam.FirstSubMalayalamRepo;
+import com.example.MuseumTicketing.Guide.img.secondSubHeading.ImgSubSecond;
 import com.example.MuseumTicketing.Guide.QR.CommonIdQRCode;
 import com.example.MuseumTicketing.Guide.QR.CommonIdQRCodeRepo;
 import com.example.MuseumTicketing.Guide.SecondSubHeading.english.SecondSubEnglish;
 import com.example.MuseumTicketing.Guide.SecondSubHeading.english.SecondSubEnglishRepo;
 import com.example.MuseumTicketing.Guide.SecondSubHeading.malayalam.SecondSubMalayalam;
 import com.example.MuseumTicketing.Guide.SecondSubHeading.malayalam.SecondSubMalayalamRepo;
+import com.example.MuseumTicketing.Guide.firstSubHeading.FScommonId.FsCommonIdRepo;
 import com.example.MuseumTicketing.Guide.firstSubHeading.english.FirstSubEnglish;
 import com.example.MuseumTicketing.Guide.firstSubHeading.english.FirstSubEnglishRepo;
 import com.example.MuseumTicketing.Guide.firstSubHeading.malayalam.FirstSubMalayalam;
@@ -42,15 +53,18 @@ public class ImgController {
 
     @Autowired
     private FirstSubMalayalamRepo firstSubMalayalamRepo;
+    @Autowired
+    private FsCommonIdRepo fsCommonIdRepo;
 
     @Autowired
     private SecondSubEnglishRepo secondSubEnglishRepo;
     @Autowired
     private SecondSubMalayalamRepo secondSubMalayalamRepo;
 
+    // *upload multiple files and background Image *
     @PostMapping(path = "/uploadImg")
     public ResponseEntity<?> uploadData(@RequestParam(value = "file") MultipartFile[] files,
-                                                    @RequestParam(value = "bgFile") MultipartFile bg,
+
                                                     @RequestParam String englishUId,
                                                     @RequestParam String malUid) throws IOException, WriterException {
 
@@ -67,14 +81,15 @@ public class ImgController {
 
         List<ImgData> responses = new ArrayList<>();
         for (MultipartFile file : files){
-            responses.add(imgService.uploadJPG(file,englishUId,malUid,commonId,bg));
+            responses.add(imgService.uploadJPG(file,englishUId,malUid,commonId));
         }
         return new ResponseEntity<>(responses,HttpStatus.OK);
     }
 
+
+
     @PostMapping(path = "/uploadImg1")
     public ResponseEntity<?> uploadData1(@RequestParam MultipartFile[] files,
-                                         @RequestParam(value = "bgFile") MultipartFile bg,
                                                         @RequestParam String englishUId,
                                                         @RequestParam String malUid){
         try {
@@ -116,7 +131,7 @@ public class ImgController {
             String commonId = commonIdQRCode.getCommonId();
             List<ImgSubFirst> imgSubFirsts = new ArrayList<>();
             for (MultipartFile file : files){
-                imgSubFirsts.add(imgService.uploadData1(file,englishUId,malUid, commonId,bg));
+                imgSubFirsts.add(imgService.uploadData1(file,englishUId,malUid, commonId));
             }
             return new ResponseEntity<>(imgSubFirsts,HttpStatus.OK);
         }catch (Exception e){
@@ -128,7 +143,6 @@ public class ImgController {
 
     @PostMapping(path = "/uploadImg2")
     public ResponseEntity<?>uploadData2(@RequestParam MultipartFile[] files,
-                                        @RequestParam(value = "bgFile") MultipartFile bg,
                                                          @RequestParam String englishUId,
                                                          @RequestParam String malUid){
         try {
@@ -199,7 +213,7 @@ public class ImgController {
 
             List<ImgSubSecond> imgSubSeconds = new ArrayList<>();
             for (MultipartFile file : files){
-                imgSubSeconds.add(imgService.uploadData2(file,englishUId,malUid,commonId,bg));
+                imgSubSeconds.add(imgService.uploadData2(file,englishUId,malUid,commonId));
             }
             return new ResponseEntity<>(imgSubSeconds,HttpStatus.OK);
         }catch (Exception e){

@@ -4,6 +4,10 @@ import com.example.MuseumTicketing.Guide.firstSubHeading.english.FirstSubEnglish
 import com.example.MuseumTicketing.Guide.firstSubHeading.english.FirstSubEnglishRepo;
 import com.example.MuseumTicketing.Guide.firstSubHeading.malayalam.FirstSubMalayalam;
 import com.example.MuseumTicketing.Guide.firstSubHeading.malayalam.FirstSubMalayalamRepo;
+import com.example.MuseumTicketing.Guide.firstSubHeading.english.FirstSubEnglish;
+import com.example.MuseumTicketing.Guide.firstSubHeading.english.FirstSubEnglishRepo;
+import com.example.MuseumTicketing.Guide.firstSubHeading.malayalam.FirstSubMalayalam;
+import com.example.MuseumTicketing.Guide.firstSubHeading.malayalam.FirstSubMalayalamRepo;
 import com.example.MuseumTicketing.Guide.mpFileData.mp3.firstSub.Mp3Data1;
 import com.example.MuseumTicketing.Guide.mpFileData.mp3.firstSub.Mp3Data1Repo;
 import com.example.MuseumTicketing.Guide.mpFileData.mp3.mainHeading.Mp3Repo;

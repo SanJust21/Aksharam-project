@@ -1,6 +1,5 @@
 package com.example.MuseumTicketing.Controller;
 
-import com.example.MuseumTicketing.Config.AppConfig;
 import com.example.MuseumTicketing.DTO.DetailsRequest;
 import com.example.MuseumTicketing.DTO.PriceRequest;
 import com.example.MuseumTicketing.Model.ForeignerDetails;
@@ -15,9 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/details")
@@ -78,46 +75,67 @@ public class DetailsController {
 
     // @CrossOrigin(origins = AppConfig.BASE_URL)
     @PostMapping("/submit")
-    public ResponseEntity<Map<String, Object>> submitDetails(@RequestBody DetailsRequest detailsRequest) {
+//    public ResponseEntity<Map<String, Object>> submitDetails(@RequestBody DetailsRequest detailsRequest) {
+//
+//        try {
+//            String sessionId = detailsRequest.getSessionId();
+//            String type = detailsRequest.getType();
+//            String mobileNumber = detailsRequest.getMobileNumber();
+//            Integer bookingId = detailsRequest.getBookingId();
+//
+//            //detailsService.submitAdditionalDetails(sessionId, type, detailsRequest);
+//            Object submittedDetails;
+//            if ("institution".equalsIgnoreCase(type)) {
+//                submittedDetails= institutionDetailsService.submitAdditionalDetails(sessionId, mobileNumber, detailsRequest, bookingId);
+//            } else if("public".equalsIgnoreCase(type)) {
+//                submittedDetails = publicDetailsService.submitAdditionalDetails(sessionId, mobileNumber, detailsRequest, bookingId);
+//            }else {
+//                submittedDetails = foreignerDetailsService.submitAdditionalDetails(sessionId, mobileNumber, detailsRequest, bookingId);
+//            }
+//
+//
+//            Map<String,Object> response = new HashMap<>();
+//            response.put("status", "success");
+//            response.put("message", "Details submitted successfully");
+//            response.put("amount", getPriceFromDetails(submittedDetails));
+//            response.put("name", getNameFromDetails(submittedDetails));
+//            response.put("mobileNumber", getMobileNumberFromDetails(submittedDetails));
+//            response.put("sessionId", getSessionIdFromDetails(submittedDetails));
+//
+//
+//            return ResponseEntity.ok(response);
+//        } catch (Exception e) {
+//
+//            e.printStackTrace();
+//
+//            Map<String, Object> errorResponse = new HashMap<>();
+//            errorResponse.put("status", "error");
+//            errorResponse.put("message", "Failed to submit details." );
+//
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+//        }
+//
+//    }
 
+    public ResponseEntity<?> submitDetails(@RequestBody DetailsRequest detailsRequest){
         try {
-            String sessionId = detailsRequest.getSessionId();
             String type = detailsRequest.getType();
-            String mobileNumber = detailsRequest.getMobileNumber();
-            Integer bookingId = detailsRequest.getBookingId();
-
-            //detailsService.submitAdditionalDetails(sessionId, type, detailsRequest);
-            Object submittedDetails;
-            if ("institution".equalsIgnoreCase(type)) {
-                submittedDetails= institutionDetailsService.submitAdditionalDetails(sessionId, mobileNumber, detailsRequest, bookingId);
-            } else if("public".equalsIgnoreCase(type)) {
-                submittedDetails = publicDetailsService.submitAdditionalDetails(sessionId, mobileNumber, detailsRequest, bookingId);
+            if ("institution".equalsIgnoreCase(type)){
+                InstitutionDetails details=institutionDetailsService.submitAdditinalDetails(detailsRequest);
+                return new ResponseEntity<>(details,HttpStatus.OK);
+            } else if ("public".equalsIgnoreCase(type)) {
+                PublicDetails publicDetails = publicDetailsService.submitAdditionalDetails(detailsRequest);
+                return new ResponseEntity<>(publicDetails,HttpStatus.OK);
+            }else if ("foreigner".equalsIgnoreCase(type)){
+                ForeignerDetails foreignerDetails = foreignerDetailsService.submitAdditionalDetails(detailsRequest);
+                return new ResponseEntity<>(foreignerDetails,HttpStatus.OK);
             }else {
-                submittedDetails = foreignerDetailsService.submitAdditionalDetails(sessionId, mobileNumber, detailsRequest, bookingId);
+                return new ResponseEntity<>("Category is required",HttpStatus.BAD_REQUEST);
             }
-
-
-            Map<String,Object> response = new HashMap<>();
-            response.put("status", "success");
-            response.put("message", "Details submitted successfully");
-            response.put("amount", getPriceFromDetails(submittedDetails));
-            response.put("name", getNameFromDetails(submittedDetails));
-            response.put("mobileNumber", getMobileNumberFromDetails(submittedDetails));
-            response.put("sessionId", getSessionIdFromDetails(submittedDetails));
-
-
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-
+        }catch (Exception e){
             e.printStackTrace();
-
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("status", "error");
-            errorResponse.put("message", "Failed to submit details." );
-
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
-
+        return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 //    @CrossOrigin(origins = AppConfig.BASE_URL)

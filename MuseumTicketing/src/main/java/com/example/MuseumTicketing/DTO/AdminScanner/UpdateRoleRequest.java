@@ -1,6 +1,7 @@
 package com.example.MuseumTicketing.DTO.AdminScanner;
 
 import com.example.MuseumTicketing.Model.Role;
+import com.example.MuseumTicketing.Model.Role;
 import lombok.Data;
 
 @Data

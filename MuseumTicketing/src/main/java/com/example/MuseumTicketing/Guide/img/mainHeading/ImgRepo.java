@@ -18,4 +18,6 @@ public interface ImgRepo extends JpaRepository<ImgData,Integer> {
     Optional<ImgData> findByImgIDAndCommonId(Integer imgId, String commonId);
 
     void deleteByCommonId(String commonId);
+
+    Optional<ImgData> findImgIDByCommonId(String commonId);
 }

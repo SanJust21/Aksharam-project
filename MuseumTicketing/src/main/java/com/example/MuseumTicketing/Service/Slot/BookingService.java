@@ -2,6 +2,8 @@ package com.example.MuseumTicketing.Service.Slot;
 
 import com.example.MuseumTicketing.Model.*;
 import com.example.MuseumTicketing.Repo.*;
+import com.example.MuseumTicketing.newFile.Model.*;
+import com.example.MuseumTicketing.newFile.Repo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,7 +43,7 @@ public class BookingService {
             booking1.setVisitDate(visitDate);
             booking1.setSlotName(slotName);
             booking1.setBookTime(LocalDateTime.now());
-            booking1.setExpireTime(booking1.getBookTime().plusSeconds(60)); //plusMinutes(2)
+            booking1.setExpireTime(booking1.getBookTime().plusMinutes(15)); //plusMinutes(2)
             booking1.setAvailable(true);
             bookingRepo.save(booking1);
 

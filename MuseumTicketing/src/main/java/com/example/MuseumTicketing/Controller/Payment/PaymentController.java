@@ -1,5 +1,4 @@
 package com.example.MuseumTicketing.Controller.Payment;
-import com.example.MuseumTicketing.Config.AppConfig;
 import com.example.MuseumTicketing.DTO.Payment.OrderRequest;
 import com.example.MuseumTicketing.DTO.Payment.OrderResponse;
 import com.example.MuseumTicketing.DTO.Payment.VerifyPaymentRequest;
@@ -13,13 +12,10 @@ import com.example.MuseumTicketing.Service.Email.EmailService;
 import com.example.MuseumTicketing.Service.Payment.PaymentService;
 import com.razorpay.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
-
-import static org.hibernate.query.sqm.tree.SqmNode.log;
 
 @RestController
 @RequestMapping("/api/payment")
@@ -62,15 +58,16 @@ public class PaymentController {
         try {
             double amount = orderRequest.getAmount();
             String sessionId = orderRequest.getSessionId();
+            String uniqueId = orderRequest.getUniqueId();
 
             String orderId = paymentService.createOrder(amount);
             System.out.println(orderId);
 
 
             // Search the Institution and Public tables by sessionId
-            Optional<InstitutionDetails> institutionDetails = institutionDetailsRepo.findBySessionId(sessionId);
-            Optional<PublicDetails> publicDetails = publicDetailsRepo.findBySessionId(sessionId);
-            Optional<ForeignerDetails> foreignerDetails = foreignerDetailsRepo.findBySessionId(sessionId);
+            Optional<InstitutionDetails> institutionDetails = institutionDetailsRepo.findByuniqueId(uniqueId);
+            Optional<PublicDetails> publicDetails = publicDetailsRepo.findByuniqueId(uniqueId);
+            Optional<ForeignerDetails> foreignerDetails = foreignerDetailsRepo.findByuniqueId(uniqueId);
 
             InstitutionDetails institutionDetailsEntity = institutionDetails.orElse(null);
             PublicDetails publicDetailsEntity = publicDetails.orElse(null);
@@ -78,12 +75,15 @@ public class PaymentController {
 
             if (institutionDetailsEntity != null) {
                 institutionDetailsEntity.setOrderId(orderId);
+                institutionDetailsEntity.setSessionId(sessionId);
                 institutionDetailsRepo.save(institutionDetailsEntity);
             } else if (publicDetailsEntity != null) {
                 publicDetailsEntity.setOrderId(orderId);
+                publicDetailsEntity.setSessionId(sessionId);
                 publicDetailsRepo.save(publicDetailsEntity);
             } else if (foreignerDetailsEntity != null) {
                 foreignerDetailsEntity.setOrderId(orderId);
+                foreignerDetailsEntity.setSessionId(sessionId);
                 foreignerDetailsRepo.save(foreignerDetailsEntity);
             } else {
                 return ResponseEntity.badRequest().body("No corresponding details found for sessionId: " + sessionId);

@@ -5,6 +5,11 @@ import com.example.MuseumTicketing.Guide.mainHeading.mainEng.MainTitleEng;
 import com.example.MuseumTicketing.Guide.mainHeading.mainEng.MainTitleEngRepo;
 import com.example.MuseumTicketing.Guide.mainHeading.mainMal.MainTitleMal;
 import com.example.MuseumTicketing.Guide.mainHeading.mainMal.MainTitleMalRepo;
+import com.example.MuseumTicketing.Guide.mainHeading.MainDTO;
+import com.example.MuseumTicketing.Guide.mainHeading.mainEng.MainTitleEng;
+import com.example.MuseumTicketing.Guide.mainHeading.mainEng.MainTitleEngRepo;
+import com.example.MuseumTicketing.Guide.mainHeading.mainMal.MainTitleMal;
+import com.example.MuseumTicketing.Guide.mainHeading.mainMal.MainTitleMalRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +33,7 @@ public class MainUpdateService {
 //    private Mp4Data mp4Data;
 
 
-    public ResponseEntity<?> updateDataMalyalam(String uId,MainDTO mainDTO) {
+    public ResponseEntity<?> updateDataMalyalam(String uId, MainDTO mainDTO) {
         try {
             Optional<MainTitleMal> mainTitleMal = mainTitleMalRepo.findBymMalUid(uId);
             if (mainTitleMal.isPresent()){

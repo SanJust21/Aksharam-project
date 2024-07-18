@@ -1,6 +1,5 @@
 package com.example.MuseumTicketing.Controller.AdminScanner;
 
-import com.example.MuseumTicketing.Config.AppConfig;
 import com.example.MuseumTicketing.DTO.AdminScanner.CustomResponse;
 import com.example.MuseumTicketing.DTO.AdminScanner.ScanRequest;
 import com.example.MuseumTicketing.Model.*;
@@ -9,6 +8,7 @@ import com.example.MuseumTicketing.Repo.InstitutionDetailsRepo;
 import com.example.MuseumTicketing.Repo.PublicDetailsRepo;
 import com.example.MuseumTicketing.Repo.UsersRepo;
 import com.example.MuseumTicketing.Service.AdminScanner.ScannerService;
+import com.example.MuseumTicketing.newFile.Model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

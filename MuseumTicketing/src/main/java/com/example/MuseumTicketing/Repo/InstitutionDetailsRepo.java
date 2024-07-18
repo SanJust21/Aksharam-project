@@ -1,6 +1,7 @@
 package com.example.MuseumTicketing.Repo;
 
 import com.example.MuseumTicketing.Model.InstitutionDetails;
+import com.example.MuseumTicketing.Model.InstitutionDetails;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,7 +14,7 @@ import java.util.Optional;
 @Repository
 public interface InstitutionDetailsRepo extends JpaRepository<InstitutionDetails, Long> {
 
-    Optional<InstitutionDetails> findBySessionId(String sessionId);
+//    Optional<InstitutionDetails> findBySessionId(String sessionId);
 
     Optional<InstitutionDetails> findByMobileNumber(String mobileNumber);
 
@@ -85,4 +86,6 @@ public interface InstitutionDetailsRepo extends JpaRepository<InstitutionDetails
     InstitutionDetails findByBookingId(Integer bId);
 
     List<InstitutionDetails> findAll();
+
+    Optional<InstitutionDetails> findByuniqueId(String uniqueId);
 }

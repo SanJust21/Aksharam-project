@@ -1,5 +1,6 @@
 package com.example.MuseumTicketing.DTO.Slot;
 import com.example.MuseumTicketing.Model.ShowTime;
+import com.example.MuseumTicketing.Model.ShowTime;
 import lombok.Data;
 
 import java.util.List;

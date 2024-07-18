@@ -1,6 +1,5 @@
 package com.example.MuseumTicketing.Controller.AdminScanner;
 
-import com.example.MuseumTicketing.Config.AppConfig;
 import com.example.MuseumTicketing.DTO.AdminScanner.CategoryVisitorDTO;
 import com.example.MuseumTicketing.DTO.AdminScanner.TotalIncomeDTO;
 import com.example.MuseumTicketing.DTO.AdminScanner.TotalTicketsDTO;

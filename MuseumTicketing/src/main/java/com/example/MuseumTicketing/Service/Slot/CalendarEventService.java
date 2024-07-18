@@ -2,6 +2,8 @@ package com.example.MuseumTicketing.Service.Slot;
 
 import com.example.MuseumTicketing.Model.*;
 import com.example.MuseumTicketing.Repo.*;
+import com.example.MuseumTicketing.newFile.Model.*;
+import com.example.MuseumTicketing.newFile.Repo.*;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,8 +64,9 @@ public class CalendarEventService {
                             if ("institution".equals(expiredBooking.getCategory())) {
 
                                 InstitutionDetails institutionDetails = institutionDetailsRepo.findByBookingId(bId);
-                                Integer expId = expiredBooking.getBookingId();
-                                Integer instiutionId = institutionDetails.getBookingId();
+                                if (institutionDetails!=null){
+                                    Integer expId = expiredBooking.getBookingId();
+                                    Integer instiutionId = institutionDetails.getBookingId();
 
                                 if (expId.equals(instiutionId)) {
                                     String paymentId = institutionDetails.getPaymentid();
@@ -92,7 +95,8 @@ public class CalendarEventService {
                                         log.info("booking : " + booking);
                                         bookingRepo.delete(booking);
                                     }
-                                } else {
+                                }
+                                }else {
                                     Booking booking = bookingRepo.findByBookingId(bId);
                                     log.info("instituId : " + institutionDetails.getId());
                                     bookingRepo.delete(booking);

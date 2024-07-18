@@ -57,9 +57,16 @@ public class PublicDetails {
 
     @Column(name = "payment_status", nullable = false, columnDefinition = "boolean default false")
     private boolean paymentStatus;
+    @Column(name = "uniqueId")
+    private String uniqueId;
 
-    public PublicDetails(String mobileNumber, String type, String email, String sessionId, String name, int numberOfAdults, int numberOfChildren, int numberOfSeniors, double totalPrice, LocalDate visitDate, String paymentid, String orderId, String ticketId, LocalDate bookDate, Integer bookingId, LocalTime slotName, boolean visitStatus, boolean paymentStatus) {
+    public PublicDetails(String mobileNumber, String type, String email, String sessionId, String name,
+                         int numberOfAdults, int numberOfChildren, int numberOfSeniors,
+                         double totalPrice, LocalDate visitDate, String paymentid, String orderId, String ticketId,
+                         LocalDate bookDate, Integer bookingId, LocalTime slotName, boolean visitStatus,
+                         boolean paymentStatus, String uniqueId) {
         this.mobileNumber = mobileNumber;
+        this.uniqueId = uniqueId;
         this.type = type;
         this.email = email;
         this.sessionId = sessionId;

@@ -1,6 +1,7 @@
 package com.example.MuseumTicketing.Repo;
 
 import com.example.MuseumTicketing.Model.ScannedDetails;
+import com.example.MuseumTicketing.Model.ScannedDetails;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

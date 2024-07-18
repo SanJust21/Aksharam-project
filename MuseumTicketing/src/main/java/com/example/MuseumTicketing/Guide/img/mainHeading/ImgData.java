@@ -20,12 +20,6 @@ public class ImgData {
     @Column(name = "fUrl")
     private String fUrl;
 
-    @Column(name = "bgName")
-    private String bgName;
-
-    @Column(name ="bgUrl")
-    private String bgUrl;
-
     @Column(name = "engId")
     private String engId;
 
@@ -43,25 +37,21 @@ public class ImgData {
         this.fUrl = fUrl;
     }
 
-
-    public ImgData( String fName, String fUrl, String bgName, String bgUrl, String engId, String malId, String commonId) {
-
-        this.fName = fName;
-        this.fUrl = fUrl;
-        this.bgName = bgName;
-        this.bgUrl = bgUrl;
+    public ImgData(String engId, String malId, String commonId) {
         this.engId = engId;
         this.malId = malId;
         this.commonId = commonId;
     }
 
-    //    public ImgData(String fName, String fUrl, String engId, String malId, String commonId) {
-//        this.fName = fName;
-//        this.fUrl = fUrl;
-//        this.engId = engId;
-//        this.malId=malId;
-//        this.commonId = commonId;
-//    }
+    public ImgData(String fName, String fUrl, String engId, String malId, String commonId) {
+
+        this.fName = fName;
+        this.fUrl = fUrl;
+        this.engId = engId;
+        this.malId = malId;
+        this.commonId = commonId;
+    }
+
     @PrePersist
     @PreUpdate
     public void setDefault(){
@@ -75,10 +65,6 @@ public class ImgData {
             malId="No Data";
         }if(commonId==null){
             commonId="No Data";
-        }if (bgUrl==null){
-            bgUrl="No Data";
-        }if (bgName==null){
-            bgName="No Data";
         }
     }
 }

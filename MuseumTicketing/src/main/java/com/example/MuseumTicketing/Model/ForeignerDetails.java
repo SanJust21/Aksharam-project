@@ -56,7 +56,13 @@ public class ForeignerDetails {
         @Column(name = "payment_status", nullable = false, columnDefinition = "boolean default false")
         private boolean paymentStatus;
 
-        public ForeignerDetails(String mobileNumber, String type, String email, String sessionId, String name, int numberOfAdults, int numberOfChildren, double totalPrice, LocalDate visitDate, String paymentid, String orderId, String ticketId, Integer bookingId, LocalTime slotName, LocalDate bookDate, boolean visitStatus, boolean paymentStatus) {
+        @Column(name = "uniqueId")
+        private String uniqueId;
+
+        public ForeignerDetails(String mobileNumber, String type, String email, String sessionId, String name,
+                                int numberOfAdults, int numberOfChildren, double totalPrice, LocalDate visitDate,
+                                String paymentid, String orderId, String ticketId, Integer bookingId, LocalTime slotName,
+                                LocalDate bookDate, boolean visitStatus, boolean paymentStatus,String uniqueId) {
             this.mobileNumber = mobileNumber;
             this.type = type;
             this.email = email;
@@ -74,6 +80,7 @@ public class ForeignerDetails {
             this.slotName = slotName;
             this.visitStatus = visitStatus;
             this.paymentStatus = paymentStatus;
+            this.uniqueId = uniqueId;
         }
 
         public ForeignerDetails(Long id) {

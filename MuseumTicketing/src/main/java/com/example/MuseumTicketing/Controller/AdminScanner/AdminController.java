@@ -1,7 +1,10 @@
 package com.example.MuseumTicketing.Controller.AdminScanner;
 
-import com.example.MuseumTicketing.Config.AppConfig;
 import com.example.MuseumTicketing.DTO.AdminScanner.*;
+import com.example.MuseumTicketing.DTO.AdminScanner.CustomResponse;
+import com.example.MuseumTicketing.DTO.AdminScanner.SignUpRequest;
+import com.example.MuseumTicketing.DTO.AdminScanner.UpdateRoleRequest;
+import com.example.MuseumTicketing.DTO.AdminScanner.UpdateScannerPasswordRequest;
 import com.example.MuseumTicketing.DTO.PriceRequest;
 import com.example.MuseumTicketing.Model.Role;
 import com.example.MuseumTicketing.Model.Users;
@@ -14,10 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 import java.util.Arrays;
 import java.util.Comparator;

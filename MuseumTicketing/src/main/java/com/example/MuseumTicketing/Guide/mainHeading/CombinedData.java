@@ -1,6 +1,8 @@
 package com.example.MuseumTicketing.Guide.mainHeading;
 
 import com.example.MuseumTicketing.Guide.firstSubHeading.CombinedDataSub;
+import com.example.MuseumTicketing.Guide.firstSubHeading.CombinedDataSub;
+import com.example.MuseumTicketing.Guide.img.backgroundImg.BackgroundImg;
 import com.example.MuseumTicketing.Guide.img.mainHeading.ImgData;
 import com.example.MuseumTicketing.Guide.mpFileData.mp3.mainHeading.Mp3Data;
 import com.example.MuseumTicketing.Guide.mpFileData.mp4.mainHeading.Mp4Data;
@@ -20,6 +22,7 @@ public class CombinedData {
     private String engId;
 
     private List<ImgData> imgDataList;
+    private List<BackgroundImg> backgroundImgList;
     private List<Mp3Data> mp3DataList;
     private List<Mp4Data> mp4DataList;
 
@@ -132,6 +135,14 @@ public class CombinedData {
 
     public void setQrCodeImage(byte[] qrCodeImage) {
         this.qrCodeImage = qrCodeImage;
+    }
+
+    public List<BackgroundImg> getBackgroundImgList() {
+        return backgroundImgList;
+    }
+
+    public void setBackgroundImgList(List<BackgroundImg> backgroundImgList) {
+        this.backgroundImgList = backgroundImgList;
     }
 }
 

@@ -1,6 +1,8 @@
 package com.example.MuseumTicketing.Guide.firstSubHeading;
 
 import com.example.MuseumTicketing.Guide.SecondSubHeading.CombinedDataSubSub;
+import com.example.MuseumTicketing.Guide.SecondSubHeading.CombinedDataSubSub;
+import com.example.MuseumTicketing.Guide.img.backgroundImg.BackgroundImg;
 import com.example.MuseumTicketing.Guide.img.firstSubHeading.ImgSubFirst;
 import com.example.MuseumTicketing.Guide.mpFileData.mp3.firstSub.Mp3Data1;
 import com.example.MuseumTicketing.Guide.mpFileData.mp4.firstSub.Mp4Data1;
@@ -20,6 +22,7 @@ public class CombinedDataSub {
 
 
     private List<ImgSubFirst> imgDataList;
+    private List<BackgroundImg> backgroundImgList;
     private List<Mp3Data1> mp3DataList;
     private List<Mp4Data1> mp4DataList;
 
@@ -99,5 +102,13 @@ public class CombinedDataSub {
 
     public void setCombinedDataSubSubList(List<CombinedDataSubSub> combinedDataSubSubList) {
         this.combinedDataSubSubList = combinedDataSubSubList;
+    }
+
+    public List<BackgroundImg> getBackgroundImgList() {
+        return backgroundImgList;
+    }
+
+    public void setBackgroundImgList(List<BackgroundImg> backgroundImgList) {
+        this.backgroundImgList = backgroundImgList;
     }
 }

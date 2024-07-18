@@ -1,7 +1,9 @@
 package com.example.MuseumTicketing.Guide.mpFileData;
 
+import com.example.MuseumTicketing.appGuide.audio.AudioService;
 import com.example.MuseumTicketing.Guide.mpType.FileType;
 import com.example.MuseumTicketing.Guide.mpType.FileTypeRepo;
+import com.example.MuseumTicketing.appGuide.audio.AudioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +18,8 @@ import java.util.Optional;
 @RequestMapping(path = "/api/mediaData")
 @CrossOrigin
 public class MediaTypeController {
+    @Autowired
+    private AudioService audioService;
     @Autowired
     private MediaTypeService mediaTypeService;
     @Autowired
@@ -36,12 +40,12 @@ public class MediaTypeController {
                 FileType fileType = fileTypeOptional.get();
                 String fData = fileType.getFileType();
                 if (fData != null && "Audio".equalsIgnoreCase(fData)) {
+
                     List<MediaTypeDTO> responses = new ArrayList<>();
                     for (MultipartFile file : files){
                         responses.add(mediaTypeService.uploadMp3(file,uId));
                     }
                     return new ResponseEntity<>(responses,HttpStatus.OK);
-                    //return mediaTypeService.addMp3(files,dtId);
                 } else if (fData != null && "Video".equalsIgnoreCase(fData)) {
                     List<MediaTypeDTO> responses = new ArrayList<>();
                     for (MultipartFile file : files){

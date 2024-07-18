@@ -1,5 +1,6 @@
 package com.example.MuseumTicketing.Service.QR;
 
+import com.example.MuseumTicketing.Service.Details.InstitutionDetailsService;
 import com.example.MuseumTicketing.DTO.QR.BookingQrRequest;
 import com.example.MuseumTicketing.DTO.QR.QrCodeResponse;
 import com.example.MuseumTicketing.Model.ForeignerDetails;
@@ -15,9 +16,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.LocalTime;
-import java.util.Random;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 public class BookingQrService {

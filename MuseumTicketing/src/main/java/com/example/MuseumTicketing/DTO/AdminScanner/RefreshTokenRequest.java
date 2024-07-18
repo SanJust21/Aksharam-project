@@ -1,4 +1,4 @@
-//package com.example.MuseumTicketing.DTO.AdminScanner;
+package com.example.MuseumTicketing.DTO.AdminScanner;//package com.example.MuseumTicketing.DTO.AdminScanner;
 //
 //import lombok.Data;
 //

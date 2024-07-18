@@ -1,6 +1,5 @@
 package com.example.MuseumTicketing.Controller.QR;
 
-import com.example.MuseumTicketing.Config.AppConfig;
 import com.example.MuseumTicketing.DTO.AdminScanner.CustomResponse;
 import com.example.MuseumTicketing.DTO.QR.BookingQrRequest;
 import com.example.MuseumTicketing.DTO.QR.QrCodeResponse;
@@ -13,9 +12,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.ByteArrayInputStream;
-import java.util.Base64;
 
 @RestController
 @RequestMapping("/api/qr")

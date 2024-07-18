@@ -10,4 +10,6 @@ public interface MainTitleMalRepo extends JpaRepository<MainTitleMal,Integer> {
     void deleteBymMalUid(String mMalUid);
 
     Optional<MainTitleMal> findBytitle(String title);
+
+
 }

@@ -1,5 +1,12 @@
 package com.example.MuseumTicketing.Guide.UPDATE.MainTitle;
 
+import com.example.MuseumTicketing.Guide.mainHeading.MainDTO;
+import com.example.MuseumTicketing.Guide.mainHeading.mainEng.MainTitleEng;
+import com.example.MuseumTicketing.Guide.mainHeading.mainEng.MainTitleEngRepo;
+import com.example.MuseumTicketing.Guide.mainHeading.mainMal.MainTitleMal;
+import com.example.MuseumTicketing.Guide.mainHeading.mainMal.MainTitleMalRepo;
+import com.example.MuseumTicketing.Guide.mpFileData.MediaTypeDTO;
+import com.example.MuseumTicketing.Guide.mpFileData.MediaTypeService;
 import com.example.MuseumTicketing.Guide.img.ImgService;
 import com.example.MuseumTicketing.Guide.img.mainHeading.ImgData;
 import com.example.MuseumTicketing.Guide.img.mainHeading.ImgRepo;
@@ -68,33 +75,6 @@ public class MainUpdateController {
         }
         return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
     }
-
-//    @PutMapping(path = "/updateUploadImg")
-//    public ResponseEntity<?> updateJpgMain(@RequestParam(value = "file") MultipartFile[] files,
-//                                        @RequestParam String englishUId,
-//                                        @RequestParam String malUid){
-//
-//        try {
-//            if (englishUId == null || malUid == null) {
-//                return new ResponseEntity<>("English UID and Malayalam UID are required", HttpStatus.BAD_REQUEST);
-//            }else {
-//                List<ImgData> existingImgData = imgRepo.findByengId(englishUId);
-//                if (!existingImgData.isEmpty()){
-//                    List<ImgData> responses = new ArrayList<>();
-//                    for (MultipartFile file : files){
-//                        responses.add(imgService.updateMainJPG(file,englishUId,malUid));
-//                    }
-//                    return new ResponseEntity<>(responses,HttpStatus.OK);
-//                }else {
-//                    return new ResponseEntity<>("imgRepo is empty",HttpStatus.BAD_REQUEST);
-//                }
-//            }
-//        }catch (Exception e){
-//            e.printStackTrace();
-//            return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
-//        }
-//    }
-//
 
     @PutMapping(path = "/updateUploadImg")
     public ResponseEntity<?> updateJpgMain(

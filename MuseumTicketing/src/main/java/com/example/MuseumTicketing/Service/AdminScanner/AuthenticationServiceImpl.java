@@ -11,6 +11,7 @@ import com.example.MuseumTicketing.Service.Details.ForeignerDetailsService;
 import com.example.MuseumTicketing.Service.Details.InstitutionDetailsService;
 import com.example.MuseumTicketing.Service.Details.PublicDetailsService;
 import com.example.MuseumTicketing.Service.Jwt.JwtService;
+import com.example.MuseumTicketing.newFile.Model.*;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

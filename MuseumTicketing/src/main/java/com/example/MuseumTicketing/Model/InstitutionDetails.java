@@ -57,8 +57,16 @@ public class InstitutionDetails {
     @Column(name = "payment_status", nullable = false, columnDefinition = "boolean default false")
     private boolean paymentStatus;
 
-    public InstitutionDetails(String mobileNumber, String type, String email, String sessionId, String institutionName, String district, int numberOfStudents, int numberOfTeachers, LocalDate visitDate, double totalPrice, String orderId, String paymentid, String ticketId, LocalDate bookDate, Integer bookingId,LocalTime slotName, boolean visitStatus, boolean paymentStatus) {
+    @Column(name = "uniqueId")
+    private String uniqueId;
+
+    public InstitutionDetails(String mobileNumber, String type, String email, String sessionId, String institutionName,
+                              String district, int numberOfStudents, int numberOfTeachers, LocalDate visitDate,
+                              double totalPrice, String orderId, String paymentid, String ticketId, LocalDate bookDate,
+                              Integer bookingId,LocalTime slotName, boolean visitStatus, boolean paymentStatus,
+                              String uniqueId) {
         this.mobileNumber = mobileNumber;
+        this.uniqueId = uniqueId;
         this.type = type;
         this.email = email;
         this.sessionId = sessionId;

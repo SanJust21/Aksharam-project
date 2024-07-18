@@ -1,6 +1,7 @@
 package com.example.MuseumTicketing.Service.Details;
 
 import com.example.MuseumTicketing.DTO.DetailsRequest;
+import com.example.MuseumTicketing.Guide.util.AlphaNumeric;
 import com.example.MuseumTicketing.Model.PublicDetails;
 import com.example.MuseumTicketing.Repo.PublicDetailsRepo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class PublicDetailsService {
@@ -20,35 +20,59 @@ public class PublicDetailsService {
         this.publicDetailsRepo = publicDetailsRepo;
     }
 
-    public Object submitAdditionalDetails(String sessionId, String mobileNumber, DetailsRequest detailsRequest, Integer bookingId) {
-        //Optional<PublicDetails> optionalDetails = publicDetailsRepo.findByMobileNumber(mobileNumber);
-        //PublicDetails publicDetails;
+    @Autowired
+    private AlphaNumeric alphaNumeric;
 
-        //if (optionalDetails.isPresent()) {
-        //    publicDetails = optionalDetails.get();
-        //} else {
-         //   publicDetails = new PublicDetails();
-        //    publicDetails.setMobileNumber(mobileNumber);
-        //}
-        PublicDetails publicDetails = publicDetailsRepo.findByBookingId(bookingId);
+//    public Object submitAdditionalDetails(String sessionId, String mobileNumber, DetailsRequest detailsRequest, Integer bookingId) {
+//        //Optional<PublicDetails> optionalDetails = publicDetailsRepo.findByMobileNumber(mobileNumber);
+//        //PublicDetails publicDetails;
+//
+//        //if (optionalDetails.isPresent()) {
+//        //    publicDetails = optionalDetails.get();
+//        //} else {
+//         //   publicDetails = new PublicDetails();
+//        //    publicDetails.setMobileNumber(mobileNumber);
+//        //}
+//        PublicDetails publicDetails = publicDetailsRepo.findByBookingId(bookingId);
+//
+//        if (publicDetails == null) {
+//            throw new IllegalArgumentException("PublicDetails not found for booking ID: " + bookingId);
+//        }
+//
+//        publicDetails.setSessionId(sessionId);
+//        publicDetails.setName(detailsRequest.getName());
+//        publicDetails.setEmail(detailsRequest.getEmail());
+//        publicDetails.setNumberOfAdults(detailsRequest.getNumberOfAdults());
+//        publicDetails.setNumberOfChildren(detailsRequest.getNumberOfChildren());
+//        publicDetails.setNumberOfSeniors(detailsRequest.getNumberOfSeniors());
+//        //publicDetails.setType(detailsRequest.getType());
+//        publicDetails.setTotalPrice(detailsRequest.getTotalPrice());
+//        //publicDetails.setVisitDate(detailsRequest.getVisitDate());
+//        publicDetails.setMobileNumber(detailsRequest.getMobileNumber());
+//        publicDetails.setBookDate(detailsRequest.getBookDate());
+//        publicDetails.setUniqueId(alphaNumeric.generateRandomNumber());
+//
+//
+//        publicDetailsRepo.save(publicDetails);
+//        return publicDetails;
+//    }
 
-        if (publicDetails == null) {
-            throw new IllegalArgumentException("PublicDetails not found for booking ID: " + bookingId);
+    public PublicDetails submitAdditionalDetails(DetailsRequest detailsRequest) {
+        PublicDetails publicDetails = publicDetailsRepo.findByBookingId(detailsRequest.getBookingId());
+        if (publicDetails==null){
+            throw new IllegalArgumentException("PublicDetails not found for booking ID: " + detailsRequest.getBookingId());
         }
-
-        publicDetails.setSessionId(sessionId);
+        publicDetails.setSessionId(detailsRequest.getSessionId());
         publicDetails.setName(detailsRequest.getName());
         publicDetails.setEmail(detailsRequest.getEmail());
+        publicDetails.setMobileNumber(detailsRequest.getMobileNumber());
+        publicDetails.setType(detailsRequest.getType());
         publicDetails.setNumberOfAdults(detailsRequest.getNumberOfAdults());
         publicDetails.setNumberOfChildren(detailsRequest.getNumberOfChildren());
         publicDetails.setNumberOfSeniors(detailsRequest.getNumberOfSeniors());
-        //publicDetails.setType(detailsRequest.getType());
         publicDetails.setTotalPrice(detailsRequest.getTotalPrice());
-        //publicDetails.setVisitDate(detailsRequest.getVisitDate());
-        publicDetails.setMobileNumber(detailsRequest.getMobileNumber());
         publicDetails.setBookDate(detailsRequest.getBookDate());
-
-
+        publicDetails.setUniqueId(alphaNumeric.generateRandomNumber());
         publicDetailsRepo.save(publicDetails);
         return publicDetails;
     }

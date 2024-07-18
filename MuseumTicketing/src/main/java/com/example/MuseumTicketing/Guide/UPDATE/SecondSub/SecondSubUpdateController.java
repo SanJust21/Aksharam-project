@@ -1,5 +1,14 @@
 package com.example.MuseumTicketing.Guide.UPDATE.SecondSub;
 
+import com.example.MuseumTicketing.Guide.SecondSubHeading.commonId.CommonIdSsRepo;
+import com.example.MuseumTicketing.Guide.SecondSubHeading.english.SecondSubEnglish;
+import com.example.MuseumTicketing.Guide.SecondSubHeading.english.SecondSubEnglishRepo;
+import com.example.MuseumTicketing.Guide.SecondSubHeading.malayalam.SecondSubMalayalam;
+import com.example.MuseumTicketing.Guide.SecondSubHeading.malayalam.SecondSubMalayalamRepo;
+import com.example.MuseumTicketing.Guide.mainHeading.MainDTO;
+import com.example.MuseumTicketing.Guide.mpFileData.MediaTypeDTO;
+import com.example.MuseumTicketing.Guide.mpFileData.MediaTypeService;
+import com.example.MuseumTicketing.Guide.SecondSubHeading.commonId.CommonIdSsRepo;
 import com.example.MuseumTicketing.Guide.SecondSubHeading.english.SecondSubEnglish;
 import com.example.MuseumTicketing.Guide.SecondSubHeading.english.SecondSubEnglishRepo;
 import com.example.MuseumTicketing.Guide.SecondSubHeading.malayalam.SecondSubMalayalam;
@@ -40,6 +49,8 @@ public class SecondSubUpdateController {
     private FileTypeRepo fileTypeRepo;
     @Autowired
     private MediaTypeService mediaTypeService;
+    @Autowired
+    private CommonIdSsRepo commonIdSsRepo ;
 
 
     @PutMapping(path = "/updateSecondData/{uId}")
@@ -74,31 +85,6 @@ public class SecondSubUpdateController {
         return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-//    @PutMapping(path = "/updateUploadImg2/{englishUId}")
-//    public ResponseEntity<?> updateJpgSecond(@RequestParam(value = "file") MultipartFile[] files,
-//                                           @PathVariable String englishUId,
-//                                           @RequestParam String malUid){
-//
-//        try {
-//            if (englishUId == null || malUid == null) {
-//                return new ResponseEntity<>("English UID and Malayalam UID are required", HttpStatus.BAD_REQUEST);
-//            }else {
-//                List<ImgSubSecond> existingImgData = imgSubSecondRepo.findByengId(englishUId);
-//                if (!existingImgData.isEmpty()){
-//                    List<ImgSubSecond> responses = new ArrayList<>();
-//                    for (MultipartFile file : files){
-//                        responses.add(imgService.updateSecondSubJPG(file,englishUId,malUid));
-//                    }
-//                    return new ResponseEntity<>(responses,HttpStatus.OK);
-//                }else {
-//                    return new ResponseEntity<>("imgRepo is empty",HttpStatus.BAD_REQUEST);
-//                }
-//            }
-//        }catch (Exception e){
-//            e.printStackTrace();
-//            return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
-//        }
-//    }
 
     @PutMapping(path = "/updateUploadImg2")
     public ResponseEntity<?> updateJpgSecond(
@@ -107,6 +93,7 @@ public class SecondSubUpdateController {
             @RequestParam String commonId) {
 
         try {
+
             if (commonId == null || imgIds.isEmpty() || files.length != imgIds.size()||"undefined".equalsIgnoreCase(commonId)) {
                 return new ResponseEntity<>("Common ID, image IDs, and files are required, and the number of files must match the number of image IDs", HttpStatus.BAD_REQUEST);
             } else {

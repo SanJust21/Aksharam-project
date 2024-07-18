@@ -13,4 +13,9 @@ public interface MainTitleEngRepo extends JpaRepository<MainTitleEng,Integer> {
 
     Optional<MainTitleEng> findBytitle(String title);
 
+
+
+    // Optional<MainTitleEng> findByMEngUid(String engId);
+
+//    Optional<MainTitleEng> findBymEngUid(String mainId);
 }

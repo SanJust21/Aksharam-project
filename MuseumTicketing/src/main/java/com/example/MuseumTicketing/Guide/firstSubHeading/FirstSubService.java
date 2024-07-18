@@ -7,6 +7,13 @@ import com.example.MuseumTicketing.Guide.SecondSubHeading.english.SecondSubEngli
 import com.example.MuseumTicketing.Guide.SecondSubHeading.english.SecondSubEnglishRepo;
 import com.example.MuseumTicketing.Guide.SecondSubHeading.malayalam.SecondSubMalayalam;
 import com.example.MuseumTicketing.Guide.SecondSubHeading.malayalam.SecondSubMalayalamRepo;
+import com.example.MuseumTicketing.Guide.SecondSubHeading.CombinedDataSubSub;
+import com.example.MuseumTicketing.Guide.SecondSubHeading.commonId.CommonIdSs;
+import com.example.MuseumTicketing.Guide.SecondSubHeading.commonId.CommonIdSsRepo;
+import com.example.MuseumTicketing.Guide.SecondSubHeading.english.SecondSubEnglish;
+import com.example.MuseumTicketing.Guide.SecondSubHeading.english.SecondSubEnglishRepo;
+import com.example.MuseumTicketing.Guide.SecondSubHeading.malayalam.SecondSubMalayalam;
+import com.example.MuseumTicketing.Guide.SecondSubHeading.malayalam.SecondSubMalayalamRepo;
 import com.example.MuseumTicketing.Guide.firstSubHeading.FScommonId.CommonIdFs;
 import com.example.MuseumTicketing.Guide.firstSubHeading.FScommonId.FsCommonIdRepo;
 import com.example.MuseumTicketing.Guide.firstSubHeading.english.FirstSubEnglish;
@@ -210,76 +217,82 @@ public class FirstSubService {
     public ResponseEntity<?> getFirstSubCombinedListEng(String id) {
         try {
             List<CombinedDataSub> combinedDataSubList = new ArrayList<>();
-            CommonIdFs commonIdFs = fsCommonIdRepo.findByfsCommonId(id);
-            String fsMalId = commonIdFs.getFsMalId();
-            if (commonIdFs!=null){
-                Optional<FirstSubEnglish> firstSubEnglish = firstSubEnglishRepo.findByfsUid(commonIdFs.getFsEngId());
-                if (firstSubEnglish.isPresent()){
-                    FirstSubEnglish firstSubEnglish1 = firstSubEnglish.get();
-                    CombinedDataSub combinedDataSub = new CombinedDataSub();
-                    combinedDataSub.setFsEngId(firstSubEnglish1.getFsUid());
-                    combinedDataSub.setTitle(firstSubEnglish1.getTitle());
-                    combinedDataSub.setDescription(firstSubEnglish1.getDescription());
-                    combinedDataSub.setReferenceUrl(firstSubEnglish1.getRef());
-                    combinedDataSub.setFsMalId(fsMalId);
-                    combinedDataSub.setFsCommonId(id);
-                    combinedDataSub.setuId(firstSubEnglish1.getFsUid());
-                    combinedDataSub.setmUid(firstSubEnglish1.getMainUid());
+//            CommonIdFs commonIdFs = fsCommonIdRepo.findByfsCommonId(id);
+//            String fsMalId = commonIdFs.getFsMalId();
+            Optional<CommonIdFs> commonIdFsOptional = fsCommonIdRepo.findByFsCommonId(id);
+            if (commonIdFsOptional.isPresent()){
+                CommonIdFs commonIdFs = commonIdFsOptional.get();
+                String fsMalId = commonIdFs.getFsMalId();
+                if (commonIdFs!=null){
+                    Optional<FirstSubEnglish> firstSubEnglish = firstSubEnglishRepo.findByfsUid(commonIdFs.getFsEngId());
+                    if (firstSubEnglish.isPresent()){
+                        FirstSubEnglish firstSubEnglish1 = firstSubEnglish.get();
+                        CombinedDataSub combinedDataSub = new CombinedDataSub();
+                        combinedDataSub.setFsEngId(firstSubEnglish1.getFsUid());
+                        combinedDataSub.setTitle(firstSubEnglish1.getTitle());
+                        combinedDataSub.setDescription(firstSubEnglish1.getDescription());
+                        combinedDataSub.setReferenceUrl(firstSubEnglish1.getRef());
+                        combinedDataSub.setFsMalId(fsMalId);
+                        combinedDataSub.setFsCommonId(id);
+                        combinedDataSub.setuId(firstSubEnglish1.getFsUid());
+                        combinedDataSub.setmUid(firstSubEnglish1.getMainUid());
 
-                    List<ImgSubFirst> imgSubFirsts = imgSubFirstRepo.findByEngId(firstSubEnglish1.getFsUid());
-                    imgSubFirsts.sort(Comparator.comparing(ImgSubFirst::getImgID));
-                    combinedDataSub.setImgDataList(imgSubFirsts);
+                        List<ImgSubFirst> imgSubFirsts = imgSubFirstRepo.findByEngId(firstSubEnglish1.getFsUid());
+                        imgSubFirsts.sort(Comparator.comparing(ImgSubFirst::getImgID));
+                        combinedDataSub.setImgDataList(imgSubFirsts);
 
-                    List<Mp3Data1> mp3Data1List = mp3Data1Repo.findBydtId(firstSubEnglish1.getFsUid());
-                    mp3Data1List.sort(Comparator.comparing(Mp3Data1::getId));
-                    combinedDataSub.setMp3DataList(mp3Data1List);
+                        List<Mp3Data1> mp3Data1List = mp3Data1Repo.findBydtId(firstSubEnglish1.getFsUid());
+                        mp3Data1List.sort(Comparator.comparing(Mp3Data1::getId));
+                        combinedDataSub.setMp3DataList(mp3Data1List);
 
-                    List<Mp4Data1> mp4Data1List = mp4Data1Repo.findBydtId(firstSubEnglish1.getFsUid());
-                    mp4Data1List.sort(Comparator.comparing(Mp4Data1::getId));
-                    combinedDataSub.setMp4DataList(mp4Data1List);
+                        List<Mp4Data1> mp4Data1List = mp4Data1Repo.findBydtId(firstSubEnglish1.getFsUid());
+                        mp4Data1List.sort(Comparator.comparing(Mp4Data1::getId));
+                        combinedDataSub.setMp4DataList(mp4Data1List);
 
-                    List<SecondSubEnglish> secondSubEnglishList = secondSubEnglishRepo.findByfsUid(firstSubEnglish1.getFsUid());
-                    secondSubEnglishList.sort(Comparator.comparing(SecondSubEnglish::getId));
-                    List<CombinedDataSubSub> combinedDataSubSubList = new ArrayList<>();
+                        List<SecondSubEnglish> secondSubEnglishList = secondSubEnglishRepo.findByfsUid(firstSubEnglish1.getFsUid());
+                        secondSubEnglishList.sort(Comparator.comparing(SecondSubEnglish::getId));
+                        List<CombinedDataSubSub> combinedDataSubSubList = new ArrayList<>();
 
-                    secondSubEnglishList.forEach(secondSubEnglish -> {
-                        CombinedDataSubSub combinedDataSubSub = new CombinedDataSubSub();
-                        // Set details of SecondSubEnglish
-                        combinedDataSubSub.setTitle(secondSubEnglish.getTitle());
-                        combinedDataSubSub.setDescription(secondSubEnglish.getDescription());
-                        combinedDataSubSub.setReferenceUrl(secondSubEnglish.getRef());
-                        combinedDataSubSub.setuId(secondSubEnglish.getSsUid());
-                        combinedDataSubSub.setmUid(secondSubEnglish.getFsUid());
+                        secondSubEnglishList.forEach(secondSubEnglish -> {
+                            CombinedDataSubSub combinedDataSubSub = new CombinedDataSubSub();
+                            // Set details of SecondSubEnglish
+                            combinedDataSubSub.setTitle(secondSubEnglish.getTitle());
+                            combinedDataSubSub.setDescription(secondSubEnglish.getDescription());
+                            combinedDataSubSub.setReferenceUrl(secondSubEnglish.getRef());
+                            combinedDataSubSub.setuId(secondSubEnglish.getSsUid());
+                            combinedDataSubSub.setmUid(secondSubEnglish.getFsUid());
 
-                        Optional<CommonIdSs> commonIdSs = commonIdSsRepo.findByssEngId(secondSubEnglish.getSsUid());
-                        if (commonIdSs.isPresent()){
-                            CommonIdSs commonIdSs1 = commonIdSs.get();
-                            combinedDataSubSub.setSsCommonId(commonIdSs1.getSsCommonId());
-                            combinedDataSubSub.setSsEngId(commonIdSs1.getSsEngId());
-                            combinedDataSubSub.setSsMalId(commonIdSs1.getSsMalId());
-                        }
-                        // Fetching images for SecondSubEnglish
-                        List<ImgSubSecond> imgSubSecondList = imgSubSecondRepo.findByengId(secondSubEnglish.getSsUid());
-                        imgSubSecondList.sort(Comparator.comparing(ImgSubSecond::getImgID));
-                        combinedDataSubSub.setImgData2List(imgSubSecondList);
-                        // Fetching audio for SecondSubEnglish
-                        List<Mp3Data2> mp3Data2List = mp3Data2Repo.findBydtId(secondSubEnglish.getSsUid());
-                        mp3Data2List.sort(Comparator.comparing(Mp3Data2::getId));
-                        combinedDataSubSub.setMp3Data2List(mp3Data2List);
-                        // Fetching video for SecondSubEnglish
-                        List<Mp4Data2> mp4Data2List = mp4Data2Repo.findBydtId(secondSubEnglish.getSsUid());
-                        mp4Data2List.sort(Comparator.comparing(Mp4Data2::getId));
-                        combinedDataSubSub.setMp4Data2List(mp4Data2List);
+                            Optional<CommonIdSs> commonIdSs = commonIdSsRepo.findByssEngId(secondSubEnglish.getSsUid());
+                            if (commonIdSs.isPresent()){
+                                CommonIdSs commonIdSs1 = commonIdSs.get();
+                                combinedDataSubSub.setSsCommonId(commonIdSs1.getSsCommonId());
+                                combinedDataSubSub.setSsEngId(commonIdSs1.getSsEngId());
+                                combinedDataSubSub.setSsMalId(commonIdSs1.getSsMalId());
+                            }
+                            // Fetching images for SecondSubEnglish
+                            List<ImgSubSecond> imgSubSecondList = imgSubSecondRepo.findByengId(secondSubEnglish.getSsUid());
+                            imgSubSecondList.sort(Comparator.comparing(ImgSubSecond::getImgID));
+                            combinedDataSubSub.setImgData2List(imgSubSecondList);
+                            // Fetching audio for SecondSubEnglish
+                            List<Mp3Data2> mp3Data2List = mp3Data2Repo.findBydtId(secondSubEnglish.getSsUid());
+                            mp3Data2List.sort(Comparator.comparing(Mp3Data2::getId));
+                            combinedDataSubSub.setMp3Data2List(mp3Data2List);
+                            // Fetching video for SecondSubEnglish
+                            List<Mp4Data2> mp4Data2List = mp4Data2Repo.findBydtId(secondSubEnglish.getSsUid());
+                            mp4Data2List.sort(Comparator.comparing(Mp4Data2::getId));
+                            combinedDataSubSub.setMp4Data2List(mp4Data2List);
 
-                        combinedDataSubSubList.add(combinedDataSubSub);
+                            combinedDataSubSubList.add(combinedDataSubSub);
 
-                    });
-                    combinedDataSub.setCombinedDataSubSubList(combinedDataSubSubList);
+                        });
+                        combinedDataSub.setCombinedDataSubSubList(combinedDataSubSubList);
 
-                    combinedDataSubList.add(combinedDataSub);
+                        combinedDataSubList.add(combinedDataSub);
+                    }
+                    return new ResponseEntity<>(combinedDataSubList,HttpStatus.OK);
                 }
-                return new ResponseEntity<>(combinedDataSubList,HttpStatus.OK);
             }
+
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -289,73 +302,79 @@ public class FirstSubService {
     public ResponseEntity<?> getFirstSubCombinedListMal(String id) {
         try {
             List<CombinedDataSub> combinedDataSubList = new ArrayList<>();
-            CommonIdFs commonIdFs = fsCommonIdRepo.findByfsCommonId(id);
-            String fsEngId = commonIdFs.getFsEngId();
-            if (commonIdFs!=null){
-                Optional<FirstSubMalayalam> firstSubMalayalam = firstSubMalayalamRepo.findByfsUid(commonIdFs.getFsMalId());
-                if (firstSubMalayalam.isPresent()){
-                    FirstSubMalayalam firstSubMalayalam1 =firstSubMalayalam.get();
-                    CombinedDataSub combinedDataSub = new CombinedDataSub();
-                    combinedDataSub.setFsMalId(firstSubMalayalam1.getFsUid());
-                    combinedDataSub.setTitle(firstSubMalayalam1.getTitle());
-                    combinedDataSub.setDescription(firstSubMalayalam1.getDescription());
-                    combinedDataSub.setReferenceUrl(firstSubMalayalam1.getRef());
-                    combinedDataSub.setFsEngId(fsEngId);
-                    combinedDataSub.setFsCommonId(commonIdFs.getFsCommonId());
-                    combinedDataSub.setFsMalId(commonIdFs.getFsMalId());
-                    combinedDataSub.setuId(firstSubMalayalam1.getFsUid());
-                    combinedDataSub.setmUid(firstSubMalayalam1.getMainUid());
+//            CommonIdFs commonIdFs = fsCommonIdRepo.findByfsCommonId(id);
+//            String fsEngId = commonIdFs.getFsEngId();
+            Optional<CommonIdFs> commonIdFsOptional = fsCommonIdRepo.findByFsCommonId(id);
+            if (commonIdFsOptional.isPresent()){
+                CommonIdFs commonIdFs = commonIdFsOptional.get();
+                String fsEngId = commonIdFs.getFsCommonId();
+                if (commonIdFs!=null){
+                    Optional<FirstSubMalayalam> firstSubMalayalam = firstSubMalayalamRepo.findByfsUid(commonIdFs.getFsMalId());
+                    if (firstSubMalayalam.isPresent()){
+                        FirstSubMalayalam firstSubMalayalam1 =firstSubMalayalam.get();
+                        CombinedDataSub combinedDataSub = new CombinedDataSub();
+                        combinedDataSub.setFsMalId(firstSubMalayalam1.getFsUid());
+                        combinedDataSub.setTitle(firstSubMalayalam1.getTitle());
+                        combinedDataSub.setDescription(firstSubMalayalam1.getDescription());
+                        combinedDataSub.setReferenceUrl(firstSubMalayalam1.getRef());
+                        combinedDataSub.setFsEngId(fsEngId);
+                        combinedDataSub.setFsCommonId(commonIdFs.getFsCommonId());
+                        combinedDataSub.setFsMalId(commonIdFs.getFsMalId());
+                        combinedDataSub.setuId(firstSubMalayalam1.getFsUid());
+                        combinedDataSub.setmUid(firstSubMalayalam1.getMainUid());
 
-                    List<ImgSubFirst> imgSubFirsts = imgSubFirstRepo.findBymalId(firstSubMalayalam1.getFsUid());
-                    imgSubFirsts.sort(Comparator.comparing(ImgSubFirst::getImgID));
-                    combinedDataSub.setImgDataList(imgSubFirsts);
+                        List<ImgSubFirst> imgSubFirsts = imgSubFirstRepo.findBymalId(firstSubMalayalam1.getFsUid());
+                        imgSubFirsts.sort(Comparator.comparing(ImgSubFirst::getImgID));
+                        combinedDataSub.setImgDataList(imgSubFirsts);
 
-                    List<Mp3Data1> mp3Data1List = mp3Data1Repo.findBydtId(firstSubMalayalam1.getFsUid());
-                    mp3Data1List.sort(Comparator.comparing(Mp3Data1::getId));
-                    combinedDataSub.setMp3DataList(mp3Data1List);
+                        List<Mp3Data1> mp3Data1List = mp3Data1Repo.findBydtId(firstSubMalayalam1.getFsUid());
+                        mp3Data1List.sort(Comparator.comparing(Mp3Data1::getId));
+                        combinedDataSub.setMp3DataList(mp3Data1List);
 
-                    List<Mp4Data1> mp4Data1List = mp4Data1Repo.findBydtId(firstSubMalayalam1.getFsUid());
-                    mp4Data1List.sort(Comparator.comparing(Mp4Data1::getId));
-                    combinedDataSub.setMp4DataList(mp4Data1List);
+                        List<Mp4Data1> mp4Data1List = mp4Data1Repo.findBydtId(firstSubMalayalam1.getFsUid());
+                        mp4Data1List.sort(Comparator.comparing(Mp4Data1::getId));
+                        combinedDataSub.setMp4DataList(mp4Data1List);
 
-                    List<SecondSubMalayalam> secondSubMalayalamList = secondSubMalayalamRepo.findByfsUid(firstSubMalayalam1.getFsUid());
-                    secondSubMalayalamList.sort(Comparator.comparing(SecondSubMalayalam::getId));
-                    List<CombinedDataSubSub> combinedDataSubSubList = new ArrayList<>();
-                    secondSubMalayalamList.forEach(secondSubMalayalam -> {
-                        CombinedDataSubSub combinedDataSubSub = new CombinedDataSubSub();
-                        // Set details of SecondSubMalayalam
-                        combinedDataSubSub.setTitle(secondSubMalayalam.getTitle());
-                        combinedDataSubSub.setDescription(secondSubMalayalam.getDescription());
-                        combinedDataSubSub.setReferenceUrl(secondSubMalayalam.getRef());
-                        combinedDataSubSub.setuId(secondSubMalayalam.getSsUid());
-                        combinedDataSubSub.setmUid(secondSubMalayalam.getFsUid());
+                        List<SecondSubMalayalam> secondSubMalayalamList = secondSubMalayalamRepo.findByfsUid(firstSubMalayalam1.getFsUid());
+                        secondSubMalayalamList.sort(Comparator.comparing(SecondSubMalayalam::getId));
+                        List<CombinedDataSubSub> combinedDataSubSubList = new ArrayList<>();
+                        secondSubMalayalamList.forEach(secondSubMalayalam -> {
+                            CombinedDataSubSub combinedDataSubSub = new CombinedDataSubSub();
+                            // Set details of SecondSubMalayalam
+                            combinedDataSubSub.setTitle(secondSubMalayalam.getTitle());
+                            combinedDataSubSub.setDescription(secondSubMalayalam.getDescription());
+                            combinedDataSubSub.setReferenceUrl(secondSubMalayalam.getRef());
+                            combinedDataSubSub.setuId(secondSubMalayalam.getSsUid());
+                            combinedDataSubSub.setmUid(secondSubMalayalam.getFsUid());
 
-                        Optional<CommonIdSs> commonIdSs = commonIdSsRepo.findByssMalId(secondSubMalayalam.getSsUid());
-                        if (commonIdSs.isPresent()){
-                            CommonIdSs commonIdSs1 = commonIdSs.get();
-                            combinedDataSubSub.setSsCommonId(commonIdSs1.getSsCommonId());
-                            combinedDataSubSub.setSsEngId(commonIdSs1.getSsEngId());
-                            combinedDataSubSub.setSsMalId(commonIdSs1.getSsMalId());
-                        }
-                        // Fetching images for SecondSubMalayalam
-                        List<ImgSubSecond> imgSubSecondList = imgSubSecondRepo.findBymalId(secondSubMalayalam.getSsUid());
-                        imgSubSecondList.sort(Comparator.comparing(ImgSubSecond::getImgID));
-                        combinedDataSubSub.setImgData2List(imgSubSecondList);
-                        // Fetching audio for SecondSubMalayalam
-                        List<Mp3Data2> mp3Data2List = mp3Data2Repo.findBydtId(secondSubMalayalam.getSsUid());
-                        mp3Data2List.sort(Comparator.comparing(Mp3Data2::getId));
-                        combinedDataSubSub.setMp3Data2List(mp3Data2List);
-                        // Fetching video for SecondSubMalayalam
-                        List<Mp4Data2> mp4Data2List = mp4Data2Repo.findBydtId(secondSubMalayalam.getSsUid());
-                        mp4Data2List.sort(Comparator.comparing(Mp4Data2::getId));
-                        combinedDataSubSub.setMp4Data2List(mp4Data2List);
-                        combinedDataSubSubList.add(combinedDataSubSub);
-                    });
-                    combinedDataSub.setCombinedDataSubSubList(combinedDataSubSubList);
-                    combinedDataSubList.add(combinedDataSub);
+                            Optional<CommonIdSs> commonIdSs = commonIdSsRepo.findByssMalId(secondSubMalayalam.getSsUid());
+                            if (commonIdSs.isPresent()){
+                                CommonIdSs commonIdSs1 = commonIdSs.get();
+                                combinedDataSubSub.setSsCommonId(commonIdSs1.getSsCommonId());
+                                combinedDataSubSub.setSsEngId(commonIdSs1.getSsEngId());
+                                combinedDataSubSub.setSsMalId(commonIdSs1.getSsMalId());
+                            }
+                            // Fetching images for SecondSubMalayalam
+                            List<ImgSubSecond> imgSubSecondList = imgSubSecondRepo.findBymalId(secondSubMalayalam.getSsUid());
+                            imgSubSecondList.sort(Comparator.comparing(ImgSubSecond::getImgID));
+                            combinedDataSubSub.setImgData2List(imgSubSecondList);
+                            // Fetching audio for SecondSubMalayalam
+                            List<Mp3Data2> mp3Data2List = mp3Data2Repo.findBydtId(secondSubMalayalam.getSsUid());
+                            mp3Data2List.sort(Comparator.comparing(Mp3Data2::getId));
+                            combinedDataSubSub.setMp3Data2List(mp3Data2List);
+                            // Fetching video for SecondSubMalayalam
+                            List<Mp4Data2> mp4Data2List = mp4Data2Repo.findBydtId(secondSubMalayalam.getSsUid());
+                            mp4Data2List.sort(Comparator.comparing(Mp4Data2::getId));
+                            combinedDataSubSub.setMp4Data2List(mp4Data2List);
+                            combinedDataSubSubList.add(combinedDataSubSub);
+                        });
+                        combinedDataSub.setCombinedDataSubSubList(combinedDataSubSubList);
+                        combinedDataSubList.add(combinedDataSub);
+                    }
+                    return new ResponseEntity<>(combinedDataSubList,HttpStatus.OK);
                 }
-                return new ResponseEntity<>(combinedDataSubList,HttpStatus.OK);
             }
+
         }catch (Exception e){
             e.printStackTrace();
         }

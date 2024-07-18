@@ -17,4 +17,6 @@ public interface CommonIdSsRepo extends JpaRepository<CommonIdSs,Integer> {
     CommonIdSs findBySsEngId(String ssUid);
 
     CommonIdSs findBySsMalId(String ssUid);
+
+    Optional<CommonIdSs> findBySsCommonId(String commonId);
 }

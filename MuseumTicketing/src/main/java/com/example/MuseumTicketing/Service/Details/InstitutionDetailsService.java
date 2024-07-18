@@ -1,15 +1,14 @@
 package com.example.MuseumTicketing.Service.Details;
 
 import com.example.MuseumTicketing.DTO.DetailsRequest;
+import com.example.MuseumTicketing.Guide.util.AlphaNumeric;
 import com.example.MuseumTicketing.Model.InstitutionDetails;
-import com.example.MuseumTicketing.Model.PublicDetails;
 import com.example.MuseumTicketing.Repo.InstitutionDetailsRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class InstitutionDetailsService {
@@ -21,34 +20,58 @@ public class InstitutionDetailsService {
         this.institutionDetailsRepo = institutionDetailsRepo;
     }
 
-    public Object submitAdditionalDetails(String sessionId, String mobileNumber, DetailsRequest detailsRequest, Integer bookingId) {
-        //Optional<InstitutionDetails> optionalDetails = institutionDetailsRepo.findByMobileNumber(mobileNumber);
+    @Autowired
+    private AlphaNumeric alphaNumeric;
 
+//    public Object submitAdditionalDetails(String sessionId, String mobileNumber, DetailsRequest detailsRequest, Integer bookingId) {
+//        //Optional<InstitutionDetails> optionalDetails = institutionDetailsRepo.findByMobileNumber(mobileNumber);
+//
+//
+//        //if (optionalDetails.isPresent()) {
+//            //institutionDetails = optionalDetails.get();
+//        //} else {
+//
+//        //    institutionDetails.setMobileNumber(mobileNumber);
+//       // }
+//        InstitutionDetails institutionDetails= institutionDetailsRepo.findByBookingId(bookingId);
+//
+//        if (institutionDetails == null) {
+//            throw new IllegalArgumentException("PublicDetails not found for booking ID: " + bookingId);
+//        }
+//        institutionDetails.setSessionId(sessionId);
+//        //institutionDetails.setType(detailsRequest.getType());
+//        institutionDetails.setEmail(detailsRequest.getEmail());
+//        institutionDetails.setInstitutionName(detailsRequest.getInstitutionName());
+//        institutionDetails.setDistrict(detailsRequest.getDistrict());
+//        institutionDetails.setNumberOfStudents(detailsRequest.getNumberOfStudents());
+//        institutionDetails.setNumberOfTeachers(detailsRequest.getNumberOfTeachers());
+//        institutionDetails.setTotalPrice(detailsRequest.getTotalPrice());
+//        //institutionDetails.setVisitDate(detailsRequest.getVisitDate());
+//        institutionDetails.setMobileNumber(detailsRequest.getMobileNumber());
+//        institutionDetails.setBookDate(detailsRequest.getBookDate());
+//        institutionDetails.setUniqueId(alphaNumeric.generateRandomNumber());
+//
+//
+//        institutionDetailsRepo.save(institutionDetails);
+//        return institutionDetails;
+//    }
 
-        //if (optionalDetails.isPresent()) {
-            //institutionDetails = optionalDetails.get();
-        //} else {
-
-        //    institutionDetails.setMobileNumber(mobileNumber);
-       // }
+    public InstitutionDetails submitAdditinalDetails(DetailsRequest detailsRequest) {
+        Integer bookingId = detailsRequest.getBookingId();
         InstitutionDetails institutionDetails= institutionDetailsRepo.findByBookingId(bookingId);
-
-        if (institutionDetails == null) {
+        if (institutionDetails==null){
             throw new IllegalArgumentException("PublicDetails not found for booking ID: " + bookingId);
         }
-        institutionDetails.setSessionId(sessionId);
-        //institutionDetails.setType(detailsRequest.getType());
-        institutionDetails.setEmail(detailsRequest.getEmail());
         institutionDetails.setInstitutionName(detailsRequest.getInstitutionName());
+        institutionDetails.setEmail(detailsRequest.getEmail());
         institutionDetails.setDistrict(detailsRequest.getDistrict());
-        institutionDetails.setNumberOfStudents(detailsRequest.getNumberOfStudents());
-        institutionDetails.setNumberOfTeachers(detailsRequest.getNumberOfTeachers());
-        institutionDetails.setTotalPrice(detailsRequest.getTotalPrice());
-        //institutionDetails.setVisitDate(detailsRequest.getVisitDate());
-        institutionDetails.setMobileNumber(detailsRequest.getMobileNumber());
+        institutionDetails.setUniqueId(alphaNumeric.generateRandomNumber());
         institutionDetails.setBookDate(detailsRequest.getBookDate());
-
-
+        institutionDetails.setMobileNumber(detailsRequest.getMobileNumber());
+        institutionDetails.setNumberOfTeachers(detailsRequest.getNumberOfTeachers());
+        institutionDetails.setNumberOfStudents(detailsRequest.getNumberOfStudents());
+        institutionDetails.setTotalPrice(detailsRequest.getTotalPrice());
+        institutionDetails.setSessionId(detailsRequest.getSessionId());
         institutionDetailsRepo.save(institutionDetails);
         return institutionDetails;
     }

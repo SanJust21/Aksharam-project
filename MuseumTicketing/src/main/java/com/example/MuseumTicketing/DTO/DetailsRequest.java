@@ -9,6 +9,7 @@ import java.time.LocalTime;
 public class DetailsRequest {
 
     private String sessionId;
+    private String uniqueId;
 
     private String type;
     private String mobileNumber;
@@ -223,5 +224,13 @@ public class DetailsRequest {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getUniqueId() {
+        return uniqueId;
+    }
+
+    public void setUniqueId(String uniqueId) {
+        this.uniqueId = uniqueId;
     }
 }

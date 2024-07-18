@@ -1,5 +1,4 @@
 package com.example.MuseumTicketing.Controller.OTP;
-import com.example.MuseumTicketing.Config.AppConfig;
 import com.example.MuseumTicketing.Service.OTP.TwoFactorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

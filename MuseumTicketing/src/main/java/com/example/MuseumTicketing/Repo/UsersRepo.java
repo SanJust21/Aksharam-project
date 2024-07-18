@@ -3,6 +3,8 @@ package com.example.MuseumTicketing.Repo;
 
 import com.example.MuseumTicketing.Model.Role;
 import com.example.MuseumTicketing.Model.Users;
+import com.example.MuseumTicketing.Model.Role;
+import com.example.MuseumTicketing.Model.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

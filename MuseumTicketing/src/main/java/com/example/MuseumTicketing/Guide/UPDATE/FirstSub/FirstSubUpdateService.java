@@ -5,6 +5,11 @@ import com.example.MuseumTicketing.Guide.firstSubHeading.english.FirstSubEnglish
 import com.example.MuseumTicketing.Guide.firstSubHeading.malayalam.FirstSubMalayalam;
 import com.example.MuseumTicketing.Guide.firstSubHeading.malayalam.FirstSubMalayalamRepo;
 import com.example.MuseumTicketing.Guide.mainHeading.MainDTO;
+import com.example.MuseumTicketing.Guide.firstSubHeading.english.FirstSubEnglish;
+import com.example.MuseumTicketing.Guide.firstSubHeading.english.FirstSubEnglishRepo;
+import com.example.MuseumTicketing.Guide.firstSubHeading.malayalam.FirstSubMalayalam;
+import com.example.MuseumTicketing.Guide.firstSubHeading.malayalam.FirstSubMalayalamRepo;
+import com.example.MuseumTicketing.Guide.mainHeading.MainDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

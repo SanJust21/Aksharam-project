@@ -1,6 +1,7 @@
 package com.example.MuseumTicketing.Repo;
 
 import com.example.MuseumTicketing.Model.ForeignerDetails;
+import com.example.MuseumTicketing.Model.ForeignerDetails;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,7 +14,7 @@ import java.util.Optional;
 public interface ForeignerDetailsRepo extends JpaRepository<ForeignerDetails, Long> {
 
 
-        Optional<ForeignerDetails> findBySessionId(String sessionId);
+//        Optional<ForeignerDetails> findBySessionId(String sessionId);
 
         Optional<ForeignerDetails> findByMobileNumber(String mobileNumber);
 
@@ -88,6 +89,8 @@ public interface ForeignerDetailsRepo extends JpaRepository<ForeignerDetails, Lo
 
 
    List<ForeignerDetails> findAll();
+
+    Optional<ForeignerDetails> findByuniqueId(String uniqueId);
 }
 
 

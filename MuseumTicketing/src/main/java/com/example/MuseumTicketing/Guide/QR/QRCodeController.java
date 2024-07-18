@@ -2,18 +2,16 @@ package com.example.MuseumTicketing.Guide.QR;
 
 import com.example.MuseumTicketing.Guide.mainHeading.CombinedData;
 import com.example.MuseumTicketing.Guide.mainHeading.MainTitleService;
+import com.example.MuseumTicketing.Guide.mainHeading.CombinedData;
+import com.example.MuseumTicketing.Guide.mainHeading.MainTitleService;
 import com.google.zxing.WriterException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/qrcode")
@@ -30,41 +28,32 @@ public class QRCodeController {
     private MainTitleService mainTitleService;
 
     @GetMapping("/generate")
-    public ResponseEntity<?> generateQRCode(@RequestParam String mMalUid, @RequestParam String mEngUid) {
+    public ResponseEntity<QRCodeResponse> generateQRCode(@RequestParam String mMalUid, @RequestParam String mEngUid) {
         try {
-
-            if (commonIdQRCodeRepo.existsByMalIdAndEngId(mMalUid, mEngUid)) {
-
+            if (commonIdQRCodeRepo.existsByMalIdAndEngId(mMalUid, mEngUid)){
                 CommonIdQRCode existingQRCode = commonIdQRCodeRepo.findByMalIdAndEngId(mMalUid, mEngUid).orElse(null);
                 if (existingQRCode != null) {
 
-                    String url = existingQRCode.getQrCodeUrl();
-                    Map<String, String> response = new HashMap<>();
-                    response.put("message", "QR code already exists");
-                    response.put("url", url);
-
-                    HttpHeaders headers = new HttpHeaders();
-                    headers.setContentType(MediaType.APPLICATION_JSON);
-                    return ResponseEntity.ok()
-                            .headers(headers)
-                            .body(response);
+                    String commonId = existingQRCode.getCommonId();
+                    QRCodeResponse response = new QRCodeResponse(commonId, " QRCode already exists");
+                    return ResponseEntity.ok(response);
                 }
             }
+            byte[] qrCodeImg = qrCodeGenerateService.generateQRCodeAndSave(mMalUid,mEngUid);
+            String commonId = qrCodeGenerateService.getCommonId(mMalUid,mEngUid);
 
-            byte[] qrCode = qrCodeGenerateService.generateQRCodeAndSave(mMalUid, mEngUid);
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.IMAGE_PNG);
-            return ResponseEntity.ok().headers(headers).body(qrCode);
-        } catch (IllegalArgumentException e) {
-            Map<String, String> response = new HashMap<>();
-            response.put("error", e.getMessage());
+            QRCodeResponse response = new QRCodeResponse(commonId,"QrCode generated successfully");
+            return ResponseEntity.ok(response);
+
+        }catch (IllegalArgumentException e){
+            QRCodeResponse response = new QRCodeResponse(null,e.getMessage());
             return ResponseEntity.badRequest().body(response);
-        } catch (WriterException | IOException e) {
-            e.printStackTrace();
-            Map<String, String> response = new HashMap<>();
-            response.put("error", "An error occurred while generating or saving the QR code. Please try again later.");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }catch (WriterException | IOException exception){
+            exception.printStackTrace();
+            QRCodeResponse qrCodeResponse = new QRCodeResponse(null,"An error occurred while generating or saving the QrCode .Please try again later");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(qrCodeResponse);
         }
+
     }
 
     @GetMapping(path = "/getScanDetails")

@@ -1,13 +1,11 @@
 package com.example.MuseumTicketing.Controller.AdminScanner;
 
 
-import com.example.MuseumTicketing.Config.AppConfig;
 import com.example.MuseumTicketing.DTO.AdminScanner.CustomResponse;
 import com.example.MuseumTicketing.DTO.AdminScanner.JwtAuthenticationResponse;
 //import com.example.MuseumTicketing.DTO.AdminScanner.RefreshTokenRequest;
 import com.example.MuseumTicketing.DTO.AdminScanner.SignInRequest;
 import com.example.MuseumTicketing.DTO.AdminScanner.SignUpRequest;
-import com.example.MuseumTicketing.Model.Users;
 import com.example.MuseumTicketing.Service.AdminScanner.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

@@ -15,8 +15,7 @@ public interface ImgSubSecondRepo extends JpaRepository<ImgSubSecond,Integer> {
 
     List<ImgSubSecond> findBymalId(String ssUid);
 
-
-    List<ImgSubSecond> findByEngIdAndMalId(String englishUId, String malUid);
+    //List<ImgSubSecond> findByEngIdAndMalId(String englishUId, String malUid);
 
     List<ImgSubSecond> findByCommonId(String commonId);
 
@@ -31,4 +30,10 @@ public interface ImgSubSecondRepo extends JpaRepository<ImgSubSecond,Integer> {
     Optional<ImgSubSecond> findByImgIDAndCommonId(Integer imgId, String commonId);
 
     void deleteAllByengId(String englishId);
+
+
+
+    Optional<ImgSubSecond> findByImgIDAndEngId(Integer imgId, String englishUId);
+
+    Optional<ImgSubSecond> findByEngIdAndMalId(String engId, String malId);
 }

@@ -1,7 +1,24 @@
 package com.example.MuseumTicketing.Guide.mainHeading;
 
+import com.example.MuseumTicketing.Guide.SecondSubHeading.CombinedDataSubSub;
+import com.example.MuseumTicketing.Guide.SecondSubHeading.commonId.CommonIdSs;
+import com.example.MuseumTicketing.Guide.SecondSubHeading.commonId.CommonIdSsRepo;
+import com.example.MuseumTicketing.Guide.SecondSubHeading.english.SecondSubEnglish;
+import com.example.MuseumTicketing.Guide.SecondSubHeading.english.SecondSubEnglishRepo;
+import com.example.MuseumTicketing.Guide.SecondSubHeading.malayalam.SecondSubMalayalam;
+import com.example.MuseumTicketing.Guide.SecondSubHeading.malayalam.SecondSubMalayalamRepo;
+import com.example.MuseumTicketing.Guide.firstSubHeading.CombinedDataSub;
+import com.example.MuseumTicketing.Guide.firstSubHeading.FScommonId.CommonIdFs;
+import com.example.MuseumTicketing.Guide.firstSubHeading.FScommonId.FsCommonIdRepo;
+import com.example.MuseumTicketing.Guide.firstSubHeading.english.FirstSubEnglish;
+import com.example.MuseumTicketing.Guide.firstSubHeading.english.FirstSubEnglishRepo;
+import com.example.MuseumTicketing.Guide.firstSubHeading.malayalam.FirstSubMalayalam;
+import com.example.MuseumTicketing.Guide.firstSubHeading.malayalam.FirstSubMalayalamRepo;
+import com.example.MuseumTicketing.Guide.mainHeading.mainMal.MainTitleMalRepo;
 import com.example.MuseumTicketing.Guide.Language.DataType;
 import com.example.MuseumTicketing.Guide.Language.DataTypeRepo;
+import com.example.MuseumTicketing.Guide.img.backgroundImg.BackgroundImg;
+import com.example.MuseumTicketing.Guide.img.backgroundImg.BackgroundImgRepo;
 import com.example.MuseumTicketing.Guide.mainHeading.mainEng.MainTitleEng;
 import com.example.MuseumTicketing.Guide.mainHeading.mainEng.MainTitleEngRepo;
 import com.example.MuseumTicketing.Guide.mainHeading.mainMal.MainTitleMal;
@@ -46,7 +63,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -110,6 +126,9 @@ public class MainTitleService {
 
     @Autowired
     private CommonIdSsRepo commonIdSsRepo;
+
+    @Autowired
+    private BackgroundImgRepo backgroundImgRepo;
 
 
     public ResponseEntity<?> addMainTitleEng(MainDTO mainDTO) {
@@ -187,6 +206,9 @@ public class MainTitleService {
                 imgData.sort(Comparator.comparing(ImgData::getImgID));
                 combinedData1.setImgDataList(imgData);
 
+                List<BackgroundImg> backgroundImgs = backgroundImgRepo.findByengId(mainTitleEng.getMEngUid());
+                combinedData1.setBackgroundImgList(backgroundImgs);
+
                 List<Mp3Data> mp3Data = mp3Repo.findBydtId(mainTitleEng.getMEngUid());
                 mp3Data.sort(Comparator.comparing(Mp3Data::getId));
                 combinedData1.setMp3DataList(mp3Data);
@@ -230,6 +252,9 @@ public class MainTitleService {
                 List<ImgData> imgData =imgRepo.findBymalId(mainTitleMal.getMMalUid());
                 imgData.sort(Comparator.comparing(ImgData::getImgID));
                 combinedData.setImgDataList(imgData);
+
+                List<BackgroundImg> backgroundImgs = backgroundImgRepo.findBymalId(mainTitleMal.getMMalUid());
+                combinedData.setBackgroundImgList(backgroundImgs);
 
                 List<Mp3Data> mp3Data = mp3Repo.findBydtId(mainTitleMal.getMMalUid());
                 mp3Data.sort(Comparator.comparing(Mp3Data::getId));
@@ -294,6 +319,9 @@ public class MainTitleService {
                     imgSubFirstList.sort(Comparator.comparing(ImgSubFirst::getImgID));
                     combinedDataSub.setImgDataList(imgSubFirstList);
 
+                    List<BackgroundImg> backgroundImgList = backgroundImgRepo.findByengId(firstSubEnglish.getFsUid());
+                    combinedDataSub.setBackgroundImgList(backgroundImgList);
+
                     // Fetching audio for the current first subheading
                     List<Mp3Data1> mp3Data1List = mp3Data1Repo.findBydtId(firstSubEnglish.getFsUid());
                     mp3Data1List.sort(Comparator.comparing(Mp3Data1::getId));
@@ -329,6 +357,10 @@ public class MainTitleService {
                         List<ImgSubSecond> imgSubSecondList = imgSubSecondRepo.findByengId(secondSubEnglish.getSsUid());
                         imgSubSecondList.sort(Comparator.comparing(ImgSubSecond::getImgID));
                         combinedDataSubSub.setImgData2List(imgSubSecondList);
+
+                        List<BackgroundImg> backgroundImgs = backgroundImgRepo.findByengId(secondSubEnglish.getSsUid());
+                        combinedDataSubSub.setBackgroundImgList(backgroundImgs);
+
                         // Fetching audio for SecondSubEnglish
                         List<Mp3Data2> mp3Data2List = mp3Data2Repo.findBydtId(secondSubEnglish.getSsUid());
                         mp3Data2List.sort(Comparator.comparing(Mp3Data2::getId));
@@ -352,6 +384,9 @@ public class MainTitleService {
                 List<ImgData> imgData =imgRepo.findByengId(mainTitleEng.getMEngUid());
                 imgData.sort(Comparator.comparing(ImgData::getImgID));
                 combinedData1.setImgDataList(imgData);
+
+                List<BackgroundImg> backgroundImgs = backgroundImgRepo.findByengId(mainTitleEng.getMEngUid());
+                combinedData1.setBackgroundImgList(backgroundImgs);
 
                 List<Mp3Data> mp3Data = mp3Repo.findBydtId(mainTitleEng.getMEngUid());
                 mp3Data.sort(Comparator.comparing(Mp3Data::getId));
@@ -415,6 +450,9 @@ public class MainTitleService {
                     imgSubFirstList.sort(Comparator.comparing(ImgSubFirst::getImgID));
                     combinedDataSub.setImgDataList(imgSubFirstList);
 
+                    List<BackgroundImg> backgroundImgs = backgroundImgRepo.findBymalId(firstSubMalayalam.getFsUid());
+                    combinedDataSub.setBackgroundImgList(backgroundImgs);
+
                     // Fetching audio for the current first subheading
                     List<Mp3Data1> mp3Data1List = mp3Data1Repo.findBydtId(firstSubMalayalam.getFsUid());
                     mp3Data1List.sort(Comparator.comparing(Mp3Data1::getId));
@@ -450,6 +488,10 @@ public class MainTitleService {
                         List<ImgSubSecond> imgSubSecondList = imgSubSecondRepo.findBymalId(secondSubMalayalam.getSsUid());
                         imgSubSecondList.sort(Comparator.comparing(ImgSubSecond::getImgID));
                         combinedDataSubSub.setImgData2List(imgSubSecondList);
+
+                        List<BackgroundImg> backgroundImgList = backgroundImgRepo.findBymalId(secondSubMalayalam.getSsUid());
+                        combinedDataSubSub.setBackgroundImgList(backgroundImgList);
+
                         // Fetching audio for SecondSubMalayalam
                         List<Mp3Data2> mp3Data2List = mp3Data2Repo.findBydtId(secondSubMalayalam.getSsUid());
                         mp3Data2List.sort(Comparator.comparing(Mp3Data2::getId));
@@ -473,6 +515,9 @@ public class MainTitleService {
                 List<ImgData> imgData =imgRepo.findBymalId(mainTitleMal.getMMalUid());
                 imgData.sort(Comparator.comparing(ImgData::getImgID));
                 combinedData.setImgDataList(imgData);
+
+                List<BackgroundImg> backgroundImgs = backgroundImgRepo.findBymalId(mainTitleMal.getMMalUid());
+                combinedData.setBackgroundImgList(backgroundImgs);
 
                 List<Mp3Data> mp3Data = mp3Repo.findBydtId(mainTitleMal.getMMalUid());
                 mp3Data.sort(Comparator.comparing(Mp3Data::getId));

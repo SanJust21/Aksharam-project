@@ -9,6 +9,10 @@ import com.example.MuseumTicketing.Model.*;
 import com.example.MuseumTicketing.Repo.ForeignerDetailsRepo;
 import com.example.MuseumTicketing.Repo.InstitutionDetailsRepo;
 import com.example.MuseumTicketing.Repo.PublicDetailsRepo;
+import com.example.MuseumTicketing.Model.ForeignerDetails;
+import com.example.MuseumTicketing.Model.InstitutionDetails;
+import com.example.MuseumTicketing.Model.PublicDetails;
+import com.example.MuseumTicketing.Model.ShowTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

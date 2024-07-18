@@ -2,21 +2,17 @@ package com.example.MuseumTicketing.Config;
 
 //import com.example.MuseumTicketing.Repo.AdminRepo;
 //import com.example.MuseumTicketing.Service.Admin.AdminService;
+import com.example.MuseumTicketing.Service.Jwt.UsersService;
 import com.example.MuseumTicketing.Model.Role;
 import com.example.MuseumTicketing.Service.Jwt.UsersService;
 import lombok.RequiredArgsConstructor;
-import org.apache.catalina.filters.CorsFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.authentication.configuration.EnableGlobalAuthentication;
-import org.springframework.security.config.annotation.authentication.configurers.userdetails.DaoAuthenticationConfigurer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -25,10 +21,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.Arrays;
 
 @SuppressWarnings("ALL")
 @Configuration
@@ -61,11 +53,16 @@ public class SecurityConfig {
                         .requestMatchers("/api/DataEntry2/getFirstSubComplete").permitAll()
                         .requestMatchers("/api/DataEntry2/getAllByCommonId/{id}").permitAll()
                         .requestMatchers("/api/dataType1/getTalk").permitAll()
+                        .requestMatchers("/api/topicData/getTopic").permitAll()
                         .requestMatchers("/api/DataEntry1/getMainComplete").permitAll()
                         .requestMatchers("/api/DataEntry1/getMainId").permitAll()
                         .requestMatchers("/api/fileType/getFileType").permitAll()
                         .requestMatchers("/api/qrcode/getScanDetails").permitAll()
                         .requestMatchers("/api/DataEntry3/getSecondSub").permitAll()
+                        .requestMatchers("/api/guideApp/**").permitAll()
+                        .requestMatchers("/api/guideAppQR/**").permitAll()
+                        .requestMatchers("/api/jpgData/**").permitAll()
+                        .requestMatchers("/api/mediaTypeData/**").permitAll()
                         .requestMatchers("/api/admin").hasAnyAuthority(Role.ADMIN.name())
                         .requestMatchers("/api/admin/addEmployee").hasAnyAuthority(Role.ADMIN.name())
                         .requestMatchers("/api/admin/employees").hasAnyAuthority(Role.ADMIN.name())
@@ -96,6 +93,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/deleteSecond/**").hasAnyAuthority(Role.ADMIN.name(),Role.EMPLOYEE.name(),Role.SCANNER.name())
                         .requestMatchers("/api/DataEntry2/firstSub").hasAnyAuthority(Role.ADMIN.name(),Role.EMPLOYEE.name(),Role.SCANNER.name())
                         .requestMatchers("/api/DataEntry2/genCommonId").hasAnyAuthority(Role.ADMIN.name(),Role.EMPLOYEE.name(),Role.SCANNER.name())
+                        .requestMatchers("/api/bgData/**").hasAnyAuthority(Role.ADMIN.name(),Role.EMPLOYEE.name(),Role.SCANNER.name())
+                        .requestMatchers("/api/topicData/addTopic").hasAnyAuthority(Role.ADMIN.name(),Role.EMPLOYEE.name(),Role.SCANNER.name())
                         .requestMatchers("/api/imgData/**").hasAnyAuthority(Role.ADMIN.name(),Role.EMPLOYEE.name(),Role.SCANNER.name())
                         .requestMatchers("/api/dataType1/addtalk").hasAnyAuthority(Role.ADMIN.name(),Role.EMPLOYEE.name(),Role.SCANNER.name())
                         .requestMatchers("/api/DataEntry1/mainT").hasAnyAuthority(Role.ADMIN.name(),Role.EMPLOYEE.name(),Role.SCANNER.name())

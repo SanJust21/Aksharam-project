@@ -1,5 +1,16 @@
 package com.example.MuseumTicketing.Guide.UPDATE.FirstSub;
 
+import com.example.MuseumTicketing.Guide.firstSubHeading.FScommonId.FsCommonIdRepo;
+import com.example.MuseumTicketing.Guide.firstSubHeading.english.FirstSubEnglish;
+import com.example.MuseumTicketing.Guide.firstSubHeading.english.FirstSubEnglishRepo;
+import com.example.MuseumTicketing.Guide.firstSubHeading.malayalam.FirstSubMalayalam;
+import com.example.MuseumTicketing.Guide.firstSubHeading.malayalam.FirstSubMalayalamRepo;
+import com.example.MuseumTicketing.Guide.mainHeading.MainDTO;
+import com.example.MuseumTicketing.Guide.mpFileData.MediaTypeDTO;
+import com.example.MuseumTicketing.Guide.mpFileData.MediaTypeService;
+import com.example.MuseumTicketing.Guide.mpFileData.mp3.firstSub.Mp3Data1Repo;
+import com.example.MuseumTicketing.Guide.mpFileData.mp4.firstSub.Mp4Data1Repo;
+import com.example.MuseumTicketing.Guide.firstSubHeading.FScommonId.FsCommonIdRepo;
 import com.example.MuseumTicketing.Guide.firstSubHeading.english.FirstSubEnglish;
 import com.example.MuseumTicketing.Guide.firstSubHeading.english.FirstSubEnglishRepo;
 import com.example.MuseumTicketing.Guide.firstSubHeading.malayalam.FirstSubMalayalam;
@@ -14,6 +25,7 @@ import com.example.MuseumTicketing.Guide.mpFileData.mp3.firstSub.Mp3Data1Repo;
 import com.example.MuseumTicketing.Guide.mpFileData.mp4.firstSub.Mp4Data1Repo;
 import com.example.MuseumTicketing.Guide.mpType.FileType;
 import com.example.MuseumTicketing.Guide.mpType.FileTypeRepo;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +39,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping(path = "/api/updateFirst")
 @CrossOrigin
+@Slf4j
 public class FirstSubUpdateController {
     @Autowired
     private FirstSubUpdateService firstSubUpdateService;
@@ -46,6 +59,8 @@ public class FirstSubUpdateController {
     private FileTypeRepo fileTypeRepo;
     @Autowired
     private MediaTypeService mediaTypeService;
+    @Autowired
+    private FsCommonIdRepo fsCommonIdRepo;
 
 
     @PutMapping(path = "/updateFirstData/{uId}")
@@ -79,7 +94,6 @@ public class FirstSubUpdateController {
         }
         return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
     }
-
 
     @PutMapping(path = "/updateUploadImgSubFirst")
     public ResponseEntity<?> updateJpgSubFirst(
