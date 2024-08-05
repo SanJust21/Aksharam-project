@@ -2,10 +2,12 @@ package com.example.MuseumTicketing.appGuide.mainPara.first;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 @Data
 @Entity
 @Table(name = "subParaMal")
+@CrossOrigin
 public class FirstTopicMal {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

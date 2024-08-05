@@ -1,5 +1,8 @@
 package com.example.MuseumTicketing.appGuide.audio;
 
+import com.example.MuseumTicketing.Guide.Language.DataType;
+import com.example.MuseumTicketing.Guide.Language.DataTypeRepo;
+import com.example.MuseumTicketing.Guide.util.ErrorService;
 import com.example.MuseumTicketing.appGuide.mainPara.first.FirstTopicEng;
 import com.example.MuseumTicketing.appGuide.mainPara.first.FirstTopicEngRepo;
 import com.example.MuseumTicketing.appGuide.mainPara.first.FirstTopicMal;
@@ -30,16 +33,16 @@ import com.example.MuseumTicketing.appGuide.mainPara.qrCode.first.SubComIdRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
 @RequestMapping(path = "/api/mediaTypeData")
+@CrossOrigin
 public class AudioController {
     @Autowired
     private AudioService audioService;
@@ -57,6 +60,10 @@ public class AudioController {
     private FirstTopicEngRepo firstTopicEngRepo;
     @Autowired
     private FirstTopicMalRepo firstTopicMalRepo;
+    @Autowired
+    private DataTypeRepo dataTypeRepo;
+    @Autowired
+    private ErrorService errorService;
 
     @PostMapping(path = "/uploadMediaTypeData")
     public ResponseEntity<?>uploadAudioFile(@RequestParam MultipartFile file,
@@ -132,7 +139,205 @@ public class AudioController {
                 return new ResponseEntity<>("File is not present. Resend the file.", HttpStatus.BAD_REQUEST);
             }
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
+            return errorService.handlerException(e);
+        }
+        return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @PutMapping(path = "updateMediaPlayer/{commonId}")
+    public ResponseEntity<?>updateMediaPlayerData(@PathVariable String commonId,@RequestParam Integer mtId,
+                                            @RequestParam MultipartFile file,@RequestParam Integer dType
+                                                  ) {
+        try {
+            if (commonId == null || mtId == null || commonId.isEmpty() || "undefined".equalsIgnoreCase(commonId)) {
+                return new ResponseEntity<>("Topic ID, Media Type ID required", HttpStatus.BAD_REQUEST);
+            }
+
+            Optional<FileType> fileTypeOptional = fileTypeRepo.findById(mtId);
+            if (fileTypeOptional.isPresent()) {
+                FileType fileType = fileTypeOptional.get();
+                String fData = fileType.getFileType();
+                if (fData != null && "Audio".equalsIgnoreCase(fData)) {
+                    Optional<CommonQRParaId> commonQRParaIdOptional = commonQRParaIdRepo.findByCommonId(commonId);
+                    Optional<SubComId> subComIdOptional = subComIdRepo.findByFsCommonId(commonId);
+                    if (commonQRParaIdOptional.isPresent()) {
+                        CommonQRParaId commonQRParaId = commonQRParaIdOptional.get();
+                        String engId = commonQRParaId.getEngId();
+                        String malId = commonQRParaId.getMalId();
+                        Optional<DataType> dataType = dataTypeRepo.findById(dType);
+                        if (dataType.isPresent()) {
+                            DataType dataType1 = dataType.get();
+                            String data = dataType1.getTalk();
+                            if ("Malayalam".equalsIgnoreCase(data)) {
+                                return audioService.updateAudioMain(malId, commonId, file);
+                            } else if ("English".equalsIgnoreCase(data)) {
+                                return audioService.updateAudioMain(engId, commonId, file);
+                            } else {
+                                return new ResponseEntity<>("Data Type is required", HttpStatus.BAD_REQUEST);
+                            }
+                        }
+                    } else if (subComIdOptional.isPresent()) {
+                        SubComId subComId = subComIdOptional.get();
+                        String engId = subComId.getFsEngId();
+                        String malId = subComId.getFsMalId();
+                        Optional<DataType> dataType = dataTypeRepo.findById(dType);
+                        if (dataType.isPresent()) {
+                            DataType dataType1 = dataType.get();
+                            String data = dataType1.getTalk();
+                            if ("Malayalam".equalsIgnoreCase(data)) {
+                                return audioService.updateAudioFirst(malId, commonId, file);
+                            } else if ("English".equalsIgnoreCase(data)) {
+                                return audioService.updateAudioFirst(engId, commonId, file);
+                            } else {
+                                return new ResponseEntity<>("Data Type is required", HttpStatus.BAD_REQUEST);
+                            }
+                        }
+                    } else {
+                        return new ResponseEntity<>("CommonId is not valid. Please check", HttpStatus.BAD_REQUEST);
+                    }
+                } else if (fData != null && "Video".equalsIgnoreCase(fData)) {
+                    Optional<CommonQRParaId> commonQRParaIdOptional = commonQRParaIdRepo.findByCommonId(commonId);
+                    Optional<SubComId> subComIdOptional = subComIdRepo.findByFsCommonId(commonId);
+                    if (commonQRParaIdOptional.isPresent()) {
+                        CommonQRParaId commonQRParaId = commonQRParaIdOptional.get();
+                        String engId = commonQRParaId.getEngId();
+                        String malId = commonQRParaId.getMalId();
+                        Optional<DataType> dataType = dataTypeRepo.findById(dType);
+                        if (dataType.isPresent()) {
+                            DataType dataType1 = dataType.get();
+                            String data = dataType1.getTalk();
+                            if ("Malayalam".equalsIgnoreCase(data)) {
+                                return audioService.updateVideoMain(malId, commonId, file);
+                            } else if ("English".equalsIgnoreCase(data)) {
+                                return audioService.updateVideoMain(engId, commonId, file);
+                            } else {
+                                return new ResponseEntity<>("Data Type is required", HttpStatus.BAD_REQUEST);
+                            }
+                        }
+                    } else if (subComIdOptional.isPresent()) {
+                        SubComId subComId = subComIdOptional.get();
+                        String engId = subComId.getFsEngId();
+                        String malId = subComId.getFsMalId();
+                        Optional<DataType> dataType = dataTypeRepo.findById(dType);
+                        if (dataType.isPresent()) {
+                            DataType dataType1 = dataType.get();
+                            String data = dataType1.getTalk();
+                            if ("Malayalam".equalsIgnoreCase(data)) {
+                                return audioService.updateVideoFirst(malId, commonId, file);
+                            } else if ("English".equalsIgnoreCase(data)) {
+                                return audioService.updateVideoFirst(engId, commonId, file);
+                            } else {
+                                return new ResponseEntity<>("Data Type is required", HttpStatus.BAD_REQUEST);
+                            }
+                        }
+                    } else {
+                        return new ResponseEntity<>("File is not present. Resend the file.", HttpStatus.BAD_REQUEST);
+                    }
+                }
+            }
+        }catch(Exception e){
+            //e.printStackTrace();
+            return errorService.handlerException(e);
+        }
+        return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @DeleteMapping(path = "/deleteMediaPlayer/{commonId}")
+    public ResponseEntity<?>deleteMediaPlayer(@PathVariable String commonId,@RequestParam Integer mtId,
+                                              @RequestParam Integer dType){
+        try {
+            if (commonId == null || mtId == null || commonId.isEmpty() || "undefined".equalsIgnoreCase(commonId)) {
+                return new ResponseEntity<>("Topic ID, Media Type ID required", HttpStatus.BAD_REQUEST);
+            }
+
+            Optional<FileType> fileTypeOptional = fileTypeRepo.findById(mtId);
+            if (fileTypeOptional.isPresent()) {
+                FileType fileType = fileTypeOptional.get();
+                String fData = fileType.getFileType();
+                if (fData != null && "Audio".equalsIgnoreCase(fData)) {
+                    Optional<CommonQRParaId> commonQRParaIdOptional = commonQRParaIdRepo.findByCommonId(commonId);
+                    Optional<SubComId> subComIdOptional = subComIdRepo.findByFsCommonId(commonId);
+                    if (commonQRParaIdOptional.isPresent()) {
+                        CommonQRParaId commonQRParaId = commonQRParaIdOptional.get();
+                        String engId = commonQRParaId.getEngId();
+                        String malId = commonQRParaId.getMalId();
+                        Optional<DataType> dataType = dataTypeRepo.findById(dType);
+                        if (dataType.isPresent()) {
+                            DataType dataType1 = dataType.get();
+                            String data = dataType1.getTalk();
+                            if ("Malayalam".equalsIgnoreCase(data)) {
+                                int count = audioService.deleteAudioMain(malId, commonId);
+                                if (count>0){
+                                    return new ResponseEntity<>("Audio is deleted",HttpStatus.OK);
+                                }else {
+                                    return new ResponseEntity<>("Failed to delete audio.Try again",HttpStatus.BAD_REQUEST);
+                                }
+                            } else if ("English".equalsIgnoreCase(data)) {
+                                int count =  audioService.deleteAudioMain(engId, commonId);
+                                if (count>0){
+                                    return new ResponseEntity<>("Audio is deleted",HttpStatus.OK);
+                                }else {
+                                    return new ResponseEntity<>("Failed to delete audio.Try again",HttpStatus.BAD_REQUEST);
+                                }
+                            } else {
+                                return new ResponseEntity<>("Data Type is required", HttpStatus.BAD_REQUEST);
+                            }
+                        }
+                    } else if (subComIdOptional.isPresent()) {
+                        SubComId subComId = subComIdOptional.get();
+                        String engId = subComId.getFsEngId();
+                        String malId = subComId.getFsMalId();
+                        Optional<DataType> dataType = dataTypeRepo.findById(dType);
+                        if (dataType.isPresent()) {
+                            DataType dataType1 = dataType.get();
+                            String data = dataType1.getTalk();
+                            if ("Malayalam".equalsIgnoreCase(data)) {
+                                int count = audioService.deleteAudioFirst(malId, commonId);
+                                if (count>0){
+                                    return new ResponseEntity<>("Video is deleted",HttpStatus.OK);
+                                }else {
+                                    return new ResponseEntity<>("Failed to delete video.Try again",HttpStatus.BAD_REQUEST);
+                                }
+                            } else if ("English".equalsIgnoreCase(data)) {
+                                int count = audioService.deleteAudioFirst(engId, commonId);
+                                if (count>0){
+                                    return new ResponseEntity<>("Video is deleted",HttpStatus.OK);
+                                }else {
+                                    return new ResponseEntity<>("Failed to delete video.Try again",HttpStatus.BAD_REQUEST);
+                                }
+                            } else {
+                                return new ResponseEntity<>("Data Type is required", HttpStatus.BAD_REQUEST);
+                            }
+                        }
+                    } else {
+                        return new ResponseEntity<>("CommonId is not valid. Please check", HttpStatus.BAD_REQUEST);
+                    }
+                } else if (fData != null && "Video".equalsIgnoreCase(fData)) {
+                    Optional<CommonQRParaId> commonQRParaIdOptional = commonQRParaIdRepo.findByCommonId(commonId);
+                    Optional<SubComId> subComIdOptional = subComIdRepo.findByFsCommonId(commonId);
+                    if (commonQRParaIdOptional.isPresent()) {
+                        int count = audioService.deleteVideoByCommonId(commonId);
+                        if (count>0){
+                            return new ResponseEntity<>("Video is deleted.", HttpStatus.OK);
+                        }else {
+                            return new ResponseEntity<>("Video is not deleted", HttpStatus.BAD_REQUEST);
+                        }
+                    } else if (subComIdOptional.isPresent()) {
+                        int count = audioService.deleteVideoByCommonId(commonId);
+                        if (count>0){
+                            return new ResponseEntity<>("Video is deleted.", HttpStatus.OK);
+                        }else {
+                            return new ResponseEntity<>("Video is not deleted", HttpStatus.BAD_REQUEST);
+                        }
+                    } else {
+                        return new ResponseEntity<>("CommonId is not valid", HttpStatus.BAD_REQUEST);
+                    }
+                }
+            }
+        }catch(Exception e){
+            //e.printStackTrace();
+            return errorService.handlerException(e);
         }
         return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
     }

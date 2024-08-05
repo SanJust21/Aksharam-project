@@ -1,6 +1,7 @@
 package com.example.MuseumTicketing.Guide.DELETE.firstSub;
 import com.example.MuseumTicketing.Guide.firstSubHeading.FScommonId.FsCommonIdRepo;
 import com.example.MuseumTicketing.Guide.firstSubHeading.FScommonId.FsCommonIdRepo;
+import com.example.MuseumTicketing.Guide.util.ErrorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,9 @@ public class FirstSubDeleteController {
     @Autowired
     private FsCommonIdRepo fsCommonIdRepo;
 
+    @Autowired
+    private ErrorService errorService;
+
     @DeleteMapping(path = "/commonIdAll/{commonId}")
     public ResponseEntity<?> deleteAllByCommonId(@PathVariable String commonId){
         try {
@@ -30,9 +34,10 @@ public class FirstSubDeleteController {
             }
 
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
+            return errorService.handlerException(e);
         }
-        return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+        //return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 

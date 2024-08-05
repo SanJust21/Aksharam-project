@@ -33,13 +33,13 @@ public class FirstSubEnglish {
     public FirstSubEnglish() {
     }
 
-    @PrePersist
-    @PreUpdate
-    public void setDefault(){
-        if (description==null){
-            description="No Data";
-        }if (ref==null){
-            ref="No Data";
-        }
-    }
+//    @PrePersist
+//    @PreUpdate
+//    public void setDefault(){
+//        if (description==null){
+//            description="No Data";
+//        }if (ref==null){
+//            ref="No Data";
+//        }
+//    }
 }

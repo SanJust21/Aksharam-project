@@ -1,24 +1,24 @@
 package com.example.MuseumTicketing.appGuide.mainPara.qrCode;
 
 import com.example.MuseumTicketing.appGuide.mainPara.CombinedPara;
+import com.example.MuseumTicketing.appGuide.mainPara.qrCode.mobileReg.MobileReg;
 import com.google.zxing.WriterException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping(path = "/api/guideAppQR")
+@CrossOrigin
 public class CommonQRParaIdController {
     @Autowired
     private CommonQRParaIdService commonQRParaIdService;
@@ -30,7 +30,6 @@ public class CommonQRParaIdController {
         try {
 
             if (commonQRParaIdRepo.existsByMalIdAndEngId(mMalUid, mEngUid)) {
-
                 CommonQRParaId existingQRCode = commonQRParaIdRepo.findByMalIdAndEngId(mMalUid, mEngUid).orElse(null);
                 if (existingQRCode != null) {
 
@@ -70,6 +69,24 @@ public class CommonQRParaIdController {
         return commonQRParaIdService.getCombinedDataByCommonId(dtId, commonId);
     }
 
+    @PostMapping(path="/mobReg")
+    public ResponseEntity<?>userMobileReg(@RequestBody MobileReg mobileReg){
+        try {
+            return commonQRParaIdService.userMobileReg(mobileReg);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
 
+    }
 
+    @GetMapping(path = "/getAllUsers")
+    public ResponseEntity<List<MobileReg>>getAllMobileUser(){
+        try {
+            return commonQRParaIdService.getAllUsersData();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }

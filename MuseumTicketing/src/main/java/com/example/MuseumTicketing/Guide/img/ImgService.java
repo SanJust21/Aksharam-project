@@ -1,5 +1,7 @@
 package com.example.MuseumTicketing.Guide.img;
 
+import com.example.MuseumTicketing.Guide.SecondSubHeading.commonId.CommonIdSs;
+import com.example.MuseumTicketing.Guide.SecondSubHeading.commonId.CommonIdSsRepo;
 import com.example.MuseumTicketing.Guide.SecondSubHeading.english.SecondSubEnglish;
 import com.example.MuseumTicketing.Guide.SecondSubHeading.english.SecondSubEnglishRepo;
 import com.example.MuseumTicketing.Guide.SecondSubHeading.malayalam.SecondSubMalayalam;
@@ -70,6 +72,9 @@ public class ImgService {
 
     @Autowired
     private SecondSubMalayalamRepo secondSubMalayalamRepo;
+    @Autowired
+    private CommonIdSsRepo commonIdSsRepo;
+
 
     private File convertMultiPartFileToFile(MultipartFile file){
         File convertedFile = new File(file.getOriginalFilename());
@@ -218,7 +223,13 @@ public class ImgService {
                 // Update existing ImgSubSecond with new file info
                 imgSubSecond.setFName(fileName);
                 imgSubSecond.setFUrl(fileUrl);
-                imgSubSecond.setCommonId(commonId);
+
+                Optional<CommonIdSs>commonIdSsOptional = commonIdSsRepo.findBySsCommonId(commonId);
+                if (commonIdSsOptional.isPresent()){
+                    CommonIdSs commonIdSs = commonIdSsOptional.get();
+                    imgSubSecond.setCommonId(commonId);
+                }
+
 
                 imgSubSecondRepo.save(imgSubSecond);  // Save the updated entity
                 return imgSubSecond;

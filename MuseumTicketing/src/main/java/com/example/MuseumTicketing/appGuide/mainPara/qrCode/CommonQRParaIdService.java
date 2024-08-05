@@ -21,6 +21,8 @@ import com.example.MuseumTicketing.appGuide.mainPara.main.MainTopicMal;
 import com.example.MuseumTicketing.appGuide.mainPara.main.MainTopicMalRepo;
 import com.example.MuseumTicketing.appGuide.mainPara.qrCode.first.SubComId;
 import com.example.MuseumTicketing.appGuide.mainPara.qrCode.first.SubComIdRepo;
+import com.example.MuseumTicketing.appGuide.mainPara.qrCode.mobileReg.MobileReg;
+import com.example.MuseumTicketing.appGuide.mainPara.qrCode.mobileReg.MobileRegRepo;
 import com.example.MuseumTicketing.appGuide.video.first.VideoFirst;
 import com.example.MuseumTicketing.appGuide.video.first.VideoFirstRepo;
 import com.example.MuseumTicketing.appGuide.video.main.VideoMain;
@@ -84,6 +86,8 @@ public class CommonQRParaIdService {
     private VideoFirstRepo videoFirstRepo;
     @Autowired
     private DataTypeRepo dataTypeRepo;
+    @Autowired
+    private MobileRegRepo mobileRegRepo;
 
     private File convertBytesToFile(byte[] bytes, String fileName) throws IOException {
         File file = new File(fileName);
@@ -336,5 +340,30 @@ public class CommonQRParaIdService {
             e.printStackTrace();
             return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    public ResponseEntity<?> userMobileReg(MobileReg mobileReg) {
+        MobileReg mobileReg1 = new MobileReg();
+        if (mobileReg.getEmail().endsWith("@gmail.com")){
+            mobileReg1.setEmail(mobileReg.getEmail());
+            if (mobileReg.getPhNumber().length()>=10){
+                mobileReg1.setPhNumber(mobileReg.getPhNumber());
+                mobileRegRepo.save(mobileReg1);
+                return new ResponseEntity<>(mobileReg1,HttpStatus.OK);
+            }else {
+                return new ResponseEntity<>("Enter 10 digit mobile number",HttpStatus.BAD_REQUEST);
+            }
+        }else {
+            return new ResponseEntity<>("Enter a valid email Id",HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    public ResponseEntity<List<MobileReg>> getAllUsersData() {
+        try {
+            return new ResponseEntity<>(mobileRegRepo.findAll(),HttpStatus.OK);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>(new ArrayList<>(),HttpStatus.BAD_REQUEST);
     }
 }

@@ -9,6 +9,7 @@ import com.example.MuseumTicketing.Guide.mainHeading.mainEng.MainTitleEng;
 import com.example.MuseumTicketing.Guide.mainHeading.mainEng.MainTitleEngRepo;
 import com.example.MuseumTicketing.Guide.mainHeading.mainMal.MainTitleMal;
 import com.example.MuseumTicketing.Guide.mainHeading.mainMal.MainTitleMalRepo;
+import com.example.MuseumTicketing.Guide.util.ErrorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +35,8 @@ public class FirstSubController {
     private MainTitleEngRepo mainTitleEngRepo;
     @Autowired
     private DataTypeRepo dataTypeRepo;
+    @Autowired
+    private ErrorService errorService;
 
     @PostMapping(path = "/firstSub")
     public ResponseEntity<?>addFirstSubData(@RequestParam String uId,
@@ -65,7 +68,8 @@ public class FirstSubController {
 
             }
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
+            return errorService.handlerException(e);
         }
         return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -110,9 +114,10 @@ public class FirstSubController {
             }
             return firstSubService.generateCommonIdFs(engId,malId);
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
+            return errorService.handlerException(e);
         }
-        return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+        //return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @GetMapping(path = "/getAllByCommonId/{id}")
@@ -131,7 +136,8 @@ public class FirstSubController {
                 }
             }
         }catch (Exception e){
-            e.printStackTrace();
+           // e.printStackTrace();
+            return errorService.handlerException(e);
         }
         return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
     }

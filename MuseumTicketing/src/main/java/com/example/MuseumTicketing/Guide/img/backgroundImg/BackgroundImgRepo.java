@@ -12,4 +12,6 @@ public interface BackgroundImgRepo extends JpaRepository<BackgroundImg,Integer> 
     List<BackgroundImg> findByengId(String mEngUid);
 
     Optional<BackgroundImg> findByEngIdAndMalId(String engId, String malId);
+
+    Optional<BackgroundImg> findByCommonIdAndId(String commonId, Integer imgId);
 }

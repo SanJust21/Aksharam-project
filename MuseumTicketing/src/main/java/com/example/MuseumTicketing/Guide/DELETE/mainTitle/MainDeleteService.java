@@ -1,13 +1,19 @@
 package com.example.MuseumTicketing.Guide.DELETE.mainTitle;
 
+import com.example.MuseumTicketing.Guide.SecondSubHeading.commonId.CommonIdSs;
+import com.example.MuseumTicketing.Guide.SecondSubHeading.commonId.CommonIdSsRepo;
 import com.example.MuseumTicketing.Guide.SecondSubHeading.english.SecondSubEnglish;
 import com.example.MuseumTicketing.Guide.SecondSubHeading.english.SecondSubEnglishRepo;
 import com.example.MuseumTicketing.Guide.SecondSubHeading.malayalam.SecondSubMalayalam;
 import com.example.MuseumTicketing.Guide.SecondSubHeading.malayalam.SecondSubMalayalamRepo;
+import com.example.MuseumTicketing.Guide.firstSubHeading.FScommonId.CommonIdFs;
+import com.example.MuseumTicketing.Guide.firstSubHeading.FScommonId.FsCommonIdRepo;
 import com.example.MuseumTicketing.Guide.firstSubHeading.english.FirstSubEnglish;
 import com.example.MuseumTicketing.Guide.firstSubHeading.english.FirstSubEnglishRepo;
 import com.example.MuseumTicketing.Guide.firstSubHeading.malayalam.FirstSubMalayalam;
 import com.example.MuseumTicketing.Guide.firstSubHeading.malayalam.FirstSubMalayalamRepo;
+import com.example.MuseumTicketing.Guide.img.backgroundImg.BackgroundImg;
+import com.example.MuseumTicketing.Guide.img.backgroundImg.BackgroundImgRepo;
 import com.example.MuseumTicketing.Guide.mainHeading.mainEng.MainTitleEng;
 import com.example.MuseumTicketing.Guide.mainHeading.mainEng.MainTitleEngRepo;
 import com.example.MuseumTicketing.Guide.mainHeading.mainMal.MainTitleMal;
@@ -60,6 +66,7 @@ import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
+import com.example.MuseumTicketing.Guide.util.ErrorService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -127,6 +134,14 @@ public class MainDeleteService {
 
     @Autowired
     private Mp4Data2Repo mp4Data2Repo;
+    @Autowired
+    private FsCommonIdRepo fsCommonIdRepo;
+    @Autowired
+    private CommonIdSsRepo commonIdSsRepo;
+    @Autowired
+    private BackgroundImgRepo backgroundImgRepo;
+    @Autowired
+    private ErrorService errorService;
 
 
 
@@ -163,10 +178,9 @@ public class MainDeleteService {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+           return errorService.handlerException(e);
 
         }
-        return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 
@@ -327,8 +341,94 @@ public class MainDeleteService {
         }
     }
 
+
+
+    public ResponseEntity<?> deleteMalMainTitleByUid(String uId) {
+        Optional<MainTitleMal>mainTitleMalOptional = mainTitleMalRepo.findBymMalUid(uId);
+        if (mainTitleMalOptional.isPresent()){
+            MainTitleMal mainTitleMal = mainTitleMalOptional.get();
+            List<Mp3Data>mp3DataList = mp3Repo.findBydtId(uId);
+            if (!mp3DataList.isEmpty()){
+                for (Mp3Data mp3Data : mp3DataList){
+                    mp3Repo.delete(mp3Data);
+                }
+            }
+            List<FirstSubMalayalam>firstSubMalayalamList = firstSubMalayalamRepo.findByMainUid(uId);
+            if (!firstSubMalayalamList.isEmpty()){
+                for (FirstSubMalayalam firstSubMalayalam : firstSubMalayalamList){
+                    String fsUid = firstSubMalayalam.getFsUid();
+                    List<Mp3Data1>mp3Data1List = mp3Data1Repo.findBydtId(fsUid);
+                    if (!mp3Data1List.isEmpty()){
+                        for (Mp3Data1 mp3Data1 : mp3Data1List){
+                            mp3Data1Repo.delete(mp3Data1);
+                        }
+                    }
+                    List<SecondSubMalayalam>secondSubMalayalam = secondSubMalayalamRepo.findByfsUid(fsUid);
+                    if (!secondSubMalayalam.isEmpty()){
+                        for (SecondSubMalayalam secondSubMalayalam1 : secondSubMalayalam){
+                            String ssUid = secondSubMalayalam1.getSsUid();
+                            List<Mp3Data2>mp3Data2List = mp3Data2Repo.findBydtId(ssUid);
+                            if (!mp3Data2List.isEmpty()){
+                                for (Mp3Data2 mp3Data2 :mp3Data2List){
+                                    mp3Data2Repo.delete(mp3Data2);
+                                }
+
+                            }
+                            secondSubMalayalamRepo.delete(secondSubMalayalam1);
+                        }
+                    }
+                    firstSubMalayalamRepo.delete(firstSubMalayalam);
+                }
+            }
+            mainTitleMalRepo.delete(mainTitleMal);
+            return new ResponseEntity<>("Deleted Successfully",HttpStatus.OK);
+        }
+        return new ResponseEntity<>("check uId",HttpStatus.BAD_REQUEST);
+    }
+
+    public ResponseEntity<?> deleteEngMainTitleByUid(String uId) {
+        MainTitleEng mainTitleEngOptional = mainTitleEngRepo.findBymEngUid(uId);
+        if (mainTitleEngOptional!=null){
+            List<Mp3Data>mp3DataList = mp3Repo.findBydtId(uId);
+            if (!mp3DataList.isEmpty()){
+                for (Mp3Data mp3Data : mp3DataList){
+                    mp3Repo.delete(mp3Data);
+                }
+            }
+            List<FirstSubEnglish>firstSubEnglishList = firstSubEnglishRepo.findByMainUid(uId);
+            if (!firstSubEnglishList.isEmpty()){
+                for (FirstSubEnglish firstSubEnglish : firstSubEnglishList){
+                    String fsUid = firstSubEnglish.getFsUid();
+                    List<Mp3Data1>mp3Data1List = mp3Data1Repo.findBydtId(fsUid);
+                    if (!mp3Data1List.isEmpty()){
+                        for (Mp3Data1 mp3Data1 : mp3Data1List){
+                            mp3Data1Repo.delete(mp3Data1);
+                        }
+                    }
+                    List<SecondSubEnglish>secondSubEnglishList =secondSubEnglishRepo.findByfsUid(fsUid);
+                    if (!secondSubEnglishList.isEmpty()){
+                        for (SecondSubEnglish secondSubEnglish :secondSubEnglishList){
+                            String ssUid = secondSubEnglish.getSsUid();
+                            List<Mp3Data2>mp3Data2List = mp3Data2Repo.findBydtId(ssUid);
+                            if (!mp3Data2List.isEmpty()){
+                                for (Mp3Data2 mp3Data2 :mp3Data2List){
+                                    mp3Data2Repo.delete(mp3Data2);
+                                }
+                            }
+                            secondSubEnglishRepo.delete(secondSubEnglish);
+                        }
+                    }
+                    firstSubEnglishRepo.delete(firstSubEnglish);
+                }
+            }
+            mainTitleEngRepo.delete(mainTitleEngOptional);
+            return new ResponseEntity<>("Main title is deleted by uId",HttpStatus.OK);
+        }
+        return new ResponseEntity<>("uniqueId : "+uId+"  is not valid. ",HttpStatus.BAD_REQUEST);
+    }
+
     @Transactional
-    public int deleteByCommonId(String commonId) {
+    public ResponseEntity<?> deleteByCommonId(String commonId) {
         try {
             // Fetch CommonIdQRCode entity
             Optional<CommonIdQRCode> commonIdQRCode = commonIdQRCodeRepo.findByCommonId(commonId);
@@ -378,6 +478,16 @@ public class MainDeleteService {
             //imgRepo.deleteByCommonId(commonId);
             deleteIfPresent(() ->deleteImagesByCommonId(commonId));
 
+            Optional<BackgroundImg>backgroundImgOptional = backgroundImgRepo.findByEngIdAndMalId(mEngUid,mMalUid);
+            if (backgroundImgOptional.isPresent()){
+                BackgroundImg backgroundImg = backgroundImgOptional.get();
+                if (backgroundImg.getCommonId().equals(commonId)){
+                    deleteFileFromS3(backgroundImg.getBgName());
+                    backgroundImgRepo.delete(backgroundImg);
+                }
+            }
+
+
             //imgSubFirstRepo.deleteByCommonId(commonId);
             deleteIfPresent(() ->deleteImagesFirstByCommonId(commonId));
 
@@ -392,13 +502,74 @@ public class MainDeleteService {
 
             // Delete MP4 entities related to mEngUid and mMalUid
             //mp4DataRepo.deleteByDtId(mEngUid);
-            deleteIfPresent(() ->deleteMp4ByDtId(mEngUid));
+            deleteIfPresent(() ->deleteMp4ByDtId(commonId));
             //mp4DataRepo.deleteByDtId(mMalUid);
-            deleteIfPresent(() ->deleteMp4ByDtId(mMalUid));
+            //deleteIfPresent(() ->deleteMp4ByDtId(mMalUid));
 
             // Delete first subheading entities related to mEngUid and mMalUid
             deleteIfPresent(() ->firstSubEnglishRepo.deleteByMainUid(mEngUid));
             deleteIfPresent(() ->firstSubMalayalamRepo.deleteByMainUid(mMalUid));
+            List<FirstSubEnglish> firstSubEnglishList = firstSubEnglishRepo.findByMainUid(mEngUid);
+            if (!firstSubEnglishList.isEmpty()){
+                for (FirstSubEnglish firstSubEnglish : firstSubEnglishList){
+                    String fsEngId = firstSubEnglish.getFsUid();
+                    List<FirstSubMalayalam> firstSubMalayalamList = firstSubMalayalamRepo.findByMainUid(mMalUid);
+                    if (!firstSubMalayalamList.isEmpty()){
+                        for (FirstSubMalayalam firstSubMalayalam : firstSubMalayalamList){
+                            String fsMalId = firstSubMalayalam.getFsUid();
+
+                            Optional<CommonIdFs>commonIdFsOptional =fsCommonIdRepo.findByFsEngIdAndFsMalId(fsEngId,fsMalId);
+                            if (commonIdFsOptional.isPresent()){
+                                CommonIdFs commonIdFs =commonIdFsOptional.get();
+                                String fsCommonId = commonIdFs.getFsCommonId();
+                                deleteIfPresent(() ->deleteMp4FirstByMainMalId(fsCommonId));
+
+                                Optional<BackgroundImg>optionalBackgroundImg = backgroundImgRepo.findByEngIdAndMalId(fsEngId,fsMalId);
+                                if (optionalBackgroundImg.isPresent()){
+                                    BackgroundImg backgroundImg = optionalBackgroundImg.get();
+                                    if (backgroundImg.getCommonId().equals(fsCommonId)){
+                                        deleteFileFromS3(backgroundImg.getBgName());
+                                        backgroundImgRepo.delete(backgroundImg);
+                                    }
+                                }
+                            }
+
+                            List<SecondSubEnglish>secondSubEnglishList = secondSubEnglishRepo.findByfsUid(fsEngId);
+                            if (!secondSubEnglishList.isEmpty()){
+                                for (SecondSubEnglish secondSubEnglish :secondSubEnglishList){
+                                    String ssEngId = secondSubEnglish.getSsUid();
+
+                                    List<SecondSubMalayalam>secondSubMalayalams = secondSubMalayalamRepo.findByfsUid(fsMalId);
+                                    if (!secondSubMalayalams.isEmpty()){
+                                        for (SecondSubMalayalam secondSubMalayalam :secondSubMalayalams){
+                                            String ssMalId = secondSubMalayalam.getSsUid();
+
+                                            Optional<CommonIdSs>commonIdSsOptional = commonIdSsRepo.findBySsMalIdAndSsEngId(ssMalId,ssEngId);
+                                            if (commonIdSsOptional.isPresent()){
+                                                CommonIdSs commonIdSs = commonIdSsOptional.get();
+                                                String ssCommonId = commonIdSs.getSsCommonId();
+
+                                                deleteIfPresent(() -> {
+                                                    deleteMp4SecondByDtId(ssCommonId);
+                                                });
+
+                                                Optional<BackgroundImg>backgroundImgOptional1 =backgroundImgRepo.findByEngIdAndMalId(ssEngId,ssMalId);
+                                                if (backgroundImgOptional1.isPresent()){
+                                                    BackgroundImg backgroundImg = backgroundImgOptional1.get();
+                                                    if (backgroundImg.getCommonId().equals(ssCommonId)){
+                                                        deleteFileFromS3(backgroundImg.getBgName());
+                                                        backgroundImgRepo.delete(backgroundImg);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
             //mp3Data1Repo.deleteByMainEngId(mEngUid);
             //mp3Data1Repo.deleteByMainMalId(mMalUid);
@@ -406,11 +577,12 @@ public class MainDeleteService {
             deleteIfPresent(() ->deleteMp3FirstByMainEngId(mEngUid));
             deleteIfPresent(() ->deleteMp3FirstByMainMalId(mMalUid));
 
+
             // Delete MP4 entities related to mEngUid and mMalUid
 //        mp4Data1Repo.deleteByMainEngId(mEngUid);
 //        mp4Data1Repo.deleteByMainMalId(mMalUid);
-            deleteIfPresent(() ->deleteMp4FirstByMainEngId(mEngUid));
-            deleteIfPresent(() ->deleteMp4FirstByMainMalId(mMalUid));
+            //deleteIfPresent(() ->deleteMp4FirstByMainEngId(mEngUid));
+
 
 
             // Delete second subheading entities related to each fsUid
@@ -427,14 +599,16 @@ public class MainDeleteService {
                 //mp3Data2Repo.deleteByDtId(ssUid);
                 deleteIfPresent(() ->deleteMp3SecondByDtId(ssUid));
                 //mp4Data2Repo.deleteByDtId(ssUid);
-                deleteIfPresent(() ->deleteMp4SecondByDtId(ssUid));
+//                deleteIfPresent(() -> {
+//                    deleteMp4SecondByDtId(ssUid);
+//                });
             }
 
             for (String ssUid : malayalamSsUids) {
                 //mp3Data2Repo.deleteByDtId(ssUid);
                 deleteIfPresent(() ->deleteMp3SecondByDtId(ssUid));
                 //mp4Data2Repo.deleteByDtId(ssUid);
-                deleteIfPresent(() ->deleteMp4SecondByDtId(ssUid));
+                //deleteIfPresent(() ->deleteMp4SecondByDtId(ssUid));
             }
 
             // Delete QR code from S3
@@ -442,56 +616,11 @@ public class MainDeleteService {
             if (qrCodeName != null && !qrCodeName.isEmpty()) {
                 deleteImageFromS3(qrCodeName);
             }
-
             // Finally, delete the CommonIdQRCode entity
             commonIdQRCodeRepo.deleteByCommonId(commonId);
-            return 1;
+            return new ResponseEntity<>("Deleted Successfully",HttpStatus.OK);
         }catch (Exception e){
-            e.printStackTrace();
+            return errorService.handlerException(e);
         }
-        return 0;
-
     }
-
-    public int deleteEngMainTitleByUid(String uId) {
-        try {
-            if (uId == null || uId.isEmpty()) {
-                return 0;
-            }
-
-            MainTitleEng mainTitleEngOptional = mainTitleEngRepo.findBymEngUid(uId);
-            if (mainTitleEngOptional!=null){
-                mainTitleEngRepo.deleteBymEngUid(uId);
-                List<Mp3Data> mp3Data = mp3Repo.findBydtId(uId);
-                if (!mp3Data.isEmpty()){
-                    mp3Repo.deleteByDtId(uId);
-                }
-                List<Mp4Data> mp4Data = mp4DataRepo.findBydtId(uId);
-                if (!mp4Data.isEmpty()){
-                    mp4DataRepo.deleteByDtId(uId);
-                }
-                List<FirstSubEnglish> firstSubEnglishOptional=firstSubEnglishRepo.findByMainUid(uId);
-                if (!firstSubEnglishOptional.isEmpty()){
-                    firstSubEnglishRepo.deleteByMainUid(uId);
-                }
-                List<Mp3Data1>mp3Data1s = mp3Data1Repo.findByMainEngId(uId);
-                if (!mp3Data1s.isEmpty()){
-                    mp3Data1Repo.deleteByMainEngId(uId);
-                }
-                List<Mp4Data1>mp4Data1s = mp4Data1Repo.findByMainEngId(uId);
-                if (!mp4Data1s.isEmpty()){
-                    mp4Data1Repo.deleteByMainEngId(uId);
-                }
-                return 1;
-            }
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-        return 0;
-    }
-
-//    public ResponseEntity<?> deleteEngMainTitleByUid(String uId) {
-
-//        return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
-//    }
 }

@@ -1,5 +1,10 @@
 package com.example.MuseumTicketing.Guide.mpFileData;
 
+import com.example.MuseumTicketing.Guide.QR.CommonIdQRCode;
+import com.example.MuseumTicketing.Guide.QR.CommonIdQRCodeRepo;
+import com.example.MuseumTicketing.Guide.SecondSubHeading.commonId.CommonIdSsRepo;
+import com.example.MuseumTicketing.Guide.firstSubHeading.FScommonId.FsCommonIdRepo;
+import com.example.MuseumTicketing.Guide.util.ErrorService;
 import com.example.MuseumTicketing.appGuide.audio.AudioService;
 import com.example.MuseumTicketing.Guide.mpType.FileType;
 import com.example.MuseumTicketing.Guide.mpType.FileTypeRepo;
@@ -25,6 +30,18 @@ public class MediaTypeController {
     @Autowired
     private FileTypeRepo fileTypeRepo;
 
+    @Autowired
+    private CommonIdQRCodeRepo commonIdQRCodeRepo;
+
+    @Autowired
+    private FsCommonIdRepo fsCommonIdRepo;
+
+    @Autowired
+    private CommonIdSsRepo commonIdSsRepo;
+
+    @Autowired
+    private ErrorService errorService;
+
     @PostMapping(path = "/mpData")
     public ResponseEntity<?> addMp3Data(@RequestParam String uId,
                                                          @RequestParam Integer mtId,
@@ -46,12 +63,8 @@ public class MediaTypeController {
                         responses.add(mediaTypeService.uploadMp3(file,uId));
                     }
                     return new ResponseEntity<>(responses,HttpStatus.OK);
-                } else if (fData != null && "Video".equalsIgnoreCase(fData)) {
-                    List<MediaTypeDTO> responses = new ArrayList<>();
-                    for (MultipartFile file : files){
-                        responses.add(mediaTypeService.uploadMp4(file,uId));
-                    }
-                    return new ResponseEntity<>(responses,HttpStatus.OK);
+                } else if (fData != null && "Video".equalsIgnoreCase(fData)) {//
+                    return mediaTypeService.uploadMp4(files,uId);
                 } else {
                     return new ResponseEntity<>("File not present. Resend the file.", HttpStatus.BAD_REQUEST);
                 }
@@ -59,9 +72,10 @@ public class MediaTypeController {
                 return new ResponseEntity<>("File not present. Resend the file.", HttpStatus.BAD_REQUEST);
             }
         }catch (Exception e){
-            e.printStackTrace();
+           // e.printStackTrace();
+            return errorService.handlerException(e);
         }
-        return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
+        //return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @PostMapping(path = "/mpData1")
@@ -86,11 +100,7 @@ public class MediaTypeController {
                     return new ResponseEntity<>(responses,HttpStatus.OK);
                     //return mediaTypeService.addMp3(files,dtId);
                 } else if (fData != null && "Video".equalsIgnoreCase(fData)) {
-                    List<MediaTypeDTO> responses = new ArrayList<>();
-                    for (MultipartFile file : files){
-                        responses.add(mediaTypeService.uploadMp4fs(file,uId));
-                    }
-                    return new ResponseEntity<>(responses,HttpStatus.OK);
+                    return mediaTypeService.uploadMp4fs(files,uId);
                 } else {
                     return new ResponseEntity<>("File not present. Resend the file.", HttpStatus.BAD_REQUEST);
                 }
@@ -98,9 +108,10 @@ public class MediaTypeController {
                 return new ResponseEntity<>("File not present. Resend the file.", HttpStatus.BAD_REQUEST);
             }
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
+            return errorService.handlerException(e);
         }
-        return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
+       // return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @PostMapping(path = "/mpData2")
@@ -123,13 +134,8 @@ public class MediaTypeController {
                         responses.add(mediaTypeService.uploadMp3ss(file,uId));
                     }
                     return new ResponseEntity<>(responses,HttpStatus.OK);
-                    //return mediaTypeService.addMp3(files,dtId);
                 } else if (fData != null && "Video".equalsIgnoreCase(fData)) {
-                    List<MediaTypeDTO> responses = new ArrayList<>();
-                    for (MultipartFile file : files){
-                        responses.add(mediaTypeService.uploadMp4ss(file,uId));
-                    }
-                    return new ResponseEntity<>(responses,HttpStatus.OK);
+                    return mediaTypeService.uploadMp4ss(files,uId);
                 } else {
                     return new ResponseEntity<>("File not present. Resend the file.", HttpStatus.BAD_REQUEST);
                 }
@@ -137,8 +143,9 @@ public class MediaTypeController {
                 return new ResponseEntity<>("File not present. Resend the file.", HttpStatus.BAD_REQUEST);
             }
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
+            return errorService.handlerException(e);
         }
-        return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
+        //return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

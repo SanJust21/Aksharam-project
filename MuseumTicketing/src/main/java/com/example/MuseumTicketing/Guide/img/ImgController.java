@@ -24,6 +24,7 @@ import com.example.MuseumTicketing.Guide.firstSubHeading.malayalam.FirstSubMalay
 import com.example.MuseumTicketing.Guide.img.firstSubHeading.ImgSubFirst;
 import com.example.MuseumTicketing.Guide.img.mainHeading.ImgData;
 import com.example.MuseumTicketing.Guide.img.secondSubHeading.ImgSubSecond;
+import com.example.MuseumTicketing.Guide.util.ErrorService;
 import com.google.zxing.WriterException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +61,8 @@ public class ImgController {
     private SecondSubEnglishRepo secondSubEnglishRepo;
     @Autowired
     private SecondSubMalayalamRepo secondSubMalayalamRepo;
+    @Autowired
+    private ErrorService errorService;
 
     // *upload multiple files and background Image *
     @PostMapping(path = "/uploadImg")
@@ -67,26 +70,27 @@ public class ImgController {
 
                                                     @RequestParam String englishUId,
                                                     @RequestParam String malUid) throws IOException, WriterException {
+        try {
+            if (englishUId == null || malUid == null) {
+                return new ResponseEntity<>("English UID and Malayalam UID are required", HttpStatus.BAD_REQUEST);
+            }
+            Optional<CommonIdQRCode> commonIdQRCodeOptional = commonIdQRCodeRepo.findByMalIdAndEngId(malUid, englishUId);
+            if (commonIdQRCodeOptional.isEmpty()) {
+                return new ResponseEntity<>("Common ID not found for given UIDs", HttpStatus.NOT_FOUND);
+            }
 
-        if (englishUId == null || malUid == null) {
-            return new ResponseEntity<>("English UID and Malayalam UID are required", HttpStatus.BAD_REQUEST);
-        }
-        Optional<CommonIdQRCode> commonIdQRCodeOptional = commonIdQRCodeRepo.findByMalIdAndEngId(malUid, englishUId);
-        if (commonIdQRCodeOptional.isEmpty()) {
-            return new ResponseEntity<>("Common ID not found for given UIDs", HttpStatus.NOT_FOUND);
-        }
+            CommonIdQRCode commonIdQRCode = commonIdQRCodeOptional.get();
+            String commonId = commonIdQRCode.getCommonId();
 
-        CommonIdQRCode commonIdQRCode = commonIdQRCodeOptional.get();
-        String commonId = commonIdQRCode.getCommonId();
-
-        List<ImgData> responses = new ArrayList<>();
-        for (MultipartFile file : files){
-            responses.add(imgService.uploadJPG(file,englishUId,malUid,commonId));
+            List<ImgData> responses = new ArrayList<>();
+            for (MultipartFile file : files){
+                responses.add(imgService.uploadJPG(file,englishUId,malUid,commonId));
+            }
+            return new ResponseEntity<>(responses,HttpStatus.OK);
+        }catch (Exception e){
+            return errorService.handlerException(e);
         }
-        return new ResponseEntity<>(responses,HttpStatus.OK);
     }
-
-
 
     @PostMapping(path = "/uploadImg1")
     public ResponseEntity<?> uploadData1(@RequestParam MultipartFile[] files,
@@ -135,10 +139,10 @@ public class ImgController {
             }
             return new ResponseEntity<>(imgSubFirsts,HttpStatus.OK);
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
+            return errorService.handlerException(e);
         }
-        return new ResponseEntity<>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
-
+        //return new ResponseEntity<>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @PostMapping(path = "/uploadImg2")
@@ -217,9 +221,9 @@ public class ImgController {
             }
             return new ResponseEntity<>(imgSubSeconds,HttpStatus.OK);
         }catch (Exception e){
-            e.printStackTrace();
+           // e.printStackTrace();
+            return errorService.handlerException(e);
         }
-        return new ResponseEntity<>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
-
+        //return new ResponseEntity<>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

@@ -1,5 +1,7 @@
 package com.example.MuseumTicketing.Guide.UPDATE.MainTitle;
 
+import com.example.MuseumTicketing.Guide.QR.CommonIdQRCode;
+import com.example.MuseumTicketing.Guide.QR.CommonIdQRCodeRepo;
 import com.example.MuseumTicketing.Guide.mainHeading.MainDTO;
 import com.example.MuseumTicketing.Guide.mainHeading.mainEng.MainTitleEng;
 import com.example.MuseumTicketing.Guide.mainHeading.mainEng.MainTitleEngRepo;
@@ -19,6 +21,7 @@ import com.example.MuseumTicketing.Guide.mpFileData.MediaTypeDTO;
 import com.example.MuseumTicketing.Guide.mpFileData.MediaTypeService;
 import com.example.MuseumTicketing.Guide.mpType.FileType;
 import com.example.MuseumTicketing.Guide.mpType.FileTypeRepo;
+import com.example.MuseumTicketing.Guide.util.ErrorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -47,6 +50,11 @@ public class MainUpdateController {
     private MediaTypeService mediaTypeService;
     @Autowired
     private ImgService imgService;
+    @Autowired
+    private CommonIdQRCodeRepo commonIdQRCodeRepo;
+    @Autowired
+    private ErrorService errorService;
+
     @PutMapping(path = "/stringUpdate/{uId}")
     public ResponseEntity<?> mainDataUpdate(@PathVariable String uId,
                                             @RequestBody MainDTO mainDTO){
@@ -71,7 +79,8 @@ public class MainUpdateController {
                 }
             }
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
+            return errorService.handlerException(e);
         }
         return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -98,8 +107,9 @@ public class MainUpdateController {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+//            e.printStackTrace();
+//            return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+            return errorService.handlerException(e);
         }
     }
 
@@ -126,11 +136,22 @@ public class MainUpdateController {
                     return new ResponseEntity<>(responses,HttpStatus.OK);
                     //return mediaTypeService.addMp3(files,dtId);
                 } else if (fData != null && "Video".equalsIgnoreCase(fData)) {
-                    List<MediaTypeDTO> responses = new ArrayList<>();
-                    for (MultipartFile file : files){
-                        responses.add(mediaTypeService.updateUploadMp4(file,uId));
+                    Optional<CommonIdQRCode>commonIdQRCodeOptional = commonIdQRCodeRepo.findByCommonId(uId);
+                    if (commonIdQRCodeOptional.isPresent()){
+                        CommonIdQRCode commonIdQRCode = commonIdQRCodeOptional.get();
+                        if (commonIdQRCode.getCommonId().equals(uId)){
+                            List<MediaTypeDTO> responses = new ArrayList<>();
+                            for (MultipartFile file : files){
+                                responses.add(mediaTypeService.updateUploadMp4(file,uId));
+                            }
+                            return new ResponseEntity<>(responses,HttpStatus.OK);
+                        }else {
+                            return new ResponseEntity<>("CommonId : "+uId+"   is not matching",HttpStatus.BAD_REQUEST);
+                        }
+                    }else {
+                        return new ResponseEntity<>("CommonId : "+uId+ "  is not correct.check CommonId",HttpStatus.BAD_REQUEST);
                     }
-                    return new ResponseEntity<>(responses,HttpStatus.OK);
+
                 } else {
                     return new ResponseEntity<>("File not present. Resend the file.", HttpStatus.BAD_REQUEST);
                 }
@@ -138,8 +159,9 @@ public class MainUpdateController {
                 return new ResponseEntity<>("File not present. Resend the file.", HttpStatus.BAD_REQUEST);
             }
         }catch (Exception e){
-            e.printStackTrace();
+           // e.printStackTrace();
+            return errorService.handlerException(e);
         }
-        return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
+        //return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

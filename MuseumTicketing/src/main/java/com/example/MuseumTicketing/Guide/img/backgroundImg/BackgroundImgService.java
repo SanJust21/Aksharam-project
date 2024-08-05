@@ -236,11 +236,12 @@ public class BackgroundImgService {
         s3Client.deleteObject(bucketName, fileName);
     }
 
-    public int deleteBgImageMain(String engId, String malId, Integer imgId) {
-        Optional<BackgroundImg> backgroundImgOptional = backgroundImgRepo.findByEngIdAndMalId(engId,malId);
-        if (backgroundImgOptional.isPresent()) {
+
+    public int deleteBgImageMain(String engId, String malId, Integer imgId, String commonId) {
+        Optional<BackgroundImg>backgroundImgOptional = backgroundImgRepo.findByCommonIdAndId(commonId,imgId);
+        if (backgroundImgOptional.isPresent()){
             BackgroundImg backgroundImg = backgroundImgOptional.get();
-            if (backgroundImg.getId().equals(imgId)){
+            if (backgroundImg.getMalId().equals(malId)&&backgroundImg.getEngId().equals(engId)){
                 deleteImageFromS3(backgroundImg.getBgName());
                 backgroundImgRepo.delete(backgroundImg);
                 return 1;
@@ -249,30 +250,44 @@ public class BackgroundImgService {
         return 0;
     }
 
-    public int deleteBgImageFirst(String engId, String malId, Integer imgId) {
-        Optional<BackgroundImg> backgroundImgOptional = backgroundImgRepo.findByEngIdAndMalId(engId,malId);
-        if (backgroundImgOptional.isPresent()) {
+    public int deleteBgImageFirst(String engId, String malId, Integer imgId, String commonId) {
+        Optional<BackgroundImg>backgroundImgOptional = backgroundImgRepo.findByCommonIdAndId(commonId, imgId);
+        if (backgroundImgOptional.isPresent()){
             BackgroundImg backgroundImg = backgroundImgOptional.get();
-            if (backgroundImg.getId().equals(imgId)){
+            if (backgroundImg.getEngId().equals(engId)&& backgroundImg.getMalId().equals(malId)){
                 deleteImageFromS3(backgroundImg.getBgName());
                 backgroundImgRepo.delete(backgroundImg);
                 return 1;
             }return -1;
-        }
-        return 0;
+        }return 0;
     }
 
-    public int deleteBgImageSecond(String engId, String malId, Integer imgId) {
-        Optional<BackgroundImg> backgroundImgOptional = backgroundImgRepo.findByEngIdAndMalId(engId,malId);
-        if (backgroundImgOptional.isPresent()) {
+    public int deleteBgImageSecond(String engId, String malId, Integer imgId, String commonId) {
+        Optional<BackgroundImg>backgroundImgOptional =backgroundImgRepo.findByCommonIdAndId(commonId,imgId);
+        if (backgroundImgOptional.isPresent()){
             BackgroundImg backgroundImg = backgroundImgOptional.get();
-            if (backgroundImg.getId().equals(imgId)){
+            if (backgroundImg.getMalId().equals(malId)&&backgroundImg.getEngId().equals(engId)){
                 deleteImageFromS3(backgroundImg.getBgName());
                 backgroundImgRepo.delete(backgroundImg);
                 return 1;
-            }
-           return -1;
-        }
-        return 0;
+            }return -1;
+        }return 0;
     }
+
+
+//    public int deleteBgImageSecond(String engId, String malId, Integer imgId) {
+//        Optional<BackgroundImg> backgroundImgOptional = backgroundImgRepo.findByEngIdAndMalId(engId,malId);
+//        if (backgroundImgOptional.isPresent()) {
+//            BackgroundImg backgroundImg = backgroundImgOptional.get();
+//            if (backgroundImg.getId().equals(imgId)){
+//                deleteImageFromS3(backgroundImg.getBgName());
+//                backgroundImgRepo.delete(backgroundImg);
+//                return 1;
+//            }
+//           return -1;
+//        }
+//        return 0;
+//    }
+
+
 }

@@ -2,10 +2,12 @@ package com.example.MuseumTicketing.appGuide.mainPara.first;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 @Data
 @Entity
 @Table(name = "subParaEng")
+@CrossOrigin
 public class FirstTopicEng {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

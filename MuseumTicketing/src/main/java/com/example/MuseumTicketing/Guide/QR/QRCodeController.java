@@ -4,6 +4,7 @@ import com.example.MuseumTicketing.Guide.mainHeading.CombinedData;
 import com.example.MuseumTicketing.Guide.mainHeading.MainTitleService;
 import com.example.MuseumTicketing.Guide.mainHeading.CombinedData;
 import com.example.MuseumTicketing.Guide.mainHeading.MainTitleService;
+import com.example.MuseumTicketing.Guide.util.ErrorService;
 import com.google.zxing.WriterException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,6 +27,7 @@ public class QRCodeController {
 
     @Autowired
     private MainTitleService mainTitleService;
+
 
     @GetMapping("/generate")
     public ResponseEntity<QRCodeResponse> generateQRCode(@RequestParam String mMalUid, @RequestParam String mEngUid) {

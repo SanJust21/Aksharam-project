@@ -1,5 +1,6 @@
 package com.example.MuseumTicketing.Guide.img.backgroundImg;
 
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.example.MuseumTicketing.Guide.SecondSubHeading.commonId.CommonIdSs;
 import com.example.MuseumTicketing.Guide.SecondSubHeading.commonId.CommonIdSsRepo;
 import com.example.MuseumTicketing.Guide.firstSubHeading.FScommonId.CommonIdFs;
@@ -10,6 +11,7 @@ import com.example.MuseumTicketing.Guide.SecondSubHeading.commonId.CommonIdSs;
 import com.example.MuseumTicketing.Guide.SecondSubHeading.commonId.CommonIdSsRepo;
 import com.example.MuseumTicketing.Guide.firstSubHeading.FScommonId.CommonIdFs;
 import com.example.MuseumTicketing.Guide.firstSubHeading.FScommonId.FsCommonIdRepo;
+import com.example.MuseumTicketing.Guide.util.ErrorResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -61,9 +63,10 @@ public class BackgroundImgController {
                 return new ResponseEntity<>("CommonId is not matchig",HttpStatus.BAD_REQUEST);
             }
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
+            return handlerException(e);
         }
-        return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+        //return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @CrossOrigin
@@ -99,9 +102,10 @@ public class BackgroundImgController {
                 return new ResponseEntity<>("CommonId is not matchig",HttpStatus.BAD_REQUEST);
             }
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
+            return handlerException(e);
         }
-        return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+        //return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @DeleteMapping(path = "/deleteBackgroundImg/{commonId}/{imgId}")
@@ -119,7 +123,7 @@ public class BackgroundImgController {
                 CommonIdQRCode commonIdQRCode = commonIdQRCodeOptional.get();
                 String engId = commonIdQRCode.getEngId();
                 String malId = commonIdQRCode.getMalId();
-                int count = backgroundImgService.deleteBgImageMain(engId,malId,imgId);
+                int count = backgroundImgService.deleteBgImageMain(engId,malId,imgId,commonId);
                 if ( count>0){
                     return new ResponseEntity<>("BackgroundImage :"+commonId+" is deleted successfully",HttpStatus.OK);
                 } else if (count<0) {
@@ -131,7 +135,7 @@ public class BackgroundImgController {
                 CommonIdFs commonIdFs = commonIdFsOptional.get();
                 String engId = commonIdFs.getFsEngId();
                 String malId = commonIdFs.getFsMalId();
-                int count = backgroundImgService.deleteBgImageFirst(engId,malId,imgId);
+                int count = backgroundImgService.deleteBgImageFirst(engId,malId,imgId,commonId);
                 if ( count>0){
                     return new ResponseEntity<>("BackgroundImage :"+commonId+" is deleted successfully",HttpStatus.OK);
                 } else if (count<0) {
@@ -143,7 +147,7 @@ public class BackgroundImgController {
                 CommonIdSs commonIdSs = commonIdSsOptional.get();
                 String engId = commonIdSs.getSsEngId();
                 String malId = commonIdSs.getSsMalId();
-                int count = backgroundImgService.deleteBgImageSecond(engId,malId,imgId);
+                int count = backgroundImgService.deleteBgImageSecond(engId,malId,imgId,commonId);
                 if ( count>0){
                     return new ResponseEntity<>("BackgroundImage :"+commonId+" is deleted successfully",HttpStatus.OK);
                 } else if (count<0) {
@@ -155,8 +159,21 @@ public class BackgroundImgController {
                 return new ResponseEntity<>("CommonId is not matchig",HttpStatus.BAD_REQUEST);
             }
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
+            return handlerException(e);
         }
-        return new ResponseEntity<>("Something went wrong!!!",HttpStatus.INTERNAL_SERVER_ERROR);
+        //return new ResponseEntity<>("Something went wrong!!!",HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    private ResponseEntity<?> handlerException(Exception e) {
+        if (e instanceof NullPointerException){
+            return new ResponseEntity<>(new ErrorResponse("Null pointer exception occurred",400),HttpStatus.BAD_REQUEST);
+        } else if (e instanceof IllegalArgumentException) {
+            return new ResponseEntity<>(new ErrorResponse("Invalid argument exception occurred",400),HttpStatus.BAD_REQUEST);
+        } else if (e instanceof AmazonS3Exception) {
+            return new ResponseEntity<>(new ErrorResponse("error deleting image from s3 "+e.getMessage(),500),HttpStatus.INTERNAL_SERVER_ERROR);
+        }else {
+            return new ResponseEntity<>(new ErrorResponse("An unexpected error occurred : "+e.getMessage(),500),HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }

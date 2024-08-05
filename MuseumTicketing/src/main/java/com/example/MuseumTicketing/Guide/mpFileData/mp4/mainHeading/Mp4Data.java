@@ -23,6 +23,12 @@ public class Mp4Data {
     @Column(name = "dtId")
     private String dtId;
 
+    @Column(name = "engId")
+    private String engId;
+
+    @Column(name = "malId")
+    private String malId;
+
     public Mp4Data() {
     }
     @PrePersist

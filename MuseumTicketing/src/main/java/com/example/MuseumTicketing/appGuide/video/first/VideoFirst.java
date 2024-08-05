@@ -2,10 +2,12 @@ package com.example.MuseumTicketing.appGuide.video.first;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 @Data
 @Entity
 @Table(name = "videoFirst")
+@CrossOrigin
 public class VideoFirst {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,6 +37,11 @@ public class VideoFirst {
     private String mainMalId;
 
     public VideoFirst() {
+    }
+
+    public VideoFirst(String fName, String fUrl) {
+        this.fName = fName;
+        this.fUrl = fUrl;
     }
 
     public VideoFirst(String fName, String fUrl, String dtId) {

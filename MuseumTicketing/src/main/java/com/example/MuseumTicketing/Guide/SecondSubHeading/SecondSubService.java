@@ -6,6 +6,8 @@ import com.example.MuseumTicketing.Guide.SecondSubHeading.english.SecondSubEngli
 import com.example.MuseumTicketing.Guide.SecondSubHeading.english.SecondSubEnglishRepo;
 import com.example.MuseumTicketing.Guide.SecondSubHeading.malayalam.SecondSubMalayalam;
 import com.example.MuseumTicketing.Guide.SecondSubHeading.malayalam.SecondSubMalayalamRepo;
+import com.example.MuseumTicketing.Guide.img.backgroundImg.BackgroundImg;
+import com.example.MuseumTicketing.Guide.img.backgroundImg.BackgroundImgRepo;
 import com.example.MuseumTicketing.Guide.img.secondSubHeading.ImgSubSecond;
 import com.example.MuseumTicketing.Guide.img.secondSubHeading.ImgSubSecondRepo;
 import com.example.MuseumTicketing.Guide.mainHeading.MainDTO;
@@ -40,6 +42,8 @@ public class SecondSubService {
     private Mp4Data2Repo mp4Data2Repo;
     @Autowired
     private CommonIdSsRepo commonIdSsRepo;
+    @Autowired
+    private BackgroundImgRepo backgroundImgRepo;
 
     public ResponseEntity<?> addSubDataEnglish(String uId, MainDTO mainDTO) {
         try {
@@ -131,6 +135,10 @@ public class SecondSubService {
                     List<ImgSubSecond> imgSubSecondList = imgSubSecondRepo.findByengId(secondSubEnglish.getSsUid());
                     imgSubSecondList.sort(Comparator.comparing(ImgSubSecond::getImgID));
                     combinedDataSubSub.setImgData2List(imgSubSecondList);
+
+                    List<BackgroundImg>backgroundImgs=backgroundImgRepo.findByengId(secondSubEnglish.getSsUid());
+                    combinedDataSubSub.setBackgroundImgList(backgroundImgs);
+
                     // Fetching audio for SecondSubEnglish
                     List<Mp3Data2> mp3Data2List = mp3Data2Repo.findBydtId(secondSubEnglish.getSsUid());
                     mp3Data2List.sort(Comparator.comparing(Mp3Data2::getId));
@@ -181,6 +189,10 @@ public class SecondSubService {
                     List<ImgSubSecond> imgSubSecondList = imgSubSecondRepo.findBymalId(secondSubMalayalam.getSsUid());
                     imgSubSecondList.sort(Comparator.comparing(ImgSubSecond::getImgID));
                     combinedDataSubSub.setImgData2List(imgSubSecondList);
+
+                    List<BackgroundImg>backgroundImgs=backgroundImgRepo.findBymalId(secondSubMalayalam.getSsUid());
+                    combinedDataSubSub.setBackgroundImgList(backgroundImgs);
+
                     // Fetching audio for SecondSubEnglish
                     List<Mp3Data2> mp3Data2List = mp3Data2Repo.findBydtId(secondSubMalayalam.getSsUid());
                     mp3Data2List.sort(Comparator.comparing(Mp3Data2::getId));

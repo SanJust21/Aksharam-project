@@ -35,13 +35,13 @@ public class SecondSubMalayalam {
     public SecondSubMalayalam() {
     }
 
-    @PrePersist
-    @PreUpdate
-    public void setDefault(){
-        if (description==null){
-            description="No Data";
-        }if (ref==null){
-            ref="No Data";
-        }
-    }
+//    @PrePersist
+//    @PreUpdate
+//    public void setDefault(){
+//        if (description==null){
+//            description="No Data";
+//        }if (ref==null){
+//            ref="No Data";
+//        }
+//    }
 }

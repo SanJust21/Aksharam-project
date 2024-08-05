@@ -9,6 +9,7 @@ import com.example.MuseumTicketing.Guide.firstSubHeading.english.FirstSubEnglish
 import com.example.MuseumTicketing.Guide.firstSubHeading.malayalam.FirstSubMalayalam;
 import com.example.MuseumTicketing.Guide.firstSubHeading.malayalam.FirstSubMalayalamRepo;
 import com.example.MuseumTicketing.Guide.mainHeading.MainDTO;
+import com.example.MuseumTicketing.Guide.util.ErrorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +35,8 @@ public class SecondSubController {
     private FirstSubEnglishRepo firstSubEnglishRepo;
     @Autowired
     private DataTypeRepo dataTypeRepo;
+    @Autowired
+    private ErrorService errorService;
 
     @PostMapping(path = "/secondSub")
     public ResponseEntity<?> addSecondSubData(@RequestParam String uId,
@@ -63,7 +66,8 @@ public class SecondSubController {
 
             }
         }catch (Exception e){
-            e.printStackTrace();
+           // e.printStackTrace();
+            return errorService.handlerException(e);
         }
         return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -78,9 +82,10 @@ public class SecondSubController {
             }
             return secondSubService.generateCommonSs(englishId,malId);
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
+            return errorService.handlerException(e);
         }
-        return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+        //return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @GetMapping(path = "/getSecondSub")

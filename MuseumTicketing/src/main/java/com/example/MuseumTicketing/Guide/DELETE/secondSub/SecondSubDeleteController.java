@@ -1,6 +1,7 @@
 package com.example.MuseumTicketing.Guide.DELETE.secondSub;
 import com.example.MuseumTicketing.Guide.SecondSubHeading.commonId.CommonIdSsRepo;
 import com.example.MuseumTicketing.Guide.SecondSubHeading.commonId.CommonIdSsRepo;
+import com.example.MuseumTicketing.Guide.util.ErrorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,19 +16,24 @@ public class SecondSubDeleteController {
 
     @Autowired
     private CommonIdSsRepo commonIdSsRepo;
+
+    @Autowired
+    private ErrorService errorService;
+
     @DeleteMapping(path = "/commonIdSecond/{id}")
     public ResponseEntity<?> commonIdSecond(@PathVariable String id){
         try {
             int count =secondSubDeleteService.commonIdSecond(id);
             if (count>0){
-                return new ResponseEntity<>("All details deleted with "+id,HttpStatus.OK);
+                return new ResponseEntity<>("All details are deleted with "+id,HttpStatus.OK);
             }else {
                 return new ResponseEntity<>("No data found with "+id,HttpStatus.BAD_REQUEST);
             }
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
+            return errorService.handlerException(e);
         }
-        return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+        //return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 }

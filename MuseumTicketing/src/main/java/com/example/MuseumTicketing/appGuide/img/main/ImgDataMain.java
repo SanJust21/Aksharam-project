@@ -2,10 +2,14 @@ package com.example.MuseumTicketing.appGuide.img.main;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.springframework.web.bind.annotation.CrossOrigin;
+
+import java.util.List;
 
 @Data
 @Entity
 @Table(name = "imgMainMob")
+@CrossOrigin
 public class ImgDataMain {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,6 +39,5 @@ public class ImgDataMain {
         this.fUrl = fUrl;
         this.commonId = commonId;
     }
-
 
 }

@@ -23,6 +23,12 @@ public class Mp4Data1 {
     @Column(name = "dtId")
     private String dtId;
 
+    @Column(name = "engId")
+    private String engId;
+
+    @Column(name = "malId")
+    private String malId;
+
     @Column(name ="mainEngId")
     private String mainEngId;
 

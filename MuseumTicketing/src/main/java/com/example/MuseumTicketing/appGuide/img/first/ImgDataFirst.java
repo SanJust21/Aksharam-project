@@ -2,10 +2,12 @@ package com.example.MuseumTicketing.appGuide.img.first;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 @Data
 @Entity
 @Table(name = "imgFirstMob")
+@CrossOrigin
 public class ImgDataFirst {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

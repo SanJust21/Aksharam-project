@@ -1,5 +1,6 @@
 package com.example.MuseumTicketing.Guide.UPDATE.SecondSub;
 
+import com.example.MuseumTicketing.Guide.SecondSubHeading.commonId.CommonIdSs;
 import com.example.MuseumTicketing.Guide.SecondSubHeading.commonId.CommonIdSsRepo;
 import com.example.MuseumTicketing.Guide.SecondSubHeading.english.SecondSubEnglish;
 import com.example.MuseumTicketing.Guide.SecondSubHeading.english.SecondSubEnglishRepo;
@@ -21,6 +22,7 @@ import com.example.MuseumTicketing.Guide.mpFileData.MediaTypeDTO;
 import com.example.MuseumTicketing.Guide.mpFileData.MediaTypeService;
 import com.example.MuseumTicketing.Guide.mpType.FileType;
 import com.example.MuseumTicketing.Guide.mpType.FileTypeRepo;
+import com.example.MuseumTicketing.Guide.util.ErrorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -51,6 +53,8 @@ public class SecondSubUpdateController {
     private MediaTypeService mediaTypeService;
     @Autowired
     private CommonIdSsRepo commonIdSsRepo ;
+    @Autowired
+    private ErrorService errorService;
 
 
     @PutMapping(path = "/updateSecondData/{uId}")
@@ -80,7 +84,8 @@ public class SecondSubUpdateController {
                 }
             }
         }catch (Exception e){
-            e.printStackTrace();
+           // e.printStackTrace();
+            return errorService.handlerException(e);
         }
         return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -109,8 +114,9 @@ public class SecondSubUpdateController {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+//            e.printStackTrace();
+//            return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+            return errorService.handlerException(e);
         }
     }
 
@@ -137,11 +143,21 @@ public class SecondSubUpdateController {
                     return new ResponseEntity<>(responses,HttpStatus.OK);
                     //return mediaTypeService.addMp3(files,dtId);
                 } else if (fData != null && "Video".equalsIgnoreCase(fData)) {
-                    List<MediaTypeDTO> responses = new ArrayList<>();
-                    for (MultipartFile file : files){
-                        responses.add(mediaTypeService.updateSecondSubUploadMp4(file,uId));
+                    Optional<CommonIdSs>commonIdSsOptional = commonIdSsRepo.findBySsCommonId(uId);
+                    if (commonIdSsOptional.isPresent()){
+                        CommonIdSs commonIdSs = commonIdSsOptional.get();
+                        if (commonIdSs.getSsCommonId().equals(uId)){
+                            List<MediaTypeDTO> responses = new ArrayList<>();
+                            for (MultipartFile file : files){
+                                responses.add(mediaTypeService.updateSecondSubUploadMp4(file,uId));
+                            }
+                            return new ResponseEntity<>(responses,HttpStatus.OK);
+                        }else {
+                            return new ResponseEntity<>("CommonId :"+uId+" is not correct",HttpStatus.BAD_REQUEST);
+                        }
+                    }else {
+                        return new ResponseEntity<>("CommonId : "+uId+ " is not present",HttpStatus.BAD_REQUEST);
                     }
-                    return new ResponseEntity<>(responses,HttpStatus.OK);
                 } else {
                     return new ResponseEntity<>("File not present. Resend the file.", HttpStatus.BAD_REQUEST);
                 }
@@ -149,8 +165,9 @@ public class SecondSubUpdateController {
                 return new ResponseEntity<>("File not present. Resend the file.", HttpStatus.BAD_REQUEST);
             }
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
+            return errorService.handlerException(e);
         }
-        return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
+        //return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

@@ -9,4 +9,10 @@ public interface Mp4DataRepo extends JpaRepository<Mp4Data,Integer> {
     List<Mp4Data> findBydtId(String s);
 
     void deleteByDtId(String mEngUid);
+
+    List<Mp4Data> findByengId(String mEngUid);
+
+    List<Mp4Data> findBymalId(String mMalUid);
+
+
 }

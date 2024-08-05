@@ -5,6 +5,8 @@ import com.example.MuseumTicketing.Guide.SecondSubHeading.english.SecondSubEngli
 import com.example.MuseumTicketing.Guide.SecondSubHeading.english.SecondSubEnglishRepo;
 import com.example.MuseumTicketing.Guide.SecondSubHeading.malayalam.SecondSubMalayalam;
 import com.example.MuseumTicketing.Guide.SecondSubHeading.malayalam.SecondSubMalayalamRepo;
+import com.example.MuseumTicketing.Guide.img.backgroundImg.BackgroundImg;
+import com.example.MuseumTicketing.Guide.img.backgroundImg.BackgroundImgRepo;
 import com.example.MuseumTicketing.Guide.mpFileData.mp3.secondSub.Mp3Data2;
 import com.example.MuseumTicketing.Guide.mpFileData.mp3.secondSub.Mp3Data2Repo;
 import com.example.MuseumTicketing.Guide.mpFileData.mp4.secondSub.Mp4Data2;
@@ -51,6 +53,8 @@ public class SecondSubDeleteService {
     private Mp4Data2Repo mp4Data2Repo;
     @Autowired
     private CommonIdSsRepo commonIdSsRepo;
+    @Autowired
+    private BackgroundImgRepo backgroundImgRepo;
 
     @Transactional
 
@@ -60,6 +64,13 @@ public class SecondSubDeleteService {
         if (commonIdSs !=null){
             String englishId = commonIdSs.getSsEngId();
             String malId = commonIdSs.getSsMalId();
+
+            Optional<BackgroundImg>backgroundImgOptional =backgroundImgRepo.findByEngIdAndMalId(englishId,malId);
+            if (backgroundImgOptional.isPresent()){
+                BackgroundImg backgroundImg = backgroundImgOptional.get();
+                deleteImageFromS3(backgroundImg.getBgName());
+                backgroundImgRepo.delete(backgroundImg);
+            }
 
             Optional<SecondSubEnglish> secondSubEnglish = secondSubEnglishRepo.findByssUid(englishId);
             if (secondSubEnglish.isPresent()){
@@ -82,12 +93,12 @@ public class SecondSubDeleteService {
                     deleteDataFromS3(fileNamesToDelete);
                     mp3Data2Repo.deleteAllBydtId(englishId);
                 }
-                List<Mp4Data2> mp4Data2s = mp4Data2Repo.findBydtId(englishId);
+                List<Mp4Data2> mp4Data2s = mp4Data2Repo.findBydtId(commonIdSs.getSsCommonId());
                 if (!mp4Data2s.isEmpty()){
                     List<String> fileNamesToDelete = mp4Data2s.stream().map(Mp4Data2::getFName)
                             .collect(Collectors.toList());
                     deleteDataFromS3(fileNamesToDelete);
-                    mp4Data2Repo.deleteAllBydtId(englishId);
+                    mp4Data2Repo.deleteAllBydtId(commonIdSs.getSsCommonId());
                 }
             }
             Optional<SecondSubMalayalam> secondSubMalayalam = secondSubMalayalamRepo.findByssUid(malId);
@@ -103,13 +114,13 @@ public class SecondSubDeleteService {
                     deleteDataFromS3(fileNamesToDelete);
                     mp3Data2Repo.deleteAllBydtId(malId);
                 }
-                List<Mp4Data2> mp4Data2s = mp4Data2Repo.findBydtId(malId);
-                if (!mp4Data2s.isEmpty()){
-                    List<String> fileNamesToDelete = mp4Data2s.stream().map(Mp4Data2::getFName)
-                            .collect(Collectors.toList());
-                    deleteDataFromS3(fileNamesToDelete);
-                    mp4Data2Repo.deleteAllBydtId(malId);
-                }
+//                List<Mp4Data2> mp4Data2s = mp4Data2Repo.findBydtId(malId);
+//                if (!mp4Data2s.isEmpty()){
+//                    List<String> fileNamesToDelete = mp4Data2s.stream().map(Mp4Data2::getFName)
+//                            .collect(Collectors.toList());
+//                    deleteDataFromS3(fileNamesToDelete);
+//                    mp4Data2Repo.deleteAllBydtId(malId);
+//                }
             }
             commonIdSsRepo.deleteByssCommonId(id);
             return 1;
@@ -128,7 +139,7 @@ public class SecondSubDeleteService {
         }
     }
 
-
-
-
+    private void deleteImageFromS3(String fileName) {
+        s3Client.deleteObject(bucketName, fileName);
+    }
 }

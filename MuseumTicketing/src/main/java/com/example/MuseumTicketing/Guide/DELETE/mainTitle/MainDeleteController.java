@@ -45,6 +45,7 @@ import com.example.MuseumTicketing.Guide.mpFileData.mp4.mainHeading.Mp4DataRepo;
 import com.example.MuseumTicketing.Guide.mpFileData.mp4.secondSub.Mp4Data2;
 import com.example.MuseumTicketing.Guide.mpFileData.mp4.secondSub.Mp4Data2Repo;
 import com.example.MuseumTicketing.Guide.mpType.FileTypeRepo;
+import com.example.MuseumTicketing.Guide.util.ErrorService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -108,24 +109,33 @@ public class MainDeleteController {
     @Autowired
     private DataTypeRepo dataTypeRepo;
 
+    @Autowired
+    private ErrorService errorService;
+
     @Transactional
     @DeleteMapping("/delete/{commonId}")
-    public ResponseEntity<String> deleteByCommonId(@PathVariable String commonId) {
-        if (commonId == null || "undefined".equalsIgnoreCase(commonId)||commonId.isEmpty()) {
-            return new ResponseEntity<>("Common ID is required", HttpStatus.BAD_REQUEST);
+    public ResponseEntity<?> deleteByCommonId(@PathVariable String commonId) {
+        try {
+            if (commonId == null || "undefined".equalsIgnoreCase(commonId)||commonId.isEmpty()) {
+                return new ResponseEntity<>("Common ID is required", HttpStatus.BAD_REQUEST);
+            }
+
+            return mainDeleteService.deleteByCommonId(commonId);
+        }catch (Exception e){
+            return errorService.handlerException(e);
         }
-        int count = mainDeleteService.deleteByCommonId(commonId);
-        if (count>0){
-            return ResponseEntity.ok("Deleted all entities associated with commonId: " + commonId);
-        }else {
-            return new ResponseEntity<>("No Data associated with commonId: "+commonId,HttpStatus.NOT_FOUND);
-        }
+
 
     }
 
     @DeleteMapping(path = "/stringDelete/{uId}")
     public ResponseEntity<?> deleteMainData(@PathVariable String uId) {
-        return mainDeleteService.deleteMainString(uId);
+        try {
+            return mainDeleteService.deleteMainString(uId);
+        }catch (Exception e){
+            return errorService.handlerException(e);
+        }
+
     }
 
     @DeleteMapping(path = "/deleteImages")
@@ -157,7 +167,8 @@ public class MainDeleteController {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
+            return errorService.handlerException(e);
         }
         return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -186,8 +197,9 @@ public class MainDeleteController {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+            //e.printStackTrace();
+            return errorService.handlerException(e);
+            //return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -213,8 +225,8 @@ public class MainDeleteController {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
-
+           // e.printStackTrace();
+            return errorService.handlerException(e);
         }
         return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -233,7 +245,8 @@ public class MainDeleteController {
         } catch (EntityNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
+            return errorService.handlerException(e);
         }
         return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -253,7 +266,8 @@ public class MainDeleteController {
         } catch (EntityNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
+            return errorService.handlerException(e);
         }
         return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -284,8 +298,9 @@ public class MainDeleteController {
         } catch (EntityNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         } catch (Exception e) {
-            e.printStackTrace();
-            return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+//            e.printStackTrace();
+//            return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+            return errorService.handlerException(e);
         }
     }
 
@@ -310,15 +325,16 @@ public class MainDeleteController {
                     mainDeleteService.deleteMp4FirstByMainMalId(mainMalId);
                 }
 
-                return new ResponseEntity<>("MP3 deleted successfully", HttpStatus.OK);
+                return new ResponseEntity<>("MP4 deleted successfully", HttpStatus.OK);
             } else {
-                return new ResponseEntity<>("MP3 data not found", HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>("MP4 data not found", HttpStatus.NOT_FOUND);
             }
         } catch (EntityNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         } catch (Exception e) {
-            e.printStackTrace();
-            return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+//            e.printStackTrace();
+//            return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+            return errorService.handlerException(e);
         }
     }
 
@@ -337,8 +353,8 @@ public class MainDeleteController {
         } catch (EntityNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         } catch (Exception e) {
-            e.printStackTrace();
-
+//            e.printStackTrace();
+            return errorService.handlerException(e);
         }
         return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -358,8 +374,8 @@ public class MainDeleteController {
         } catch (EntityNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         } catch (Exception e) {
-            e.printStackTrace();
-
+//            e.printStackTrace();
+            return errorService.handlerException(e);
         }
         return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -372,14 +388,9 @@ public class MainDeleteController {
                 DataType dataType = dataTypeOptional.get();
                 String tData = dataType.getTalk();
                 if (tData != null && "English".equalsIgnoreCase(tData)){
-                    int count = mainDeleteService.deleteEngMainTitleByUid(uId);
-                    if (count>0){
-                        return new ResponseEntity<>("Deleted Successfully",HttpStatus.OK);
-                    }else {
-                        return new ResponseEntity<>("Can't be Deleted . Try again",HttpStatus.BAD_REQUEST);
-                    }
+                    return mainDeleteService.deleteEngMainTitleByUid(uId);
                 } else if (tData != null && "Malayalam".equalsIgnoreCase(tData)) {
-                   // return mainDeleteService.deleteMalMainTitleByUid(uId);
+                    return mainDeleteService.deleteMalMainTitleByUid(uId);
                 }else {
                     return new ResponseEntity<>(new ArrayList<>(), HttpStatus.BAD_REQUEST);
                 }
@@ -387,8 +398,10 @@ public class MainDeleteController {
                 return new ResponseEntity<>(new ArrayList<>(), HttpStatus.BAD_REQUEST);
             }
         }catch (Exception e){
-            e.printStackTrace();
-        }return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+//            e.printStackTrace();
+            return errorService.handlerException(e);
+        }
+        //return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 }

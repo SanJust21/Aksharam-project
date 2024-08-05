@@ -2,10 +2,12 @@ package com.example.MuseumTicketing.appGuide.audio.first;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 @Data
 @Entity
 @Table(name = "audioFirst")
+@CrossOrigin
 public class AudioFirst {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,6 +23,9 @@ public class AudioFirst {
     @Column(name = "dtId")
     private String dtId;
 
+    @Column(name = "fsCommonId")
+    private String fsCommonId;
+
     @Column(name ="mainEngId")
     private String mainEngId;
 
@@ -28,6 +33,13 @@ public class AudioFirst {
     private String mainMalId;
 
     public AudioFirst() {
+    }
+
+    public AudioFirst(String fName, String fUrl, String dtId, String fsCommonId) {
+        this.fName = fName;
+        this.fUrl = fUrl;
+        this.dtId = dtId;
+        this.fsCommonId = fsCommonId;
     }
 
     public AudioFirst(String fName, String fUrl, String dtId) {

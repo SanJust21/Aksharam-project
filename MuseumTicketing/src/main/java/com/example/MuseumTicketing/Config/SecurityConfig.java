@@ -55,6 +55,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/dataType1/getTalk").permitAll()
                         .requestMatchers("/api/topicData/getTopic").permitAll()
                         .requestMatchers("/api/DataEntry1/getMainComplete").permitAll()
+                        .requestMatchers("/api/DataEntry1/getSubDataByCommonId").permitAll()
                         .requestMatchers("/api/DataEntry1/getMainId").permitAll()
                         .requestMatchers("/api/fileType/getFileType").permitAll()
                         .requestMatchers("/api/qrcode/getScanDetails").permitAll()

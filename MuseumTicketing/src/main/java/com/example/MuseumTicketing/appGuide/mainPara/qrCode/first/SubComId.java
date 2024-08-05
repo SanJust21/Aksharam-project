@@ -2,10 +2,12 @@ package com.example.MuseumTicketing.appGuide.mainPara.qrCode.first;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 @Data
 @Entity
 @Table(name = "subComId")
+@CrossOrigin
 public class SubComId {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

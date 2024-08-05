@@ -36,10 +36,23 @@ public class MuseumTicketingApplication implements CommandLineRunner {
 			users.setPermAddress("admin");
 			users.setRole(Role.ADMIN);
 			users.setPassword(new BCryptPasswordEncoder().encode("password"));
-
 			usersRepo.save(users);
-
 		}
 
+		Users guestAccount = usersRepo.findByRole(Role.GUEST);
+
+		if (guestAccount==null){
+			Users users = new Users();
+			users.setName("guest");
+			users.setEmail("guest@gmail.com");
+			users.setEmployeeId("guest");
+			users.setImage("guest");
+			users.setPhoneNo("9999999999");
+			users.setTempAddress("guest");
+			users.setPermAddress("guest");
+			users.setRole(Role.GUEST);
+			users.setPassword(new BCryptPasswordEncoder().encode("password"));
+			usersRepo.save(users);
+		}
 	}
 }

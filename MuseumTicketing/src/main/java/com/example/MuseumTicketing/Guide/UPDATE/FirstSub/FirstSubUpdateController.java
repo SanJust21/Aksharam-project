@@ -1,5 +1,6 @@
 package com.example.MuseumTicketing.Guide.UPDATE.FirstSub;
 
+import com.example.MuseumTicketing.Guide.firstSubHeading.FScommonId.CommonIdFs;
 import com.example.MuseumTicketing.Guide.firstSubHeading.FScommonId.FsCommonIdRepo;
 import com.example.MuseumTicketing.Guide.firstSubHeading.english.FirstSubEnglish;
 import com.example.MuseumTicketing.Guide.firstSubHeading.english.FirstSubEnglishRepo;
@@ -25,6 +26,7 @@ import com.example.MuseumTicketing.Guide.mpFileData.mp3.firstSub.Mp3Data1Repo;
 import com.example.MuseumTicketing.Guide.mpFileData.mp4.firstSub.Mp4Data1Repo;
 import com.example.MuseumTicketing.Guide.mpType.FileType;
 import com.example.MuseumTicketing.Guide.mpType.FileTypeRepo;
+import com.example.MuseumTicketing.Guide.util.ErrorService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -61,6 +63,8 @@ public class FirstSubUpdateController {
     private MediaTypeService mediaTypeService;
     @Autowired
     private FsCommonIdRepo fsCommonIdRepo;
+    @Autowired
+    private ErrorService errorService;
 
 
     @PutMapping(path = "/updateFirstData/{uId}")
@@ -90,7 +94,8 @@ public class FirstSubUpdateController {
                 }
             }
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
+            return errorService.handlerException(e);
         }
         return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -117,8 +122,9 @@ public class FirstSubUpdateController {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+//            e.printStackTrace();
+//            return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+            return errorService.handlerException(e);
         }
     }
 
@@ -142,11 +148,21 @@ public class FirstSubUpdateController {
                     }
                     return new ResponseEntity<>(responses, HttpStatus.OK);
                 } else if (fData != null && "Video".equalsIgnoreCase(fData)) {
-                    List<MediaTypeDTO> responses = new ArrayList<>();
-                    for (MultipartFile file : files) {
-                        responses.add(mediaTypeService.updateFirstSubUploadMp4(file, uId));
+                    Optional<CommonIdFs>commonIdFsOptional=fsCommonIdRepo.findByFsCommonId(uId);
+                    if (commonIdFsOptional.isPresent()){
+                        CommonIdFs commonIdFs = commonIdFsOptional.get();
+                        if (commonIdFs.getFsCommonId().equals(uId)){
+                            List<MediaTypeDTO> responses = new ArrayList<>();
+                            for (MultipartFile file : files) {
+                                responses.add(mediaTypeService.updateFirstSubUploadMp4(file, uId));
+                            }
+                            return new ResponseEntity<>(responses, HttpStatus.OK);
+                        }else {
+                            return new ResponseEntity<>("CommonId : "+uId+"  is not correct.",HttpStatus.BAD_REQUEST);
+                        }
+                    }else {
+                        return new ResponseEntity<>("CommonId : "+uId+" is not present",HttpStatus.BAD_REQUEST);
                     }
-                    return new ResponseEntity<>(responses, HttpStatus.OK);
                 } else {
                     return new ResponseEntity<>("File not present. Resend the file.", HttpStatus.BAD_REQUEST);
                 }
@@ -154,8 +170,9 @@ public class FirstSubUpdateController {
                 return new ResponseEntity<>("File not present. Resend the file.", HttpStatus.BAD_REQUEST);
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+//            e.printStackTrace();
+//            return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+            return errorService.handlerException(e);
         }
     }
 

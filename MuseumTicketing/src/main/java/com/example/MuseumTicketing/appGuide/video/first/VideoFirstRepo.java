@@ -8,5 +8,7 @@ public interface VideoFirstRepo extends JpaRepository<VideoFirst,Integer> {
     List<VideoFirst> findByfsMalId(String fsUid);
 
     List<VideoFirst> findByfsEngId(String fsUid);
+
+    List<VideoFirst> findBydtId(String fsCommonId);
 //    List<VideoFirst> findBydtId(String fsUid);
 }
