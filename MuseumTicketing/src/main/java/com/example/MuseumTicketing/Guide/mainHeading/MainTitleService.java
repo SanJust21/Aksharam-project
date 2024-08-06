@@ -573,13 +573,13 @@ public class MainTitleService {
         List<GetDtoSub>getDtoSubList=new ArrayList<>();
         List<FirstSubMalayalam>firstSubMalayalamList = firstSubMalayalamRepo.findByMainUid(mainMalId);
         if (!firstSubMalayalamList.isEmpty()){
-            GetDtoSub getDtoSub = new GetDtoSub();
-            for (FirstSubMalayalam firstSubMalayalam : firstSubMalayalamList){
 
+            for (FirstSubMalayalam firstSubMalayalam : firstSubMalayalamList){
+                GetDtoSub getDtoSub = new GetDtoSub();
                 getDtoSub.setTitle(firstSubMalayalam.getTitle());
                 getDtoSub.setuId(firstSubMalayalam.getFsUid());
+                getDtoSubList.add(getDtoSub);
             }
-            getDtoSubList.add(getDtoSub);
         }
         return new ResponseEntity<>(getDtoSubList,HttpStatus.OK);
     }
@@ -588,12 +588,12 @@ public class MainTitleService {
         List<GetDtoSub>getDtoSubList = new ArrayList<>();
         List<FirstSubEnglish>firstSubEnglishList=firstSubEnglishRepo.findByMainUid(mainEngId);
         if (!firstSubEnglishList.isEmpty()){
-            GetDtoSub getDtoSub = new GetDtoSub();
             for (FirstSubEnglish firstSubEnglish : firstSubEnglishList){
+                GetDtoSub getDtoSub = new GetDtoSub();
                 getDtoSub.setTitle(firstSubEnglish.getTitle());
                 getDtoSub.setuId(firstSubEnglish.getFsUid());
+                getDtoSubList.add(getDtoSub);
             }
-            getDtoSubList.add(getDtoSub);
         }
         return new ResponseEntity<>(getDtoSubList,HttpStatus.OK);
     }
@@ -602,12 +602,12 @@ public class MainTitleService {
         List<GetDtoSub>getDtoSubList=new ArrayList<>();
         List<SecondSubMalayalam>secondSubMalayalamList=secondSubMalayalamRepo.findByfsUid(fsMalId);
         if (!secondSubMalayalamList.isEmpty()){
-            GetDtoSub getDtoSub = new GetDtoSub();
             for (SecondSubMalayalam secondSubMalayalam : secondSubMalayalamList){
+                GetDtoSub getDtoSub = new GetDtoSub();
                 getDtoSub.setTitle(secondSubMalayalam.getTitle());
                 getDtoSub.setuId(secondSubMalayalam.getSsUid());
+                getDtoSubList.add(getDtoSub);
             }
-            getDtoSubList.add(getDtoSub);
         }
         return new ResponseEntity<>(getDtoSubList,HttpStatus.OK);
     }
@@ -616,12 +616,12 @@ public class MainTitleService {
         List<GetDtoSub>getDtoSubList=new ArrayList<>();
         List<SecondSubEnglish>secondSubEnglishList=secondSubEnglishRepo.findByfsUid(fsEngId);
         if (!secondSubEnglishList.isEmpty()){
-            GetDtoSub getDtoSub = new GetDtoSub();
             for (SecondSubEnglish secondSubEnglish : secondSubEnglishList){
+                GetDtoSub getDtoSub = new GetDtoSub();
                 getDtoSub.setTitle(secondSubEnglish.getTitle());
                 getDtoSub.setuId(secondSubEnglish.getSsUid());
+                getDtoSubList.add(getDtoSub);
             }
-            getDtoSubList.add(getDtoSub);
         }
         return new ResponseEntity<>(getDtoSubList,HttpStatus.OK);
     }
