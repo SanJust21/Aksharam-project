@@ -294,7 +294,7 @@ public class FirstSubService {
                             combinedDataSubSub.setImgData2List(imgSubSecondList);
 
                             List<BackgroundImg>backgroundImgList=backgroundImgRepo.findByengId(secondSubEnglish.getSsUid());
-                            combinedDataSub.setBackgroundImgList(backgroundImgList);
+                            combinedDataSubSub.setBackgroundImgList(backgroundImgList);
 
                             // Fetching audio for SecondSubEnglish
                             List<Mp3Data2> mp3Data2List = mp3Data2Repo.findBydtId(secondSubEnglish.getSsUid());
