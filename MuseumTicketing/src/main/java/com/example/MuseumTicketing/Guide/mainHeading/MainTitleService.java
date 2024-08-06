@@ -578,7 +578,6 @@ public class MainTitleService {
         List<GetDtoSub>getDtoSubList=new ArrayList<>();
         List<FirstSubMalayalam>firstSubMalayalamList = firstSubMalayalamRepo.findByMainUid(mainMalId);
         if (!firstSubMalayalamList.isEmpty()){
-
             for (FirstSubMalayalam firstSubMalayalam : firstSubMalayalamList){
                 String fsMalId = firstSubMalayalam.getFsUid();
                 CommonIdFs commonIdFs =fsCommonIdRepo.findByfsMalId(fsMalId);
@@ -623,7 +622,8 @@ public class MainTitleService {
         if (!secondSubMalayalamList.isEmpty()){
             for (SecondSubMalayalam secondSubMalayalam : secondSubMalayalamList){
                 GetDtoSub getDtoSub = new GetDtoSub();
-                Optional<CommonIdSs>commonIdSsOptional=commonIdSsRepo.findByssMalId(secondSubMalayalam.getSsUid());
+                String ssMalId = secondSubMalayalam.getSsUid();
+                Optional<CommonIdSs>commonIdSsOptional=commonIdSsRepo.findByssMalId(ssMalId);
                 if (commonIdSsOptional.isPresent()){
                     CommonIdSs commonIdSs = commonIdSsOptional.get();
                     getDtoSub.setTitle(secondSubMalayalam.getTitle());
