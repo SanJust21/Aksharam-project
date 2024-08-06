@@ -57,8 +57,6 @@ public class SecondSubDeleteService {
     private BackgroundImgRepo backgroundImgRepo;
 
     @Transactional
-
-
     public int commonIdSecond(String id) {
         CommonIdSs commonIdSs = commonIdSsRepo.findByssCommonId(id);
         if (commonIdSs !=null){

@@ -16,6 +16,7 @@ import com.example.MuseumTicketing.Guide.mpFileData.mp3.secondSub.Mp3Data2Repo;
 import com.example.MuseumTicketing.Guide.mpFileData.mp4.secondSub.Mp4Data2;
 import com.example.MuseumTicketing.Guide.mpFileData.mp4.secondSub.Mp4Data2Repo;
 import com.example.MuseumTicketing.Guide.util.AlphaNumeric;
+import com.example.MuseumTicketing.Guide.util.ErrorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,6 +45,8 @@ public class SecondSubService {
     private CommonIdSsRepo commonIdSsRepo;
     @Autowired
     private BackgroundImgRepo backgroundImgRepo;
+    @Autowired
+    private ErrorService errorService;
 
     public ResponseEntity<?> addSubDataEnglish(String uId, MainDTO mainDTO) {
         try {
@@ -66,9 +69,10 @@ public class SecondSubService {
             secondSubEnglishRepo.save(secondSubEnglish);
             return new ResponseEntity<>(secondSubEnglish,HttpStatus.OK);
         }catch (Exception e){
-            e.printStackTrace();
+           // e.printStackTrace();
+            return errorService.handlerException(e);
         }
-        return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+        //return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     public ResponseEntity<?> addSubDataMalayalam(String uId, MainDTO mainDTO) {
@@ -93,9 +97,10 @@ public class SecondSubService {
             secondSubMalayalamRepo.save(secondSubMalayalam);
             return new ResponseEntity<>(secondSubMalayalam, HttpStatus.OK);
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
+            return errorService.handlerException(e);
         }
-        return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+        //return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     public ResponseEntity<?> generateCommonSs(String englishId, String malId) {

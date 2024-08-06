@@ -10,6 +10,7 @@ import com.example.MuseumTicketing.Guide.firstSubHeading.english.FirstSubEnglish
 import com.example.MuseumTicketing.Guide.firstSubHeading.malayalam.FirstSubMalayalam;
 import com.example.MuseumTicketing.Guide.firstSubHeading.malayalam.FirstSubMalayalamRepo;
 import com.example.MuseumTicketing.Guide.mainHeading.MainDTO;
+import com.example.MuseumTicketing.Guide.util.ErrorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,9 @@ public class FirstSubUpdateService {
     private FirstSubMalayalamRepo firstSubMalayalamRepo;
     @Autowired
     private FirstSubEnglishRepo firstSubEnglishRepo;
+    @Autowired
+    private ErrorService errorService;
+
     public ResponseEntity<?> updateFirstSubDataMalyalam(String uId, MainDTO mainDTO) {
         try {
             Optional<FirstSubMalayalam> firstSubMalayalam = firstSubMalayalamRepo.findByfsUid(uId);
@@ -41,7 +45,8 @@ public class FirstSubUpdateService {
                 }
             }
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
+            return errorService.handlerException(e);
         }
         return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
 
@@ -64,7 +69,8 @@ public class FirstSubUpdateService {
                 }
             }
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
+            return errorService.handlerException(e);
         }
         return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
     }

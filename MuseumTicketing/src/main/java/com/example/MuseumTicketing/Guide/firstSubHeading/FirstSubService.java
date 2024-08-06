@@ -36,6 +36,7 @@ import com.example.MuseumTicketing.Guide.mpFileData.mp4.firstSub.Mp4Data1Repo;
 import com.example.MuseumTicketing.Guide.mpFileData.mp4.secondSub.Mp4Data2;
 import com.example.MuseumTicketing.Guide.mpFileData.mp4.secondSub.Mp4Data2Repo;
 import com.example.MuseumTicketing.Guide.util.AlphaNumeric;
+import com.example.MuseumTicketing.Guide.util.ErrorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -81,6 +82,8 @@ public class FirstSubService {
     private SecondSubMalayalamRepo secondSubMalayalamRepo;
     @Autowired
     private BackgroundImgRepo backgroundImgRepo;
+    @Autowired
+    private ErrorService errorService;
 
     public ResponseEntity<?> addSubDataMalayalam(String uId, MainDTO mainDTO) {
         try {
@@ -103,9 +106,10 @@ public class FirstSubService {
             firstSubMalayalamRepo.save(firstSubMalayalam);
             return new ResponseEntity<>(firstSubMalayalam,HttpStatus.OK);
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
+            return errorService.handlerException(e);
         }
-        return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+        //return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     public ResponseEntity<?> addSubDataEnglish(String uId, MainDTO mainDTO) {
@@ -129,9 +133,10 @@ public class FirstSubService {
             firstSubEnglishRepo.save(firstSubEnglish);
             return new ResponseEntity<>(firstSubEnglish,HttpStatus.OK);
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
+            return errorService.handlerException(e);
         }
-        return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+        //return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     public ResponseEntity<List<CombinedDataSub>> getCombinedListEng() {
@@ -219,9 +224,10 @@ public class FirstSubService {
             fsCommonIdRepo.save(commonIdFs);
             return new ResponseEntity<>(commonIdFs,HttpStatus.CREATED);
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
+            return errorService.handlerException(e);
         }
-        return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+        //return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     public ResponseEntity<?> getFirstSubCombinedListEng(String id) {
@@ -311,7 +317,8 @@ public class FirstSubService {
             }
 
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
+            return errorService.handlerException(e);
         }
         return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -399,7 +406,8 @@ public class FirstSubService {
             }
 
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
+            return errorService.handlerException(e);
         }
         return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
     }

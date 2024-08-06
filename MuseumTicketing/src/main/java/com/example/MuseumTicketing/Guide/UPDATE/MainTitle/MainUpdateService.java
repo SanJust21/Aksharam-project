@@ -10,6 +10,7 @@ import com.example.MuseumTicketing.Guide.mainHeading.mainEng.MainTitleEng;
 import com.example.MuseumTicketing.Guide.mainHeading.mainEng.MainTitleEngRepo;
 import com.example.MuseumTicketing.Guide.mainHeading.mainMal.MainTitleMal;
 import com.example.MuseumTicketing.Guide.mainHeading.mainMal.MainTitleMalRepo;
+import com.example.MuseumTicketing.Guide.util.ErrorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,12 +26,9 @@ public class MainUpdateService {
     private MainTitleEngRepo mainTitleEngRepo;
     @Autowired
     private MainTitleMalRepo mainTitleMalRepo;
-//    @Autowired
-//    private ImgRepo imgRepo;
-//    @Autowired
-//    private Mp3Data mp3Data;
-//    @Autowired
-//    private Mp4Data mp4Data;
+    @Autowired
+    private ErrorService errorService;
+
 
 
     public ResponseEntity<?> updateDataMalyalam(String uId, MainDTO mainDTO) {
@@ -50,7 +48,8 @@ public class MainUpdateService {
                 return new ResponseEntity<>(orderedList, HttpStatus.OK);
             }
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
+            return errorService.handlerException(e);
         }
         return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -69,9 +68,10 @@ public class MainUpdateService {
 
             return new ResponseEntity<>(orderedList, HttpStatus.OK);
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
+            return errorService.handlerException(e);
         }
-        return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+        //return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 }

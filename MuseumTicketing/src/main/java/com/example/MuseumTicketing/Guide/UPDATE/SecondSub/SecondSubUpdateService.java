@@ -15,6 +15,7 @@ import com.example.MuseumTicketing.Guide.img.secondSubHeading.ImgSubSecondRepo;
 import com.example.MuseumTicketing.Guide.mainHeading.MainDTO;
 import com.example.MuseumTicketing.Guide.mpFileData.mp3.secondSub.Mp3Data2Repo;
 import com.example.MuseumTicketing.Guide.mpFileData.mp4.secondSub.Mp4Data2Repo;
+import com.example.MuseumTicketing.Guide.util.ErrorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +36,10 @@ public class SecondSubUpdateService {
     private Mp3Data2Repo mp3Data2Repo;
     @Autowired
     private Mp4Data2Repo mp4Data2Repo;
+    @Autowired
+    private ErrorService errorService;
+
+
     public ResponseEntity<?> updateSecondSubDataMalayalam(String uId, MainDTO mainDTO) {
         try {
             Optional<SecondSubMalayalam> secondSubMalayalam = secondSubMalayalamRepo.findByssUid(uId);
@@ -52,7 +57,8 @@ public class SecondSubUpdateService {
                 }
             }
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
+            return errorService.handlerException(e);
         }
         return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -74,7 +80,8 @@ public class SecondSubUpdateService {
                 }
             }
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
+            return errorService.handlerException(e);
         }
         return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
     }

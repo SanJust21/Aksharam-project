@@ -59,6 +59,7 @@ import com.example.MuseumTicketing.Guide.mpFileData.mp4.mainHeading.Mp4DataRepo;
 import com.example.MuseumTicketing.Guide.mpFileData.mp4.secondSub.Mp4Data2;
 import com.example.MuseumTicketing.Guide.mpFileData.mp4.secondSub.Mp4Data2Repo;
 import com.example.MuseumTicketing.Guide.util.AlphaNumeric;
+import com.example.MuseumTicketing.Guide.util.ErrorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -130,6 +131,8 @@ public class MainTitleService {
 
     @Autowired
     private BackgroundImgRepo backgroundImgRepo;
+    @Autowired
+    private ErrorService errorService;
 
 
     public ResponseEntity<?> addMainTitleEng(MainDTO mainDTO) {
@@ -150,9 +153,10 @@ public class MainTitleService {
             mtEngRepo.save(mtEng);
             return new ResponseEntity<>(mtEng,HttpStatus.OK);
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
+            return errorService.handlerException(e);
         }
-        return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+        //return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     public ResponseEntity<?> addMainTitleMal(MainDTO mainDTO) {
@@ -174,9 +178,10 @@ public class MainTitleService {
             mtMalRepo.save(mtMal);
             return new ResponseEntity<>(mtMal,HttpStatus.OK);
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
+            return errorService.handlerException(e);
         }
-        return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+        //return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 
