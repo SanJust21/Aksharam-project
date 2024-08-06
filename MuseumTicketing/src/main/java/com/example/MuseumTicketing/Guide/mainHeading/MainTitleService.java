@@ -580,10 +580,17 @@ public class MainTitleService {
         if (!firstSubMalayalamList.isEmpty()){
 
             for (FirstSubMalayalam firstSubMalayalam : firstSubMalayalamList){
-                GetDtoSub getDtoSub = new GetDtoSub();
-                getDtoSub.setTitle(firstSubMalayalam.getTitle());
-                getDtoSub.setuId(firstSubMalayalam.getFsUid());
-                getDtoSubList.add(getDtoSub);
+                String fsMalId = firstSubMalayalam.getFsUid();
+                CommonIdFs commonIdFs =fsCommonIdRepo.findByfsMalId(fsMalId);
+                if (commonIdFs==null){
+                    return new ResponseEntity<>(new ArrayList<>(),HttpStatus.NOT_FOUND);
+                }else {
+                    String fsCommonId = commonIdFs.getFsCommonId();
+                    GetDtoSub getDtoSub = new GetDtoSub();
+                    getDtoSub.setTitle(firstSubMalayalam.getTitle());
+                    getDtoSub.setCommonId(fsCommonId);
+                    getDtoSubList.add(getDtoSub);
+                }
             }
         }
         return new ResponseEntity<>(getDtoSubList,HttpStatus.OK);
@@ -594,10 +601,17 @@ public class MainTitleService {
         List<FirstSubEnglish>firstSubEnglishList=firstSubEnglishRepo.findByMainUid(mainEngId);
         if (!firstSubEnglishList.isEmpty()){
             for (FirstSubEnglish firstSubEnglish : firstSubEnglishList){
-                GetDtoSub getDtoSub = new GetDtoSub();
-                getDtoSub.setTitle(firstSubEnglish.getTitle());
-                getDtoSub.setuId(firstSubEnglish.getFsUid());
-                getDtoSubList.add(getDtoSub);
+                String fsEngId = firstSubEnglish.getFsUid();
+                CommonIdFs commonIdFs = fsCommonIdRepo.findByfsEngId(fsEngId);
+                if (commonIdFs==null){
+                    return new ResponseEntity<>(new ArrayList<>(),HttpStatus.NOT_FOUND);
+                }else {
+                    String CommonId = commonIdFs.getFsCommonId();
+                    GetDtoSub getDtoSub = new GetDtoSub();
+                    getDtoSub.setTitle(firstSubEnglish.getTitle());
+                    getDtoSub.setCommonId(commonId);
+                    getDtoSubList.add(getDtoSub);
+                }
             }
         }
         return new ResponseEntity<>(getDtoSubList,HttpStatus.OK);
@@ -609,9 +623,13 @@ public class MainTitleService {
         if (!secondSubMalayalamList.isEmpty()){
             for (SecondSubMalayalam secondSubMalayalam : secondSubMalayalamList){
                 GetDtoSub getDtoSub = new GetDtoSub();
-                getDtoSub.setTitle(secondSubMalayalam.getTitle());
-                getDtoSub.setuId(secondSubMalayalam.getSsUid());
-                getDtoSubList.add(getDtoSub);
+                Optional<CommonIdSs>commonIdSsOptional=commonIdSsRepo.findByssMalId(secondSubMalayalam.getSsUid());
+                if (commonIdSsOptional.isPresent()){
+                    CommonIdSs commonIdSs = commonIdSsOptional.get();
+                    getDtoSub.setTitle(secondSubMalayalam.getTitle());
+                    getDtoSub.setCommonId(commonIdSs.getSsCommonId());
+                    getDtoSubList.add(getDtoSub);
+                }
             }
         }
         return new ResponseEntity<>(getDtoSubList,HttpStatus.OK);
@@ -623,9 +641,13 @@ public class MainTitleService {
         if (!secondSubEnglishList.isEmpty()){
             for (SecondSubEnglish secondSubEnglish : secondSubEnglishList){
                 GetDtoSub getDtoSub = new GetDtoSub();
-                getDtoSub.setTitle(secondSubEnglish.getTitle());
-                getDtoSub.setuId(secondSubEnglish.getSsUid());
-                getDtoSubList.add(getDtoSub);
+                Optional<CommonIdSs>commonIdSsOptional=commonIdSsRepo.findByssEngId(secondSubEnglish.getSsUid());
+                if (commonIdSsOptional.isPresent()){
+                    CommonIdSs commonIdSs = commonIdSsOptional.get();
+                    getDtoSub.setTitle(secondSubEnglish.getTitle());
+                    getDtoSub.setCommonId(commonIdSs.getSsCommonId());
+                    getDtoSubList.add(getDtoSub);
+                }
             }
         }
         return new ResponseEntity<>(getDtoSubList,HttpStatus.OK);

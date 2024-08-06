@@ -1,18 +1,18 @@
 package com.example.MuseumTicketing.Guide.firstSubHeading;
 
 public class GetDtoSub {
-    private String uId;
+    private String commonId;
     private String title;
 
     public GetDtoSub() {
     }
 
-    public String getuId() {
-        return uId;
+    public String getCommonId() {
+        return commonId;
     }
 
-    public void setuId(String uId) {
-        this.uId = uId;
+    public void setCommonId(String commonId) {
+        this.commonId = commonId;
     }
 
     public String getTitle() {
