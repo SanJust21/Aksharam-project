@@ -609,7 +609,7 @@ public class MainTitleService {
                     String CommonId = commonIdFs.getFsCommonId();
                     GetDtoSub getDtoSub = new GetDtoSub();
                     getDtoSub.setTitle(firstSubEnglish.getTitle());
-                    getDtoSub.setCommonId(commonId);
+                    getDtoSub.setCommonId(CommonId);
                     getDtoSubList.add(getDtoSub);
                 }
             }
