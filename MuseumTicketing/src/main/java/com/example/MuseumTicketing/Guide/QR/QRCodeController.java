@@ -5,6 +5,7 @@ import com.example.MuseumTicketing.Guide.mainHeading.MainTitleService;
 import com.example.MuseumTicketing.Guide.mainHeading.CombinedData;
 import com.example.MuseumTicketing.Guide.mainHeading.MainTitleService;
 import com.example.MuseumTicketing.Guide.util.ErrorService;
+import com.example.MuseumTicketing.appGuide.mainPara.qrCode.CommonQRParaId;
 import com.google.zxing.WriterException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/qrcode")
@@ -55,7 +57,6 @@ public class QRCodeController {
             QRCodeResponse qrCodeResponse = new QRCodeResponse(null,"An error occurred while generating or saving the QrCode .Please try again later");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(qrCodeResponse);
         }
-
     }
 
     @GetMapping(path = "/getScanDetails")

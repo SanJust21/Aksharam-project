@@ -189,13 +189,19 @@ public class MainTopicService {
 
     public ResponseEntity<?> generateComId(String engId, String malId) {
         try {
-            SubComId comId = new SubComId();
-            comId.setFsMalId(malId);
-            comId.setFsEngId(engId);
-            String genId = alphaNumeric.generateRandomNumber();
-            comId.setFsCommonId(genId);
-            subComIdRepo.save(comId);
-            return new ResponseEntity<>(comId,HttpStatus.CREATED);
+            SubComId subComId = subComIdRepo.findByFsEngIdAndFsMalId(engId,malId);
+            if (subComId.getFsEngId().equals(engId)&&subComId.getFsMalId().equals(malId)){
+                return new ResponseEntity<>("CommonId : "+subComId.getFsCommonId(),HttpStatus.OK);
+            }else {
+                SubComId comId = new SubComId();
+                comId.setFsMalId(malId);
+                comId.setFsEngId(engId);
+                String genId = alphaNumeric.generateRandomNumber();
+                comId.setFsCommonId(genId);
+                subComIdRepo.save(comId);
+                return new ResponseEntity<>(comId,HttpStatus.CREATED);
+            }
+
         }catch (Exception e){
            // e.printStackTrace();
             return errorService.handlerException(e);
@@ -565,7 +571,4 @@ public class MainTopicService {
         }
         return new ResponseEntity<>("FirstSub is not deleted.Try agin",HttpStatus.BAD_REQUEST);
     }
-
-
-
 }

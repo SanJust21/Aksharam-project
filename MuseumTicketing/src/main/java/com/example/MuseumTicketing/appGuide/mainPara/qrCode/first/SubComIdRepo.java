@@ -10,4 +10,6 @@ public interface SubComIdRepo extends JpaRepository<SubComId,Integer> {
     SubComId findByfsEngId(String fsUid);
 
     SubComId findByfsMalId(String fsUid);
+
+    SubComId findByFsEngIdAndFsMalId(String engId, String malId);
 }

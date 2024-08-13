@@ -137,6 +137,14 @@ public class CommonQRParaIdService {
         return qrCode;
     }
 
+    public String getCommonId(String mMalUid, String mEngUid) {
+        Optional<CommonQRParaId>commonQRParaIdOptional=commonQRParaIdRepo.findByMalIdAndEngId(mMalUid,mEngUid);
+        if (commonQRParaIdOptional.isPresent()){
+            CommonQRParaId commonQRParaId = commonQRParaIdOptional.get();
+            return commonQRParaId.getCommonId();
+        }return null;
+    }
+
 
     public ResponseEntity<List<CombinedPara>> getCombinedList(String mainId) {
         try {
@@ -366,4 +374,172 @@ public class CommonQRParaIdService {
         }
         return new ResponseEntity<>(new ArrayList<>(),HttpStatus.BAD_REQUEST);
     }
+
+    public ResponseEntity<List<CombinedGetAllPara>> getAllDetailsByDataType(Integer dtId) {
+        Optional<DataType>dataTypeOptional=dataTypeRepo.findById(dtId);
+        if (dataTypeOptional.isPresent()){
+            DataType dataType=dataTypeOptional.get();
+            String talk= dataType.getTalk();
+            if ("Malayalam".equalsIgnoreCase(talk)){
+                List<CombinedGetAllPara>combinedGetAllParaList=new ArrayList<>();
+                List<MainTopicMal>mainTopicMalList=mainTopicMalRepo.findAll();
+                mainTopicMalList.sort(Comparator.comparing(MainTopicMal::getMMalId));
+                for (MainTopicMal mainTopicMal :mainTopicMalList){
+                    CombinedGetAllPara combinedGetAllPara = new CombinedGetAllPara();
+                    combinedGetAllPara.setTopic(mainTopicMal.getTopic());
+                    combinedGetAllPara.setDescription(mainTopicMal.getDescription());
+                    combinedGetAllPara.setRef(mainTopicMal.getRef());
+                    combinedGetAllPara.setMainUniqueId(mainTopicMal.getMMalUid());
+                    Optional<CommonQRParaId>commonQRParaIdOptional=commonQRParaIdRepo.findByMalId(mainTopicMal.getMMalUid());
+                    if (commonQRParaIdOptional.isPresent()){
+                        CommonQRParaId commonQRParaId =commonQRParaIdOptional.get();
+                        combinedGetAllPara.setQrCodeImage(commonQRParaId.getQrCodeImage());
+                        combinedGetAllPara.setQrCodeUrl(commonQRParaId.getQrCodeUrl());
+                        combinedGetAllPara.setMainCommonId(commonQRParaId.getCommonId());
+                        combinedGetAllPara.setEngUniqueId(commonQRParaId.getEngId());
+                        combinedGetAllPara.setMalUniqueId(commonQRParaId.getMalId());
+                    }
+                    List<ImgDataMain>imgDataMainOptional=imgDataMainRepo.findByMalId(mainTopicMal.getMMalUid());
+                    if (!imgDataMainOptional.isEmpty()){
+                        imgDataMainOptional.sort(Comparator.comparing(ImgDataMain::getId));
+                        combinedGetAllPara.setImgDataMainList(imgDataMainOptional);
+                    }
+                    List<AudioMain>audioMainList=audioMainRepo.findBydtId(mainTopicMal.getMMalUid());
+                    if (!audioMainList.isEmpty()){
+                        audioMainList.sort(Comparator.comparing(AudioMain::getId));
+                        combinedGetAllPara.setAudioMainList(audioMainList);
+                    }
+                    List<VideoMain>videoMainList=videoMainRepo.findBymalId(mainTopicMal.getMMalUid());
+                    if (!videoMainList.isEmpty()){
+                        videoMainList.sort(Comparator.comparing(VideoMain::getId));
+                        combinedGetAllPara.setVideoMainList(videoMainList);
+                    }
+
+                    List<FirstTopicMal>firstTopicMalList=firstTopicMalRepo.findByMainUid(mainTopicMal.getMMalUid());
+                    List<CombinedAllSubPara>combinedAllSubParaList=new ArrayList<>();
+                    if (!firstTopicMalList.isEmpty()){
+                        firstTopicMalList.sort(Comparator.comparing(FirstTopicMal::getId));
+                        for (FirstTopicMal firstTopicMal : firstTopicMalList){
+                            CombinedAllSubPara combinedAllSubPara = new CombinedAllSubPara();
+                            combinedAllSubPara.setTopic(firstTopicMal.getTopic());
+                            combinedAllSubPara.setDescription(firstTopicMal.getDescription());
+                            combinedAllSubPara.setReference(firstTopicMal.getRef());
+                            combinedAllSubPara.setSubUniqueId(firstTopicMal.getFsUid());
+                            combinedAllSubPara.setMainUniqueId(firstTopicMal.getMainUid());
+                            SubComId subComIdOptional=subComIdRepo.findByfsMalId(firstTopicMal.getFsUid());
+                            combinedAllSubPara.setSubCommonId(subComIdOptional.getFsCommonId());
+                            combinedAllSubPara.setEngUniqueId(subComIdOptional.getFsEngId());
+                            combinedAllSubPara.setMalUniqueId(subComIdOptional.getFsMalId());
+                            List<ImgDataFirst>imgDataFirstList=imgDataFirstRepo.findByCommonId(subComIdOptional.getFsCommonId());
+                            if (!imgDataFirstList.isEmpty()){
+                                imgDataFirstList.sort(Comparator.comparing(ImgDataFirst::getId));
+                                combinedAllSubPara.setImgDataFirstList(imgDataFirstList);
+                            }
+                            List<AudioFirst>audioFirstList=audioFirstRepo.findBydtId(firstTopicMal.getFsUid());
+                            if (!audioFirstList.isEmpty()){
+                                audioFirstList.sort(Comparator.comparing(AudioFirst::getId));
+                                combinedAllSubPara.setAudioFirstList(audioFirstList);
+                            }
+                            List<VideoFirst>videoFirstList=videoFirstRepo.findByfsMalId(firstTopicMal.getFsUid());
+                            if (!videoFirstList.isEmpty()){
+                                videoFirstList.sort(Comparator.comparing(VideoFirst::getId));
+                                combinedAllSubPara.setVideoFirstList(videoFirstList);
+                            }
+                            combinedAllSubParaList.add(combinedAllSubPara);
+                        }
+                    }
+                    combinedGetAllPara.setCombinedAllSubParaList(combinedAllSubParaList);
+                    combinedGetAllParaList.add(combinedGetAllPara);
+                }
+                return new ResponseEntity<>(combinedGetAllParaList,HttpStatus.OK);
+            }else if ("English".equalsIgnoreCase(talk)){
+                List<CombinedGetAllPara>combinedGetAllParaList=new ArrayList<>();
+                List<MainTopicEng>mainTopicEngList=mainTopicEngRepo.findAll();
+                mainTopicEngList.sort(Comparator.comparing(MainTopicEng::getMEngId));
+                for (MainTopicEng mainTopicEng : mainTopicEngList){
+                    CombinedGetAllPara combinedGetAllPara = new CombinedGetAllPara();
+                    combinedGetAllPara.setTopic(mainTopicEng.getTopic());
+                    combinedGetAllPara.setDescription(mainTopicEng.getDescription());
+                    combinedGetAllPara.setRef(mainTopicEng.getRef());
+                    combinedGetAllPara.setMainUniqueId(mainTopicEng.getMEngUid());
+                    Optional<CommonQRParaId>commonQRParaIdOptional=commonQRParaIdRepo.findByEngId(mainTopicEng.getMEngUid());
+                    if (commonQRParaIdOptional.isPresent()){
+                        CommonQRParaId commonQRParaId = commonQRParaIdOptional.get();
+                        combinedGetAllPara.setMainCommonId(commonQRParaId.getCommonId());
+                        combinedGetAllPara.setEngUniqueId(commonQRParaId.getEngId());
+                        combinedGetAllPara.setMalUniqueId(commonQRParaId.getMalId());
+                        combinedGetAllPara.setQrCodeUrl(commonQRParaId.getQrCodeUrl());
+                        combinedGetAllPara.setQrCodeImage(commonQRParaId.getQrCodeImage());
+                    }
+                    List<ImgDataMain>imgDataMainOptional=imgDataMainRepo.findByEngId(mainTopicEng.getMEngUid());
+                    if (!imgDataMainOptional.isEmpty()){
+                        imgDataMainOptional.sort(Comparator.comparing(ImgDataMain::getId));
+                        combinedGetAllPara.setImgDataMainList(imgDataMainOptional);
+                    }
+                    List<AudioMain>audioMainList=audioMainRepo.findBydtId(mainTopicEng.getMEngUid());
+                    if (!audioMainList.isEmpty()){
+                        audioMainList.sort(Comparator.comparing(AudioMain::getId));
+                        combinedGetAllPara.setAudioMainList(audioMainList);
+                    }
+                    List<VideoMain>videoMainList=videoMainRepo.findByengId(mainTopicEng.getMEngUid());
+                    if (!videoMainList.isEmpty()){
+                        videoMainList.sort(Comparator.comparing(VideoMain::getId));
+                        combinedGetAllPara.setVideoMainList(videoMainList);
+                    }
+                    List<FirstTopicEng>firstTopicEngList=firstTopicEngRepo.findByMainUid(mainTopicEng.getMEngUid());
+                    List<CombinedAllSubPara>combinedAllSubParaList = new ArrayList<>();
+                    if (!firstTopicEngList.isEmpty()){
+                        firstTopicEngList.sort(Comparator.comparing(FirstTopicEng::getId));
+                        CombinedAllSubPara combinedAllSubPara = new CombinedAllSubPara();
+                        for (FirstTopicEng firstTopicEng : firstTopicEngList){
+                            combinedAllSubPara.setTopic(firstTopicEng.getTopic());
+                            combinedAllSubPara.setDescription(firstTopicEng.getDescription());
+                            combinedAllSubPara.setReference(firstTopicEng.getRef());
+                            combinedAllSubPara.setSubUniqueId(firstTopicEng.getFsUid());
+                            combinedAllSubPara.setMainUniqueId(firstTopicEng.getMainUid());
+                            SubComId subComIdOptional=subComIdRepo.findByfsEngId(firstTopicEng.getFsUid());
+                            combinedAllSubPara.setSubCommonId(subComIdOptional.getFsCommonId());
+                            combinedAllSubPara.setEngUniqueId(subComIdOptional.getFsEngId());
+                            combinedAllSubPara.setMalUniqueId(subComIdOptional.getFsMalId());
+                            List<ImgDataFirst>imgDataFirstList=imgDataFirstRepo.findByEngId(firstTopicEng.getFsUid());
+                            if (!imgDataFirstList.isEmpty()){
+                                imgDataFirstList.sort(Comparator.comparing(ImgDataFirst::getId));
+                                combinedAllSubPara.setImgDataFirstList(imgDataFirstList);
+                            }
+                            List<AudioFirst>audioFirstList=audioFirstRepo.findBydtId(firstTopicEng.getFsUid());
+                            if (!audioFirstList.isEmpty()){
+                                audioFirstList.sort(Comparator.comparing(AudioFirst::getId));
+                                combinedAllSubPara.setAudioFirstList(audioFirstList);
+                            }
+                            List<VideoFirst>videoFirstList=videoFirstRepo.findByfsEngId(firstTopicEng.getFsUid());
+                            if (!videoFirstList.isEmpty()){
+                                videoFirstList.sort(Comparator.comparing(VideoFirst::getId));
+                                combinedAllSubPara.setVideoFirstList(videoFirstList);
+                            }
+                            combinedAllSubParaList.add(combinedAllSubPara);
+                            combinedGetAllPara.setCombinedAllSubParaList(combinedAllSubParaList);
+                            combinedGetAllParaList.add(combinedGetAllPara);
+                        }
+
+                        return new ResponseEntity<>(combinedGetAllParaList,HttpStatus.OK);
+                    }
+
+                }
+            }else {
+                return new ResponseEntity<>(new ArrayList<>(),HttpStatus.NOT_FOUND);
+            }
+        }return new ResponseEntity<>(new ArrayList<>(),HttpStatus.BAD_REQUEST);
+    }
+
+
+//    public ResponseEntity<List<CombinedPara>> getAllDetailsByDataType(Integer dtId) {
+//        Optional<DataType>dataTypeOptional=dataTypeRepo.findById(dtId);
+//        if (dataTypeOptional.isPresent()){
+//            DataType dataType=dataTypeOptional.get();
+//            String talk= dataType.getTalk();
+//            if ("Malayalam".equalsIgnoreCase(talk)){
+//
+//            }
+//        }return new ResponseEntity<>(new ArrayList<>(),HttpStatus.BAD_REQUEST);
+//    }
 }

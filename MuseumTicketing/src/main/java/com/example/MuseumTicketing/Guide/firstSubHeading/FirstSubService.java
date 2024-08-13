@@ -249,7 +249,7 @@ public class FirstSubService {
                         combinedDataSub.setDescription(firstSubEnglish1.getDescription());
                         combinedDataSub.setReferenceUrl(firstSubEnglish1.getRef());
                         combinedDataSub.setFsMalId(fsMalId);
-                        combinedDataSub.setFsCommonId(id);
+                        combinedDataSub.setFsCommonId(commonIdFs.getFsCommonId());
                         combinedDataSub.setuId(firstSubEnglish1.getFsUid());
                         combinedDataSub.setmUid(firstSubEnglish1.getMainUid());
 
@@ -331,7 +331,7 @@ public class FirstSubService {
             Optional<CommonIdFs> commonIdFsOptional = fsCommonIdRepo.findByFsCommonId(id);
             if (commonIdFsOptional.isPresent()){
                 CommonIdFs commonIdFs = commonIdFsOptional.get();
-                String fsEngId = commonIdFs.getFsCommonId();
+                String fsEngId = commonIdFs.getFsEngId();
                 if (commonIdFs!=null){
                     Optional<FirstSubMalayalam> firstSubMalayalam = firstSubMalayalamRepo.findByfsUid(commonIdFs.getFsMalId());
                     if (firstSubMalayalam.isPresent()){

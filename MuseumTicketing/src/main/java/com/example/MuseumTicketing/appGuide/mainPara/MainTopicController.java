@@ -5,7 +5,9 @@ import com.example.MuseumTicketing.Guide.Language.DataTypeRepo;
 import com.example.MuseumTicketing.Guide.firstSubHeading.english.FirstSubEnglish;
 import com.example.MuseumTicketing.Guide.firstSubHeading.english.FirstSubEnglishRepo;
 import com.example.MuseumTicketing.Guide.util.ErrorService;
+import com.example.MuseumTicketing.appGuide.mainPara.first.FirstTopicEng;
 import com.example.MuseumTicketing.appGuide.mainPara.first.FirstTopicEngRepo;
+import com.example.MuseumTicketing.appGuide.mainPara.first.FirstTopicMal;
 import com.example.MuseumTicketing.appGuide.mainPara.first.FirstTopicMalRepo;
 import com.example.MuseumTicketing.appGuide.mainPara.qrCode.CommonQRParaId;
 import com.example.MuseumTicketing.appGuide.mainPara.qrCode.CommonQRParaIdRepo;
@@ -32,6 +34,11 @@ public class MainTopicController {
     private SubComIdRepo subComIdRepo;
     @Autowired
     private ErrorService errorService;
+    @Autowired
+    private FirstTopicEngRepo firstTopicEngRepo;
+    @Autowired
+    private FirstTopicMalRepo firstTopicMalRepo;
+
 
     @PostMapping(path = "/mainPara")
     public ResponseEntity<?>addMainPara(@RequestParam Integer dId, @RequestBody MainParaDTO mainParaDTO){
@@ -93,7 +100,14 @@ public class MainTopicController {
                     malId==null || malId.isEmpty()|| "undefined".equalsIgnoreCase(malId) || malId.isBlank()) {
                 return new ResponseEntity<>("ID is required!", HttpStatus.BAD_REQUEST);
             }
-            return mainTopicService.generateComId(engId,malId);
+            Optional<FirstTopicEng>firstTopicEngOptional=firstTopicEngRepo.findByfsUid(engId);
+            if (firstTopicEngOptional.isPresent()){
+                Optional<FirstTopicMal>firstTopicMalOptional=firstTopicMalRepo.findByFsUid(malId);
+                if (firstTopicMalOptional.isPresent()){
+                    return mainTopicService.generateComId(engId,malId);
+                }return new ResponseEntity<>("malayalam uniqueId is not valid. "+malId,HttpStatus.BAD_REQUEST);
+            }return new ResponseEntity<>("English uniqueId is not valid. "+engId,HttpStatus.BAD_REQUEST);
+
         }catch (Exception e){
            // e.printStackTrace();
             return errorService.handlerException(e);

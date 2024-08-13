@@ -17,6 +17,7 @@ public class CombinedDataSubSub {
     private String ssCommonId;
     private String ssEngId;
     private String ssMalId;
+    private String fsCommonId;
 
 
     private List<ImgSubSecond> imgData2List;
@@ -25,6 +26,14 @@ public class CombinedDataSubSub {
     private List<Mp4Data2> mp4Data2List;
 
     public CombinedDataSubSub() {
+    }
+
+    public String getFsCommonId() {
+        return fsCommonId;
+    }
+
+    public void setFsCommonId(String fsCommonId) {
+        this.fsCommonId = fsCommonId;
     }
 
     public String getTitle() {

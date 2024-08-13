@@ -6,6 +6,8 @@ import com.example.MuseumTicketing.Guide.SecondSubHeading.english.SecondSubEngli
 import com.example.MuseumTicketing.Guide.SecondSubHeading.english.SecondSubEnglishRepo;
 import com.example.MuseumTicketing.Guide.SecondSubHeading.malayalam.SecondSubMalayalam;
 import com.example.MuseumTicketing.Guide.SecondSubHeading.malayalam.SecondSubMalayalamRepo;
+import com.example.MuseumTicketing.Guide.firstSubHeading.FScommonId.CommonIdFs;
+import com.example.MuseumTicketing.Guide.firstSubHeading.FScommonId.FsCommonIdRepo;
 import com.example.MuseumTicketing.Guide.img.backgroundImg.BackgroundImg;
 import com.example.MuseumTicketing.Guide.img.backgroundImg.BackgroundImgRepo;
 import com.example.MuseumTicketing.Guide.img.secondSubHeading.ImgSubSecond;
@@ -47,6 +49,8 @@ public class SecondSubService {
     private BackgroundImgRepo backgroundImgRepo;
     @Autowired
     private ErrorService errorService;
+    @Autowired
+    private FsCommonIdRepo fsCommonIdRepo;
 
     public ResponseEntity<?> addSubDataEnglish(String uId, MainDTO mainDTO) {
         try {
@@ -128,6 +132,10 @@ public class SecondSubService {
                     combinedDataSubSub.setReferenceUrl(secondSubEnglish.getRef());
                     combinedDataSubSub.setuId(secondSubEnglish.getSsUid());
                     combinedDataSubSub.setmUid(secondSubEnglish.getFsUid());
+                    String fsUid = secondSubEnglish.getFsUid();
+                    CommonIdFs commonIdFs=fsCommonIdRepo.findByfsEngId(fsUid);
+                    String fsCommonId = commonIdFs.getFsCommonId();
+                    combinedDataSubSub.setFsCommonId(fsCommonId);
 
                     CommonIdSs commonIdSsEng = commonIdSsRepo.findBySsEngId(secondSubEnglish.getSsUid());
                     if (commonIdSsEng != null){
@@ -182,6 +190,9 @@ public class SecondSubService {
                     combinedDataSubSub.setReferenceUrl(secondSubMalayalam.getRef());
                     combinedDataSubSub.setuId(secondSubMalayalam.getSsUid());
                     combinedDataSubSub.setmUid(secondSubMalayalam.getFsUid());
+                    String fsMalId = secondSubMalayalam.getFsUid();
+                    CommonIdFs commonIdFs=fsCommonIdRepo.findByfsMalId(fsMalId);
+                    combinedDataSubSub.setFsCommonId(commonIdFs.getFsCommonId());
 
                     CommonIdSs commonIdSsEng = commonIdSsRepo.findBySsMalId(secondSubMalayalam.getSsUid());
                     if (commonIdSsEng != null){

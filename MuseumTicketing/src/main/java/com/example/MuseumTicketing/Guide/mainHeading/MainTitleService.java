@@ -577,6 +577,7 @@ public class MainTitleService {
     public ResponseEntity<List<GetDtoSub>> getSubDataDetailsByCommonId(String mainMalId, String commonId) {
         List<GetDtoSub>getDtoSubList=new ArrayList<>();
         List<FirstSubMalayalam>firstSubMalayalamList = firstSubMalayalamRepo.findByMainUid(mainMalId);
+        firstSubMalayalamList.sort(Comparator.comparing(FirstSubMalayalam::getId));
         if (!firstSubMalayalamList.isEmpty()){
             for (FirstSubMalayalam firstSubMalayalam : firstSubMalayalamList){
                 String fsMalId = firstSubMalayalam.getFsUid();
@@ -598,6 +599,7 @@ public class MainTitleService {
     public ResponseEntity<List<GetDtoSub>> getSubDataDetailsEnglishByCommonId(String mainEngId, String commonId) {
         List<GetDtoSub>getDtoSubList = new ArrayList<>();
         List<FirstSubEnglish>firstSubEnglishList=firstSubEnglishRepo.findByMainUid(mainEngId);
+        firstSubEnglishList.sort(Comparator.comparing(FirstSubEnglish::getId));
         if (!firstSubEnglishList.isEmpty()){
             for (FirstSubEnglish firstSubEnglish : firstSubEnglishList){
                 String fsEngId = firstSubEnglish.getFsUid();
@@ -619,8 +621,10 @@ public class MainTitleService {
     public ResponseEntity<List<GetDtoSub>> getSubSubDetailsByCommonId(String fsMalId, String commonId) {
         List<GetDtoSub>getDtoSubList=new ArrayList<>();
         List<SecondSubMalayalam>secondSubMalayalamList=secondSubMalayalamRepo.findByfsUid(fsMalId);
+        secondSubMalayalamList.sort(Comparator.comparing(SecondSubMalayalam::getId));
         if (!secondSubMalayalamList.isEmpty()){
             for (SecondSubMalayalam secondSubMalayalam : secondSubMalayalamList){
+
                 GetDtoSub getDtoSub = new GetDtoSub();
                 String ssMalId = secondSubMalayalam.getSsUid();
                 Optional<CommonIdSs>commonIdSsOptional=commonIdSsRepo.findByssMalId(ssMalId);
@@ -638,6 +642,7 @@ public class MainTitleService {
     public ResponseEntity<List<GetDtoSub>> getSubDetailsEng(String fsEngId, String commonId) {
         List<GetDtoSub>getDtoSubList=new ArrayList<>();
         List<SecondSubEnglish>secondSubEnglishList=secondSubEnglishRepo.findByfsUid(fsEngId);
+        secondSubEnglishList.sort(Comparator.comparing(SecondSubEnglish::getId));
         if (!secondSubEnglishList.isEmpty()){
             for (SecondSubEnglish secondSubEnglish : secondSubEnglishList){
                 GetDtoSub getDtoSub = new GetDtoSub();

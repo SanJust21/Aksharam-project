@@ -146,6 +146,5 @@ public class QRCodeGenerateService {
         }else {
             return null;
         }return null;
-
     }
 }
