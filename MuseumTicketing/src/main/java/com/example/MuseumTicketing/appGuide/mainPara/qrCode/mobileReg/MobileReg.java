@@ -17,4 +17,7 @@ public class MobileReg {
 
     @Column(name = "phNumber")
     private String phNumber;
+
+    @Column(name="fullName")
+    private String fullName;
 }

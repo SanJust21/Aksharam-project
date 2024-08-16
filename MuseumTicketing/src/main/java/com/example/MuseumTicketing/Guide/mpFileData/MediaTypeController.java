@@ -65,7 +65,15 @@ public class MediaTypeController {
                     return new ResponseEntity<>(responses,HttpStatus.OK);
                 } else if (fData != null && "Video".equalsIgnoreCase(fData)) {//
                     return mediaTypeService.uploadMp4(files,uId);
-                } else {
+                }
+                //                else if (fData != null && "Pdf".equalsIgnoreCase(fData)) {
+//                    List<MediaTypeDTO> responses = new ArrayList<>();
+//                    for (MultipartFile file : files) {
+//                        responses.add(mediaTypeService.uploadPdf(file, uId));
+//                    }
+//                    return new ResponseEntity<>(responses, HttpStatus.OK);
+//                }
+                else {
                     return new ResponseEntity<>("File not present. Resend the file.", HttpStatus.BAD_REQUEST);
                 }
             } else {

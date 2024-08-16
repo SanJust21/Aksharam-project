@@ -5,6 +5,7 @@ import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.example.MuseumTicketing.Guide.img.mainHeading.ImgData;
 import com.example.MuseumTicketing.Guide.util.ErrorService;
+import com.example.MuseumTicketing.Guide.util.S3Service;
 import com.example.MuseumTicketing.appGuide.mainPara.first.FirstTopicEng;
 import com.example.MuseumTicketing.appGuide.mainPara.first.FirstTopicEngRepo;
 import com.example.MuseumTicketing.appGuide.mainPara.first.FirstTopicMal;
@@ -37,6 +38,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -68,6 +70,9 @@ public class ImgMobDataService {
     @Autowired
     private ErrorService errorService;
 
+    @Autowired
+    private S3Service s3Service;
+
     private File convertMultiPartFileToFile(MultipartFile file){
         File convertedFile = new File(file.getOriginalFilename());
         try(FileOutputStream fos = new FileOutputStream(convertedFile)) {
@@ -79,12 +84,16 @@ public class ImgMobDataService {
         return convertedFile;
     }
 
-    public ImgDataMain uploadJPGMain(MultipartFile file, String engId, String malId, String commonId) {
+    public ImgDataMain uploadJPGMain(MultipartFile file, String engId, String malId, String commonId) throws IOException {
         File fileObj = convertMultiPartFileToFile(file);
         String fileName = System.currentTimeMillis()+"_"+file.getOriginalFilename();
-        s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        // Use the S3Service's uploadLargeFile method to upload the file
+        s3Service.uploadLargeFile(fileName, fileObj);
         fileObj.delete();
-        String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+        //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+        // Retrieve the file URL from S3
+        String fileUrl = s3Service.getFileUrl(fileName);
         ImgDataMain imgDataMain = new ImgDataMain(fileName,fileUrl,commonId);
         Optional<MainTopicEng> mainTopicEngOptional = mainTopicEngRepo.findBymEngUid(engId);
         if (mainTopicEngOptional.isPresent()){
@@ -105,12 +114,16 @@ public class ImgMobDataService {
         return imgDataMain;
     }
 
-    public ImgDataFirst uploadJPGFirst(MultipartFile file, String engId, String malId, String commonId) {
+    public ImgDataFirst uploadJPGFirst(MultipartFile file, String engId, String malId, String commonId) throws IOException{
         File fileObj = convertMultiPartFileToFile(file);
         String fileName = System.currentTimeMillis()+"_"+file.getOriginalFilename();
-        s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        // Use the S3Service's uploadLargeFile method to upload the file
+        s3Service.uploadLargeFile(fileName, fileObj);
         fileObj.delete();
-        String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+        //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+        // Retrieve the file URL from S3
+        String fileUrl = s3Service.getFileUrl(fileName);
         ImgDataFirst imgDataFirst = new ImgDataFirst(fileName,fileUrl,commonId);
         Optional<FirstTopicEng> firstTopicEngOptional = firstTopicEngRepo.findByfsUid(engId);
         if (firstTopicEngOptional.isPresent()){
@@ -138,7 +151,7 @@ public class ImgMobDataService {
         return imgDataFirst;
     }
 
-    public ImgDataMain updateMainJPG(MultipartFile file, Integer imgId, String commonId) {
+    public ImgDataMain updateMainJPG(MultipartFile file, Integer imgId, String commonId) throws IOException{
 //        try {
 //
 //        }catch (Exception e){
@@ -149,10 +162,13 @@ public class ImgMobDataService {
         // Convert file and upload to S3
         File fileObj = convertMultiPartFileToFile(file);
         String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-        s3Client.putObject(new PutObjectRequest(bucketName, fileName, fileObj));
+        //s3Client.putObject(new PutObjectRequest(bucketName, fileName, fileObj));
+        // Use the S3Service's uploadLargeFile method to upload the file
+        s3Service.uploadLargeFile(fileName, fileObj);
         fileObj.delete();
-        String fileUrl = s3Client.getUrl(bucketName, fileName).toString();
-
+        //String fileUrl = s3Client.getUrl(bucketName, fileName).toString();
+        // Retrieve the file URL from S3
+        String fileUrl = s3Service.getFileUrl(fileName);
         // Update existing ImgData with new file info
         Optional<CommonQRParaId>commonQRParaIdOptional = commonQRParaIdRepo.findByCommonId(commonId);
         if (commonQRParaIdOptional.isPresent()){
@@ -171,13 +187,16 @@ public class ImgMobDataService {
         return new ImgDataMain();
     }
 
-    public ImgDataFirst updateFirstJPG(MultipartFile file, Integer imgId, String commonId) {
+    public ImgDataFirst updateFirstJPG(MultipartFile file, Integer imgId, String commonId) throws IOException{
         File fileObj = convertMultiPartFileToFile(file);
         String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-        s3Client.putObject(new PutObjectRequest(bucketName, fileName, fileObj));
+        //s3Client.putObject(new PutObjectRequest(bucketName, fileName, fileObj));
+        // Use the S3Service's uploadLargeFile method to upload the file
+        s3Service.uploadLargeFile(fileName, fileObj);
         fileObj.delete();
-        String fileUrl = s3Client.getUrl(bucketName, fileName).toString();
-
+        //String fileUrl = s3Client.getUrl(bucketName, fileName).toString();
+        // Retrieve the file URL from S3
+        String fileUrl = s3Service.getFileUrl(fileName);
         Optional<SubComId>subComIdOptional = subComIdRepo.findByFsCommonId(commonId);
         if (subComIdOptional.isPresent()){
             SubComId subComId = subComIdOptional.get();

@@ -30,6 +30,7 @@ import com.example.MuseumTicketing.Guide.img.firstSubHeading.ImgSubFirstRepo;
 import com.example.MuseumTicketing.Guide.img.secondSubHeading.ImgSubSecondRepo;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.example.MuseumTicketing.Guide.util.S3Service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,6 +39,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Optional;
 
 @Service
@@ -75,6 +77,10 @@ public class ImgService {
     @Autowired
     private CommonIdSsRepo commonIdSsRepo;
 
+    @Autowired
+    private S3Service s3Service;
+
+
 
     private File convertMultiPartFileToFile(MultipartFile file){
         File convertedFile = new File(file.getOriginalFilename());
@@ -86,13 +92,16 @@ public class ImgService {
         }
         return convertedFile;
     }
-    public ImgData uploadJPG(MultipartFile file, String englishUId, String malUid, String commonId) {
+    public ImgData uploadJPG(MultipartFile file, String englishUId, String malUid, String commonId) throws IOException {
         File fileObj = convertMultiPartFileToFile(file);
         String fileName = System.currentTimeMillis()+"_"+file.getOriginalFilename();
-        s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        // Use the S3Service's uploadLargeFile method to upload the file
+        s3Service.uploadLargeFile(fileName, fileObj);
         fileObj.delete();
-        String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
-
+        //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+        //Retrieve the file URL from S3
+        String fileUrl = s3Service.getFileUrl(fileName);
         ImgData imgData = new ImgData(fileName,fileUrl,englishUId,malUid,commonId);
         imgRepo.save(imgData);
         return imgData;
@@ -100,13 +109,16 @@ public class ImgService {
 
 
 
-    public ImgSubFirst uploadData1(MultipartFile file, String englishUId, String malUid, String commonId) {
+    public ImgSubFirst uploadData1(MultipartFile file, String englishUId, String malUid, String commonId) throws IOException{
         File fileObj = convertMultiPartFileToFile(file);
         String fileName = System.currentTimeMillis()+"_"+file.getOriginalFilename();
-        s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        // Use the S3Service's uploadLargeFile method to upload the file
+        s3Service.uploadLargeFile(fileName, fileObj);
         fileObj.delete();
-        String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
-
+        //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+        // Retrieve the file URL from S3
+        String fileUrl = s3Service.getFileUrl(fileName);
         ImgSubFirst imgSubFirst1 = new ImgSubFirst(fileName,fileUrl,commonId);
         Optional<FirstSubEnglish> firstSubEnglishOptional = firstSubEnglishRepo.findByfsUid(englishUId);
         if (firstSubEnglishOptional.isPresent()){
@@ -124,13 +136,16 @@ public class ImgService {
         return imgSubFirst1;
     }
 
-    public ImgSubSecond uploadData2(MultipartFile file, String englishUId, String malUid, String commonId) {
+    public ImgSubSecond uploadData2(MultipartFile file, String englishUId, String malUid, String commonId) throws IOException {
         File fileObj = convertMultiPartFileToFile(file);
         String fileName =  System.currentTimeMillis()+"_"+file.getOriginalFilename();
-        s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        // Use the S3Service's uploadLargeFile method to upload the file
+        s3Service.uploadLargeFile(fileName, fileObj);
         fileObj.delete();
-        String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
-
+        //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+        // Retrieve the file URL from S3
+        String fileUrl = s3Service.getFileUrl(fileName);
         ImgSubSecond imgSubSecond1 = new ImgSubSecond(fileName,fileUrl,commonId);
         Optional<SecondSubEnglish> secondSubEnglishOptional = secondSubEnglishRepo.findByssUid(englishUId);
         if (secondSubEnglishOptional.isPresent()){
@@ -151,7 +166,7 @@ public class ImgService {
 
 
 
-    public ImgData updateMainJPG(MultipartFile file, Integer imgId, String commonId) {
+    public ImgData updateMainJPG(MultipartFile file, Integer imgId, String commonId)throws IOException {
         try {
             Optional<ImgData> existingImgDataOptional = imgRepo.findById(imgId);
             if (existingImgDataOptional.isPresent() && !file.isEmpty()) {
@@ -160,10 +175,13 @@ public class ImgService {
                 // Convert file and upload to S3
                 File fileObj = convertMultiPartFileToFile(file);
                 String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-                s3Client.putObject(new PutObjectRequest(bucketName, fileName, fileObj));
+                //s3Client.putObject(new PutObjectRequest(bucketName, fileName, fileObj));
+                // Use the S3Service's uploadLargeFile method to upload the file
+                s3Service.uploadLargeFile(fileName, fileObj);
                 fileObj.delete();
-                String fileUrl = s3Client.getUrl(bucketName, fileName).toString();
-
+                //String fileUrl = s3Client.getUrl(bucketName, fileName).toString();
+                // Retrieve the file URL from S3
+                String fileUrl = s3Service.getFileUrl(fileName);
                 // Update existing ImgData with new file info
                 imgData.setFName(fileName);
                 imgData.setFUrl(fileUrl);
@@ -180,7 +198,7 @@ public class ImgService {
 
 
 
-    public ImgSubFirst updateFirstSubJPG(MultipartFile file, Integer imgId, String commonId) {
+    public ImgSubFirst updateFirstSubJPG(MultipartFile file, Integer imgId, String commonId) throws IOException{
         try {
             Optional<ImgSubFirst> existingImgDataOptional = imgSubFirstRepo.findById(imgId);
             if (existingImgDataOptional.isPresent() && !file.isEmpty()) {
@@ -189,10 +207,13 @@ public class ImgService {
                 // Convert file and upload to S3
                 File fileObj = convertMultiPartFileToFile(file);
                 String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-                s3Client.putObject(new PutObjectRequest(bucketName, fileName, fileObj));
+                //s3Client.putObject(new PutObjectRequest(bucketName, fileName, fileObj));
+                // Use the S3Service's uploadLargeFile method to upload the file
+                s3Service.uploadLargeFile(fileName, fileObj);
                 fileObj.delete();
-                String fileUrl = s3Client.getUrl(bucketName, fileName).toString();
-
+                //String fileUrl = s3Client.getUrl(bucketName, fileName).toString();
+                // Retrieve the file URL from S3
+                String fileUrl = s3Service.getFileUrl(fileName);
                 // Update existing ImgSubFirst with new file info
                 imgSubFirst.setFName(fileName);
                 imgSubFirst.setFUrl(fileUrl);
@@ -207,7 +228,7 @@ public class ImgService {
         return new ImgSubFirst("No Data", "No Data", "No Data");
     }
 
-    public ImgSubSecond updateSecondSubJPG(MultipartFile file, Integer imgId, String commonId) {
+    public ImgSubSecond updateSecondSubJPG(MultipartFile file, Integer imgId, String commonId) throws IOException{
         try {
             Optional<ImgSubSecond> existingImgDataOptional = imgSubSecondRepo.findById(imgId);
             if (existingImgDataOptional.isPresent() && !file.isEmpty()) {
@@ -216,10 +237,13 @@ public class ImgService {
                 // Convert file and upload to S3
                 File fileObj = convertMultiPartFileToFile(file);
                 String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-                s3Client.putObject(new PutObjectRequest(bucketName, fileName, fileObj));
+                //s3Client.putObject(new PutObjectRequest(bucketName, fileName, fileObj));
+                // Use the S3Service's uploadLargeFile method to upload the file
+                s3Service.uploadLargeFile(fileName, fileObj);
                 fileObj.delete();
-                String fileUrl = s3Client.getUrl(bucketName, fileName).toString();
-
+                //String fileUrl = s3Client.getUrl(bucketName, fileName).toString();
+                // Retrieve the file URL from S3
+                String fileUrl = s3Service.getFileUrl(fileName);
                 // Update existing ImgSubSecond with new file info
                 imgSubSecond.setFName(fileName);
                 imgSubSecond.setFUrl(fileUrl);

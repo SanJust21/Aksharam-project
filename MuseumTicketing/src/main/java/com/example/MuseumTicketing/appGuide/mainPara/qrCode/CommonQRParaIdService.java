@@ -351,8 +351,13 @@ public class CommonQRParaIdService {
     }
 
     public ResponseEntity<?> userMobileReg(MobileReg mobileReg) {
-        MobileReg mobileReg1 = new MobileReg();
+
+        Optional<MobileReg> existingMobileReg = mobileRegRepo.findByPhNumber(mobileReg.getPhNumber());
+        if (existingMobileReg.isPresent()) {
+            return new ResponseEntity<>("Mobile number already registered", HttpStatus.CONFLICT);
+        }
         if (mobileReg.getEmail().endsWith("@gmail.com")){
+            MobileReg mobileReg1 = new MobileReg();
             mobileReg1.setEmail(mobileReg.getEmail());
             if (mobileReg.getPhNumber().length()>=10){
                 mobileReg1.setPhNumber(mobileReg.getPhNumber());
@@ -490,8 +495,8 @@ public class CommonQRParaIdService {
                     List<CombinedAllSubPara>combinedAllSubParaList = new ArrayList<>();
                     if (!firstTopicEngList.isEmpty()){
                         firstTopicEngList.sort(Comparator.comparing(FirstTopicEng::getId));
-                        CombinedAllSubPara combinedAllSubPara = new CombinedAllSubPara();
                         for (FirstTopicEng firstTopicEng : firstTopicEngList){
+                            CombinedAllSubPara combinedAllSubPara = new CombinedAllSubPara();
                             combinedAllSubPara.setTopic(firstTopicEng.getTopic());
                             combinedAllSubPara.setDescription(firstTopicEng.getDescription());
                             combinedAllSubPara.setReference(firstTopicEng.getRef());
@@ -517,14 +522,12 @@ public class CommonQRParaIdService {
                                 combinedAllSubPara.setVideoFirstList(videoFirstList);
                             }
                             combinedAllSubParaList.add(combinedAllSubPara);
-                            combinedGetAllPara.setCombinedAllSubParaList(combinedAllSubParaList);
-                            combinedGetAllParaList.add(combinedGetAllPara);
                         }
-
-                        return new ResponseEntity<>(combinedGetAllParaList,HttpStatus.OK);
                     }
+                    combinedGetAllPara.setCombinedAllSubParaList(combinedAllSubParaList);
+                    combinedGetAllParaList.add(combinedGetAllPara);
 
-                }
+                } return new ResponseEntity<>(combinedGetAllParaList,HttpStatus.OK);
             }else {
                 return new ResponseEntity<>(new ArrayList<>(),HttpStatus.NOT_FOUND);
             }

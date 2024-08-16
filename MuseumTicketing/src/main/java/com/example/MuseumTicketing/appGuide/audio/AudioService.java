@@ -3,6 +3,7 @@ package com.example.MuseumTicketing.appGuide.audio;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.example.MuseumTicketing.Guide.util.S3Service;
 import com.example.MuseumTicketing.appGuide.mainPara.first.FirstTopicEng;
 import com.example.MuseumTicketing.appGuide.mainPara.first.FirstTopicEngRepo;
 import com.example.MuseumTicketing.appGuide.mainPara.first.FirstTopicMal;
@@ -39,6 +40,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -62,11 +64,12 @@ public class AudioService {
     @Autowired
     private FirstTopicMalRepo firstTopicMalRepo;
 
-
     @Value("${aws.s3.bucketName}")
     private String bucketName;
     @Autowired
     private AmazonS3 s3Client;
+    @Autowired
+    private S3Service s3Service;
 
     private File convertMultiPartFileToFile(MultipartFile file){
         File convertedFile = new File(file.getOriginalFilename());
@@ -78,12 +81,16 @@ public class AudioService {
         return convertedFile;
     }
 
-    public MediaTypeDTO uploadAudioMain(String uId, MultipartFile file) {
+    public MediaTypeDTO uploadAudioMain(String uId, MultipartFile file) throws IOException {
         File fileObj = convertMultiPartFileToFile(file);
         String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
-        s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        // Use the S3Service's uploadLargeFile method to upload the file
+        s3Service.uploadLargeFile(fileName, fileObj);
         fileObj.delete();
-        String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+        //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+        // Retrieve the file URL from S3
+        String fileUrl = s3Service.getFileUrl(fileName);
         AudioMain audioMain = new AudioMain(fileName,fileUrl,uId);
         Optional<CommonQRParaId>commonQRParaIdOptional =  commonQRParaIdRepo.findByEngId(uId);
         Optional<CommonQRParaId>commonQRParaIdOptional1 = commonQRParaIdRepo.findByMalId(uId);
@@ -102,12 +109,16 @@ public class AudioService {
         return new MediaTypeDTO(fileName,fileUrl,uId);
     }
 
-    public MediaTypeDTO uploadAudioFirst(MultipartFile file, String uId) {
+    public MediaTypeDTO uploadAudioFirst(MultipartFile file, String uId) throws IOException{
         File fileObj = convertMultiPartFileToFile(file);
         String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
-        s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        // Use the S3Service's uploadLargeFile method to upload the file
+        s3Service.uploadLargeFile(fileName, fileObj);
         fileObj.delete();
-        String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+        //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+        // Retrieve the file URL from S3
+        String fileUrl = s3Service.getFileUrl(fileName);
         AudioFirst audioFirst = new AudioFirst(fileName,fileUrl,uId);
         Optional<FirstTopicEng> firstTopicEnglishOptional =firstTopicEngRepo.findByfsUid(uId);
         Optional<FirstTopicMal> firstTopicMalayalamOptional =firstTopicMalRepo.findByFsUid(uId);
@@ -143,12 +154,16 @@ public class AudioService {
         return new MediaTypeDTO(fileName,fileUrl,uId);
     }
 
-    public MediaTypeDTO uploadVideoMain(String uId, MultipartFile file, String engId, String malId) {
+    public MediaTypeDTO uploadVideoMain(String uId, MultipartFile file, String engId, String malId) throws IOException{
         File fileObj = convertMultiPartFileToFile(file);
         String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
-        s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        // Use the S3Service's uploadLargeFile method to upload the file
+        s3Service.uploadLargeFile(fileName, fileObj);
         fileObj.delete();
-        String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+        //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+        // Retrieve the file URL from S3
+        String fileUrl = s3Service.getFileUrl(fileName);
         VideoMain videoMain = new VideoMain(fileName,fileUrl,uId);
         if (uId!=null){
             videoMain.setEngId(engId);
@@ -158,10 +173,12 @@ public class AudioService {
         return new MediaTypeDTO(fileName,fileUrl,uId);
     }
 
-    public ResponseEntity<?> uploadVideoFirst(String uId, MultipartFile file, String engId, String malId) {
+    public ResponseEntity<?> uploadVideoFirst(String uId, MultipartFile file, String engId, String malId) throws IOException{
         File fileObj = convertMultiPartFileToFile(file);
         String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
-        s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        // Use the S3Service's uploadLargeFile method to upload the file
+        s3Service.uploadLargeFile(fileName, fileObj);
         fileObj.delete();
         String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
         VideoFirst videoFirst  = new VideoFirst(fileName,fileUrl,uId);
@@ -186,12 +203,16 @@ public class AudioService {
         return new ResponseEntity<>(videoFirst, HttpStatus.OK);
     }
 
-    public ResponseEntity<?> updateAudioMain(String malId, String commonId, MultipartFile file) {
+    public ResponseEntity<?> updateAudioMain(String malId, String commonId, MultipartFile file) throws IOException{
         File fileObj = convertMultiPartFileToFile(file);
         String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
-        s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        // Use the S3Service's uploadLargeFile method to upload the file
+        s3Service.uploadLargeFile(fileName, fileObj);
         fileObj.delete();
-        String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+        //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+        // Retrieve the file URL from S3
+        String fileUrl = s3Service.getFileUrl(fileName);
 
         Optional<AudioMain>audioMainOptional = audionMainRepo.findByCommonIdAndDtId(commonId,malId);
         if (audioMainOptional.isPresent()){
@@ -207,12 +228,16 @@ public class AudioService {
         return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    public ResponseEntity<?> updateAudioFirst(String malId, String commonId, MultipartFile file) {
+    public ResponseEntity<?> updateAudioFirst(String malId, String commonId, MultipartFile file) throws IOException {
         File fileObj = convertMultiPartFileToFile(file);
         String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
-        s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        // Use the S3Service's uploadLargeFile method to upload the file
+        s3Service.uploadLargeFile(fileName, fileObj);
         fileObj.delete();
-        String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+        //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+        // Retrieve the file URL from S3
+        String fileUrl = s3Service.getFileUrl(fileName);
         Optional<AudioFirst>audioFirstOptional = audioFirstRepo.findByFsCommonIdAndDtId(commonId,malId);
         if (audioFirstOptional.isPresent()){
             AudioFirst audioFirst = audioFirstOptional.get();
@@ -226,12 +251,16 @@ public class AudioService {
         return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    public ResponseEntity<?> updateVideoMain(String malId, String commonId, MultipartFile file) {
+    public ResponseEntity<?> updateVideoMain(String malId, String commonId, MultipartFile file) throws IOException{
         File fileObj = convertMultiPartFileToFile(file);
         String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
-        s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        // Use the S3Service's uploadLargeFile method to upload the file
+        s3Service.uploadLargeFile(fileName, fileObj);
         fileObj.delete();
-        String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+        //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+        // Retrieve the file URL from S3
+        String fileUrl = s3Service.getFileUrl(fileName);
         Optional<VideoMain>videoMainOptional =videoMainRepo.findByDtIdAndMalId(commonId,malId);
         if (videoMainOptional.isPresent()){
             VideoMain videoMain =videoMainOptional.get();
@@ -255,12 +284,16 @@ public class AudioService {
         return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    public ResponseEntity<?> updateVideoFirst(String malId, String commonId, MultipartFile file) {
+    public ResponseEntity<?> updateVideoFirst(String malId, String commonId, MultipartFile file) throws IOException{
         File fileObj = convertMultiPartFileToFile(file);
         String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
-        s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        // Use the S3Service's uploadLargeFile method to upload the file
+        s3Service.uploadLargeFile(fileName, fileObj);
         fileObj.delete();
-        String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+        //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+        // Retrieve the file URL from S3
+        String fileUrl = s3Service.getFileUrl(fileName);
         List<VideoFirst>videoFirstOptional = videoFirstRepo.findBydtId(commonId);
         if (!videoFirstOptional.isEmpty()){
             for (VideoFirst videoFirst : videoFirstOptional){

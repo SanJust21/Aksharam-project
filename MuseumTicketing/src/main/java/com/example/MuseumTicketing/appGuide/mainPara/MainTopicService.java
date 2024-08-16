@@ -139,11 +139,11 @@ public class MainTopicService {
                 DataType dataType1 = dataTypeOptional.get();
                 String type = dataType1.getTalk();
                 if (type!=null&&"English".equalsIgnoreCase(type)){
-                    Optional<FirstTopicEng> existingTopic = firstTopicEngRepo.findByTopic(mainParaDTO.getTopic());
-                    if(existingTopic.isPresent()){
-                        String existTopic = mainParaDTO.getTopic();
-                        return new ResponseEntity<>(existTopic+" is already present in database", HttpStatus.CONFLICT);
-                    }
+//                    Optional<FirstTopicEng> existingTopic = firstTopicEngRepo.findByTopic(mainParaDTO.getTopic());
+//                    if(existingTopic.isPresent()){
+//                        String existTopic = mainParaDTO.getTopic();
+//                        return new ResponseEntity<>(existTopic+" is already present in database", HttpStatus.CONFLICT);
+//                    }
                     String randomId = alphaNumeric.generateRandomNumber();
                     FirstTopicEng firstTopicEng = new FirstTopicEng();
                     firstTopicEng.setTopic(mainParaDTO.getTopic());
@@ -159,11 +159,11 @@ public class MainTopicService {
                     return new ResponseEntity<>(firstTopicEng, HttpStatus.OK);
 
                 } else if (type!=null && "Malayalam".equalsIgnoreCase(type)) {
-                    Optional<FirstTopicMal> existingTopic = firstTopicMalRepo.findByTopic(mainParaDTO.getTopic());
-                    if(existingTopic.isPresent()){
-                        String existTopic = mainParaDTO.getTopic();
-                        return new ResponseEntity<>(existTopic+" is already present in database", HttpStatus.CONFLICT);
-                    }
+//                    Optional<FirstTopicMal> existingTopic = firstTopicMalRepo.findByTopic(mainParaDTO.getTopic());
+//                    if(existingTopic.isPresent()){
+//                        String existTopic = mainParaDTO.getTopic();
+//                        return new ResponseEntity<>(existTopic+" is already present in database", HttpStatus.CONFLICT);
+//                    }
                     String randomId = alphaNumeric.generateRandomNumber();
                     FirstTopicMal firstTopicMal = new FirstTopicMal();
                     firstTopicMal.setTopic(mainParaDTO.getTopic());

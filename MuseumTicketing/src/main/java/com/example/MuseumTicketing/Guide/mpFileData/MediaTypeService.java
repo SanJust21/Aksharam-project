@@ -29,6 +29,7 @@ import com.example.MuseumTicketing.Guide.mpFileData.mp4.mainHeading.Mp4Data;
 import com.example.MuseumTicketing.Guide.mpFileData.mp4.mainHeading.Mp4DataRepo;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.example.MuseumTicketing.Guide.util.S3Service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,6 +40,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -79,12 +81,20 @@ public class MediaTypeService {
     @Autowired
     private AmazonS3 s3Client;
 
-    public MediaTypeDTO uploadMp3(MultipartFile file, String uId) {
+    @Autowired
+    private S3Service s3Service;
+
+
+    public MediaTypeDTO uploadMp3(MultipartFile file, String uId) throws IOException {
         File fileObj = convertMultiPartFileToFile(file);
         String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
-        s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        // Use the S3Service's uploadLargeFile method to upload the file
+        s3Service.uploadLargeFile(fileName, fileObj);
         fileObj.delete();
-        String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+        //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+        // Retrieve the file URL from S3
+        String fileUrl = s3Service.getFileUrl(fileName);
         Mp3Data mp3Data = new Mp3Data(fileName,fileUrl,uId);
         mp3Repo.save(mp3Data);
         return new MediaTypeDTO(fileName,fileUrl,uId);
@@ -99,7 +109,7 @@ public class MediaTypeService {
         return convertedFile;
     }
 
-    public ResponseEntity<List<MediaTypeVideoDTO>> uploadMp4(MultipartFile[] files, String uId) {
+    public ResponseEntity<List<MediaTypeVideoDTO>> uploadMp4(MultipartFile[] files, String uId) throws IOException{
         List<MediaTypeVideoDTO> response = new ArrayList<>();
         for (MultipartFile file : files){
             MediaTypeVideoDTO mediaTypeVideoDTO = uploadMp4Main(file,uId);
@@ -108,13 +118,17 @@ public class MediaTypeService {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    public MediaTypeVideoDTO uploadMp4Main(MultipartFile file, String uId) {
+    public MediaTypeVideoDTO uploadMp4Main(MultipartFile file, String uId) throws IOException{
         try {
             File fileObj = convertMultiPartFileToFile(file);
             String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
-            s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+            //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+            // Use the S3Service's uploadLargeFile method to upload the file
+            s3Service.uploadLargeFile(fileName, fileObj);
             fileObj.delete();
-            String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+            //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+            // Retrieve the file URL from S3
+            String fileUrl = s3Service.getFileUrl(fileName);
             Mp4Data mp4Data= new Mp4Data(fileName,fileUrl,uId);
             Optional<CommonIdQRCode> commonIdQRCodeOptional = commonIdQRCodeRepo.findByCommonId(uId);
             if (commonIdQRCodeOptional.isPresent()){
@@ -135,12 +149,31 @@ public class MediaTypeService {
         return new MediaTypeVideoDTO(null,null,null,null,null);
     }
 
-    public MediaTypeDTO uploadMp3fs(MultipartFile file, String uId) {
+    public MediaTypeDTO uploadPdf(MultipartFile file, String uId) throws IOException{
         File fileObj = convertMultiPartFileToFile(file);
         String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
-        s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        // Use the S3Service's uploadLargeFile method to upload the file
+        s3Service.uploadLargeFile(fileName, fileObj);
         fileObj.delete();
-        String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+        // Retrieve the file URL from S3
+        String fileUrl = s3Service.getFileUrl(fileName);
+        Mp4Data mp4Data= new Mp4Data(fileName,fileUrl,uId);
+        mp4DataRepo.save(mp4Data);
+        //PdfData pdfData = new PdfData(fileName,fileUrl,uId);
+        //pdfDataRepo.save(pdfData);
+        return new MediaTypeDTO(fileName,fileUrl,uId);
+    }
+
+    public MediaTypeDTO uploadMp3fs(MultipartFile file, String uId) throws IOException{
+        File fileObj = convertMultiPartFileToFile(file);
+        String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
+        //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        // Use the S3Service's uploadLargeFile method to upload the file
+        s3Service.uploadLargeFile(fileName, fileObj);
+        fileObj.delete();
+        //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+        // Retrieve the file URL from S3
+        String fileUrl = s3Service.getFileUrl(fileName);
         Mp3Data1 mp3Data1 = new Mp3Data1(fileName,fileUrl,uId);
 
         Optional<FirstSubEnglish> firstSubEnglishOptional =firstSubEnglishRepo.findByfsUid(uId);
@@ -176,7 +209,7 @@ public class MediaTypeService {
         return new MediaTypeDTO(fileName,fileUrl,uId);
     }
 
-    public ResponseEntity<?> uploadMp4fs(MultipartFile[] files, String uId) {
+    public ResponseEntity<?> uploadMp4fs(MultipartFile[] files, String uId) throws IOException {
         List<MediaTypeVideoDTO> response = new ArrayList<>();
         for (MultipartFile file : files){
             MediaTypeVideoDTO mediaTypeVideoDTO = uploadMp4First(file,uId);
@@ -186,12 +219,16 @@ public class MediaTypeService {
     }
 
 
-    public MediaTypeVideoDTO uploadMp4First(MultipartFile file, String uId) {
+    public MediaTypeVideoDTO uploadMp4First(MultipartFile file, String uId) throws IOException{
         File fileObj = convertMultiPartFileToFile(file);
         String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
-        s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        // Use the S3Service's uploadLargeFile method to upload the file
+        s3Service.uploadLargeFile(fileName, fileObj);
         fileObj.delete();
-        String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+        //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+        // Retrieve the file URL from S3
+        String fileUrl = s3Service.getFileUrl(fileName);
         Mp4Data1 mp4Data1 = new Mp4Data1(fileName,fileUrl,uId);
         Optional<CommonIdFs>commonIdFsOptional = fsCommonIdRepo.findByFsCommonId(uId);
         if (commonIdFsOptional.isPresent()){
@@ -218,18 +255,22 @@ public class MediaTypeService {
     }
 
 
-    public MediaTypeDTO uploadMp3ss(MultipartFile file, String uId) {
+    public MediaTypeDTO uploadMp3ss(MultipartFile file, String uId) throws IOException{
         File fileObj = convertMultiPartFileToFile(file);
         String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
-        s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        // Use the S3Service's uploadLargeFile method to upload the file
+        s3Service.uploadLargeFile(fileName, fileObj);
         fileObj.delete();
-        String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+        //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+        // Retrieve the file URL from S3
+        String fileUrl = s3Service.getFileUrl(fileName);
         Mp3Data2 mp3Data2 = new Mp3Data2(fileName,fileUrl,uId);
         mp3Data2Repo.save(mp3Data2);
         return new MediaTypeDTO(fileName,fileUrl,uId);
     }
 
-    public ResponseEntity<?> uploadMp4ss(MultipartFile[] files, String uId) {
+    public ResponseEntity<?> uploadMp4ss(MultipartFile[] files, String uId) throws IOException{
         List<MediaTypeVideoDTO> response = new ArrayList<>();
         for (MultipartFile file : files){
             MediaTypeVideoDTO mediaTypeVideoDTO = uploadMp4Second(file,uId);
@@ -238,12 +279,16 @@ public class MediaTypeService {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    public MediaTypeVideoDTO uploadMp4Second(MultipartFile file, String uId) {
+    public MediaTypeVideoDTO uploadMp4Second(MultipartFile file, String uId) throws IOException{
         File fileObj = convertMultiPartFileToFile(file);
         String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
-        s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        // Use the S3Service's uploadLargeFile method to upload the file
+        s3Service.uploadLargeFile(fileName, fileObj);
         fileObj.delete();
-        String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+        //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+        // Retrieve the file URL from S3
+        String fileUrl = s3Service.getFileUrl(fileName);
         Mp4Data2 mp4Data2 = new Mp4Data2(fileName,fileUrl,uId);
         Optional<CommonIdSs>commonIdSsOptional = commonIdSsRepo.findBySsCommonId(uId);
         if (commonIdSsOptional.isPresent()){
@@ -257,16 +302,19 @@ public class MediaTypeService {
         return new MediaTypeVideoDTO(fileName,fileUrl,uId,mp4Data2.getEngId(),mp4Data2.getMalId());
     }
 
-    public MediaTypeDTO updateUploadMp3(MultipartFile file, String uId) {
+    public MediaTypeDTO updateUploadMp3(MultipartFile file, String uId) throws IOException{
         try {
             List<Mp3Data> mp3Data1 = mp3Repo.findBydtId(uId);
             if (!mp3Data1.isEmpty()){
                 File fileObj = convertMultiPartFileToFile(file);
                 String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
-                s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+                //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+                // Use the S3Service's uploadLargeFile method to upload the file
+                s3Service.uploadLargeFile(fileName, fileObj);
                 fileObj.delete();
-                String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
-
+                //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+                // Retrieve the file URL from S3
+                String fileUrl = s3Service.getFileUrl(fileName);
                 for (Mp3Data mp3Data : mp3Data1) {
                     mp3Data.setFName(fileName);
                     mp3Data.setFUrl(fileUrl);
@@ -280,16 +328,20 @@ public class MediaTypeService {
         return new MediaTypeDTO("No Data","No Data","No Data");
     }
 
-    public MediaTypeDTO updateUploadMp4(MultipartFile file, String uId) {
+    public MediaTypeDTO updateUploadMp4(MultipartFile file, String uId) throws IOException{
         try {
 
             List<Mp4Data> mp4DataList = mp4DataRepo.findBydtId(uId);
             if (!mp4DataList.isEmpty() && !file.isEmpty()) {
                 File fileObj = convertMultiPartFileToFile(file);
                 String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-                s3Client.putObject(new PutObjectRequest(bucketName, fileName, fileObj));
+                //s3Client.putObject(new PutObjectRequest(bucketName, fileName, fileObj));
+                // Use the S3Service's uploadLargeFile method to upload the file
+                s3Service.uploadLargeFile(fileName, fileObj);
                 fileObj.delete();
-                String fileUrl = s3Client.getUrl(bucketName, fileName).toString();
+                //String fileUrl = s3Client.getUrl(bucketName, fileName).toString();
+                // Retrieve the file URL from S3
+                String fileUrl = s3Service.getFileUrl(fileName);
                 // Update existing Mp4Data entries
                 for (Mp4Data mp4Data : mp4DataList) {
                     mp4Data.setFName(fileName);
@@ -305,16 +357,19 @@ public class MediaTypeService {
     }
 
 
-    public MediaTypeDTO updateFirstSubUploadMp3(MultipartFile file, String uId) {
+    public MediaTypeDTO updateFirstSubUploadMp3(MultipartFile file, String uId) throws IOException{
         try {
             List<Mp3Data1> mp3DataList = mp3Data1Repo.findBydtId(uId);
             if (!mp3DataList.isEmpty() && !file.isEmpty()) {
                 File fileObj = convertMultiPartFileToFile(file);
                 String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-                s3Client.putObject(new PutObjectRequest(bucketName, fileName, fileObj));
+                //s3Client.putObject(new PutObjectRequest(bucketName, fileName, fileObj));
+                // Use the S3Service's uploadLargeFile method to upload the file
+                s3Service.uploadLargeFile(fileName, fileObj);
                 fileObj.delete();
-                String fileUrl = s3Client.getUrl(bucketName, fileName).toString();
-
+                //String fileUrl = s3Client.getUrl(bucketName, fileName).toString();
+                // Retrieve the file URL from S3
+                String fileUrl = s3Service.getFileUrl(fileName);
                 // Update existing Mp3Data1 entries
                 for (Mp3Data1 mp3Data : mp3DataList) {
                     mp3Data.setFName(fileName);
@@ -330,16 +385,19 @@ public class MediaTypeService {
     }
 
 
-    public MediaTypeDTO updateFirstSubUploadMp4(MultipartFile file, String uId) {
+    public MediaTypeDTO updateFirstSubUploadMp4(MultipartFile file, String uId) throws IOException {
         try {
             List<Mp4Data1> mp4DataList = mp4Data1Repo.findBydtId(uId);
             if (!mp4DataList.isEmpty() && !file.isEmpty()) {
                 File fileObj = convertMultiPartFileToFile(file);
                 String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-                s3Client.putObject(new PutObjectRequest(bucketName, fileName, fileObj));
+                //s3Client.putObject(new PutObjectRequest(bucketName, fileName, fileObj));
+                // Use the S3Service's uploadLargeFile method to upload the file
+                s3Service.uploadLargeFile(fileName, fileObj);
                 fileObj.delete();
-                String fileUrl = s3Client.getUrl(bucketName, fileName).toString();
-
+                //String fileUrl = s3Client.getUrl(bucketName, fileName).toString();
+                // Retrieve the file URL from S3
+                String fileUrl = s3Service.getFileUrl(fileName);
                 // Update existing Mp4Data1 entries
                 for (Mp4Data1 mp4Data : mp4DataList) {
                     mp4Data.setFName(fileName);
@@ -387,16 +445,19 @@ public class MediaTypeService {
 //        return new MediaTypeDTO("No Data","No Data","No Data");
 //    }
 
-    public MediaTypeDTO updateSecondSubUploadMp3(MultipartFile file, String uId) {
+    public MediaTypeDTO updateSecondSubUploadMp3(MultipartFile file, String uId) throws IOException{
         try {
             List<Mp3Data2> mp3DataList = mp3Data2Repo.findBydtId(uId);
             if (!mp3DataList.isEmpty() && !file.isEmpty()) {
                 File fileObj = convertMultiPartFileToFile(file);
                 String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-                s3Client.putObject(new PutObjectRequest(bucketName, fileName, fileObj));
+                //s3Client.putObject(new PutObjectRequest(bucketName, fileName, fileObj));
+                // Use the S3Service's uploadLargeFile method to upload the file
+                s3Service.uploadLargeFile(fileName, fileObj);
                 fileObj.delete();
-                String fileUrl = s3Client.getUrl(bucketName, fileName).toString();
-
+                //String fileUrl = s3Client.getUrl(bucketName, fileName).toString();
+                // Retrieve the file URL from S3
+                String fileUrl = s3Service.getFileUrl(fileName);
                 // Update existing Mp3Data2 entries
                 for (Mp3Data2 mp3Data : mp3DataList) {
                     mp3Data.setFName(fileName);
@@ -411,16 +472,19 @@ public class MediaTypeService {
         return new MediaTypeDTO("No Data", "No Data", "No Data");
     }
 
-    public MediaTypeDTO updateSecondSubUploadMp4(MultipartFile file, String uId) {
+    public MediaTypeDTO updateSecondSubUploadMp4(MultipartFile file, String uId) throws IOException {
         try {
             List<Mp4Data2> mp4DataList = mp4Data2Repo.findBydtId(uId);
             if (!mp4DataList.isEmpty() && !file.isEmpty()) {
                 File fileObj = convertMultiPartFileToFile(file);
                 String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-                s3Client.putObject(new PutObjectRequest(bucketName, fileName, fileObj));
+                //s3Client.putObject(new PutObjectRequest(bucketName, fileName, fileObj));
+                // Use the S3Service's uploadLargeFile method to upload the file
+                s3Service.uploadLargeFile(fileName, fileObj);
                 fileObj.delete();
-                String fileUrl = s3Client.getUrl(bucketName, fileName).toString();
-
+                //String fileUrl = s3Client.getUrl(bucketName, fileName).toString();
+                // Retrieve the file URL from S3
+                String fileUrl = s3Service.getFileUrl(fileName);
                 // Update existing Mp4Data2 entries
                 for (Mp4Data2 mp4Data : mp4DataList) {
                     mp4Data.setFName(fileName);
