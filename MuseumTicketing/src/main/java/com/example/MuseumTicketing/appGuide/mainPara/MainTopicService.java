@@ -189,9 +189,12 @@ public class MainTopicService {
 
     public ResponseEntity<?> generateComId(String engId, String malId) {
         try {
-            SubComId subComId = subComIdRepo.findByFsEngIdAndFsMalId(engId,malId);
-            if (subComId.getFsEngId().equals(engId)&&subComId.getFsMalId().equals(malId)){
-                return new ResponseEntity<>("CommonId : "+subComId.getFsCommonId(),HttpStatus.OK);
+            Optional<SubComId> subComIdOptional = subComIdRepo.findByFsEngIdAndFsMalId(engId,malId);
+            if (subComIdOptional.isPresent()){
+                SubComId subComId = subComIdOptional.get();
+                if (subComId.getFsEngId().equals(engId)&&subComId.getFsMalId().equals(malId)){
+                    return new ResponseEntity<>("CommonId : "+subComId.getFsCommonId(),HttpStatus.OK);
+                }
             }else {
                 SubComId comId = new SubComId();
                 comId.setFsMalId(malId);
@@ -201,12 +204,13 @@ public class MainTopicService {
                 subComIdRepo.save(comId);
                 return new ResponseEntity<>(comId,HttpStatus.CREATED);
             }
+            return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
 
         }catch (Exception e){
            // e.printStackTrace();
             return errorService.handlerException(e);
         }
-        //return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+//        return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 

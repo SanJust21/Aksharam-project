@@ -1,5 +1,6 @@
 package com.example.MuseumTicketing.appGuide.mainPara;
 
+import com.example.MuseumTicketing.appGuide.Pdf.PdfData;
 import com.example.MuseumTicketing.appGuide.audio.main.AudioMain;
 import com.example.MuseumTicketing.appGuide.img.main.ImgDataMain;
 import com.example.MuseumTicketing.appGuide.mainPara.first.CombinedSubPara;
@@ -21,6 +22,7 @@ public class CombinedPara {
     private String engId;
 
     private List<ImgDataMain> imgList;
+    private List<PdfData> pdfDataList;
     private List<AudioMain> audioList;
     private List<VideoMain> videoList;
 

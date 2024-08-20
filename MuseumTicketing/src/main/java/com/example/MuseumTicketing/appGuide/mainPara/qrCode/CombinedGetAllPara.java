@@ -1,5 +1,6 @@
 package com.example.MuseumTicketing.appGuide.mainPara.qrCode;
 
+import com.example.MuseumTicketing.appGuide.Pdf.PdfData;
 import com.example.MuseumTicketing.appGuide.audio.main.AudioMain;
 import com.example.MuseumTicketing.appGuide.img.main.ImgDataMain;
 import com.example.MuseumTicketing.appGuide.video.main.VideoMain;
@@ -23,6 +24,7 @@ public class CombinedGetAllPara {
     private List<ImgDataMain>imgDataMainList;
     private List<AudioMain>audioMainList;
     private List<VideoMain>videoMainList;
+    private List<PdfData>pdfDataList;
 
     public String getTopic() {
         return topic;
@@ -110,5 +112,9 @@ public class CombinedGetAllPara {
 
     public void setVideoMainList(List<VideoMain> videoMainList) {
         this.videoMainList = videoMainList;
+    }
+
+    public List<PdfData> getPdfDataList() {
+        return pdfDataList;
     }
 }

@@ -11,5 +11,7 @@ public interface SubComIdRepo extends JpaRepository<SubComId,Integer> {
 
     SubComId findByfsMalId(String fsUid);
 
-    SubComId findByFsEngIdAndFsMalId(String engId, String malId);
+    Optional<SubComId> findByFsEngIdAndFsMalId(String engId, String malId);
+
+//    SubComId findByFsEngIdAndFsMalId(String engId, String malId);
 }

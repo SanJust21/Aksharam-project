@@ -287,6 +287,7 @@ public class FirstSubService {
                                 combinedDataSubSub.setSsCommonId(commonIdSs1.getSsCommonId());
                                 combinedDataSubSub.setSsEngId(commonIdSs1.getSsEngId());
                                 combinedDataSubSub.setSsMalId(commonIdSs1.getSsMalId());
+                                combinedDataSubSub.setFsCommonId(commonIdFs.getFsCommonId());
                             }
                             // Fetching images for SecondSubEnglish
                             List<ImgSubSecond> imgSubSecondList = imgSubSecondRepo.findByengId(secondSubEnglish.getSsUid());
@@ -380,6 +381,7 @@ public class FirstSubService {
                                 combinedDataSubSub.setSsCommonId(commonIdSs1.getSsCommonId());
                                 combinedDataSubSub.setSsEngId(commonIdSs1.getSsEngId());
                                 combinedDataSubSub.setSsMalId(commonIdSs1.getSsMalId());
+                                combinedDataSubSub.setFsCommonId(commonIdFs.getFsCommonId());
                             }
                             // Fetching images for SecondSubMalayalam
                             List<ImgSubSecond> imgSubSecondList = imgSubSecondRepo.findBymalId(secondSubMalayalam.getSsUid());

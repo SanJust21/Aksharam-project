@@ -20,13 +20,23 @@ public class PdfData {
     @Column(name = "fUrl")
     private String fUrl;
 
-    @Column(name = "engId")
-    private String engId;
-
-    @Column(name = "malId")
-    private String malId;
+    @Column(name = "uId")
+    private String uId;
 
     @Column(name = "commonId")
     private String commonId;
 
+    public PdfData() {
+    }
+
+    public PdfData(String fName, String fUrl) {
+        this.fName = fName;
+        this.fUrl = fUrl;
+    }
+
+    public PdfData(String fName, String fUrl, String uId) {
+        this.fName = fName;
+        this.fUrl = fUrl;
+        this.uId = uId;
+    }
 }

@@ -3,6 +3,9 @@ package com.example.MuseumTicketing.appGuide.audio;
 import com.example.MuseumTicketing.Guide.Language.DataType;
 import com.example.MuseumTicketing.Guide.Language.DataTypeRepo;
 import com.example.MuseumTicketing.Guide.util.ErrorService;
+import com.example.MuseumTicketing.appGuide.Pdf.PdfData;
+import com.example.MuseumTicketing.appGuide.audio.first.AudioFirst;
+import com.example.MuseumTicketing.appGuide.audio.main.AudioMain;
 import com.example.MuseumTicketing.appGuide.mainPara.first.FirstTopicEng;
 import com.example.MuseumTicketing.appGuide.mainPara.first.FirstTopicEngRepo;
 import com.example.MuseumTicketing.appGuide.mainPara.first.FirstTopicMal;
@@ -30,6 +33,8 @@ import com.example.MuseumTicketing.appGuide.mainPara.qrCode.CommonQRParaId;
 import com.example.MuseumTicketing.appGuide.mainPara.qrCode.CommonQRParaIdRepo;
 import com.example.MuseumTicketing.appGuide.mainPara.qrCode.first.SubComId;
 import com.example.MuseumTicketing.appGuide.mainPara.qrCode.first.SubComIdRepo;
+import com.example.MuseumTicketing.appGuide.video.first.VideoFirst;
+import com.example.MuseumTicketing.appGuide.video.main.VideoMain;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -132,6 +137,20 @@ public class AudioController {
                     }else {
                         return new ResponseEntity<>("CommonId is not generated. Please generate it.",HttpStatus.NO_CONTENT);
                     }
+                } else if (fData!=null&&"PDF".equalsIgnoreCase(fData)) {
+                    Optional<MainTopicEng> mainTopicEngOptional = mainTopicEngRepo.findBymEngUid(uId);
+                    Optional<MainTopicMal> mainTopicMalOptional = mainTopicMalRepo.findBymMalUid(uId);
+                    if (mainTopicMalOptional.isPresent()){
+                        MainTopicMal mainTopicMal = mainTopicMalOptional.get();
+                        if (mainTopicMal.getMMalUid().equals(uId)){
+                            return audioService.uploadPDF(uId,file);
+                        }
+                    } else if (mainTopicEngOptional.isPresent()) {
+                        MainTopicEng mainTopicEng = mainTopicEngOptional.get();
+                        if (mainTopicEng.getMEngUid().equals(uId)){
+                            return audioService.uploadPDF(uId,file);
+                        }
+                    }
                 } else {
                     return new ResponseEntity<>("FileType is not present. Resend the file.", HttpStatus.BAD_REQUEST);
                 }
@@ -147,10 +166,10 @@ public class AudioController {
 
     @PutMapping(path = "updateMediaPlayer/{commonId}")
     public ResponseEntity<?>updateMediaPlayerData(@PathVariable String commonId,@RequestParam Integer mtId,
-                                            @RequestParam MultipartFile file,@RequestParam Integer dType
-                                                  ) {
+                                            @RequestParam MultipartFile[] file,@RequestParam Integer dType,
+                                                  @RequestParam List<Integer> ids) {
         try {
-            if (commonId == null || mtId == null || commonId.isEmpty() || "undefined".equalsIgnoreCase(commonId)) {
+            if (commonId == null || ids ==null ||mtId == null || commonId.isEmpty() || "undefined".equalsIgnoreCase(commonId)) {
                 return new ResponseEntity<>("Topic ID, Media Type ID required", HttpStatus.BAD_REQUEST);
             }
 
@@ -170,9 +189,17 @@ public class AudioController {
                             DataType dataType1 = dataType.get();
                             String data = dataType1.getTalk();
                             if ("Malayalam".equalsIgnoreCase(data)) {
-                                return audioService.updateAudioMain(malId, commonId, file);
+                                List<AudioMain> response = new ArrayList<>();
+                                for (int i =0; i < file.length;i++){
+                                    response.add(audioService.updateAudioMain(malId,commonId,file[i],ids.get(i)));
+                                }
+                                return new ResponseEntity<>(response,HttpStatus.OK);
                             } else if ("English".equalsIgnoreCase(data)) {
-                                return audioService.updateAudioMain(engId, commonId, file);
+                                List<AudioMain> response = new ArrayList<>();
+                                for (int i =0; i < file.length;i++){
+                                    response.add(audioService.updateAudioMain(engId,commonId,file[i],ids.get(i)));
+                                }
+                                return new ResponseEntity<>(response,HttpStatus.OK);
                             } else {
                                 return new ResponseEntity<>("Data Type is required", HttpStatus.BAD_REQUEST);
                             }
@@ -186,9 +213,19 @@ public class AudioController {
                             DataType dataType1 = dataType.get();
                             String data = dataType1.getTalk();
                             if ("Malayalam".equalsIgnoreCase(data)) {
-                                return audioService.updateAudioFirst(malId, commonId, file);
+                                List<AudioFirst> response = new ArrayList<>();
+                                for (int i =0; i < file.length;i++){
+                                    response.add(audioService.updateAudioFirst(malId,commonId,file[i],ids.get(i)));
+                                }
+                                return new ResponseEntity<>(response,HttpStatus.OK);
+                                //return audioService.updateAudioFirst(malId, commonId, file);
                             } else if ("English".equalsIgnoreCase(data)) {
-                                return audioService.updateAudioFirst(engId, commonId, file);
+                                List<AudioFirst> response = new ArrayList<>();
+                                for (int i =0; i < file.length;i++){
+                                    response.add(audioService.updateAudioFirst(malId,commonId,file[i],ids.get(i)));
+                                }
+                                return new ResponseEntity<>(response,HttpStatus.OK);
+                                //return audioService.updateAudioFirst(engId, commonId, file);
                             } else {
                                 return new ResponseEntity<>("Data Type is required", HttpStatus.BAD_REQUEST);
                             }
@@ -196,41 +233,51 @@ public class AudioController {
                     } else {
                         return new ResponseEntity<>("CommonId is not valid. Please check", HttpStatus.BAD_REQUEST);
                     }
+                } else if (fData!=null && "PDF".equalsIgnoreCase(fData)) {
+                    Optional<CommonQRParaId> commonQRParaIdOptional = commonQRParaIdRepo.findByCommonId(commonId);
+                    if (commonQRParaIdOptional.isPresent()){
+                        CommonQRParaId commonQRParaId = commonQRParaIdOptional.get();
+                        String engId = commonQRParaId.getEngId();
+                        String malId =commonQRParaId.getMalId();
+                        Optional<DataType>dataTypeOptional=dataTypeRepo.findById(dType);
+                        if (dataTypeOptional.isPresent()){
+                            DataType dataType = dataTypeOptional.get();
+                            String data = dataType.getTalk();
+                            if ("Malayalam".equalsIgnoreCase(data)){
+                                List<PdfData> response = new ArrayList<>();
+                                for (int i =0; i < file.length;i++){
+                                    response.add(audioService.updatePDF(malId,commonId,file[i],ids.get(i)));
+                                }
+                                return new ResponseEntity<>(response,HttpStatus.OK);
+                                //return audioService.updatePDF(file,malId);
+                            } else if ("English".equalsIgnoreCase(data)) {
+                                List<PdfData> response = new ArrayList<>();
+                                for (int i =0; i < file.length;i++){
+                                    response.add(audioService.updatePDF(engId,commonId,file[i],ids.get(i)));
+                                }
+                                return new ResponseEntity<>(response,HttpStatus.OK);
+                                //return audioService.updatePDF(file,engId);
+                            }return new ResponseEntity<>("Language is not mentioned",HttpStatus.NOT_FOUND);
+                        }return new ResponseEntity<>("Language is required",HttpStatus.BAD_REQUEST);
+                    }return new ResponseEntity<>("CommonId : "+commonId+" is required. Enter valid commonId",HttpStatus.BAD_REQUEST);
                 } else if (fData != null && "Video".equalsIgnoreCase(fData)) {
                     Optional<CommonQRParaId> commonQRParaIdOptional = commonQRParaIdRepo.findByCommonId(commonId);
                     Optional<SubComId> subComIdOptional = subComIdRepo.findByFsCommonId(commonId);
                     if (commonQRParaIdOptional.isPresent()) {
-                        CommonQRParaId commonQRParaId = commonQRParaIdOptional.get();
-                        String engId = commonQRParaId.getEngId();
-                        String malId = commonQRParaId.getMalId();
-                        Optional<DataType> dataType = dataTypeRepo.findById(dType);
-                        if (dataType.isPresent()) {
-                            DataType dataType1 = dataType.get();
-                            String data = dataType1.getTalk();
-                            if ("Malayalam".equalsIgnoreCase(data)) {
-                                return audioService.updateVideoMain(malId, commonId, file);
-                            } else if ("English".equalsIgnoreCase(data)) {
-                                return audioService.updateVideoMain(engId, commonId, file);
-                            } else {
-                                return new ResponseEntity<>("Data Type is required", HttpStatus.BAD_REQUEST);
-                            }
+//
+                        List<VideoMain> response = new ArrayList<>();
+                        for (int i =0; i < file.length;i++){
+                            response.add(audioService.updateVideoMain(commonId,file[i],ids.get(i)));
                         }
+                        return new ResponseEntity<>(response,HttpStatus.OK);
+
                     } else if (subComIdOptional.isPresent()) {
                         SubComId subComId = subComIdOptional.get();
-                        String engId = subComId.getFsEngId();
-                        String malId = subComId.getFsMalId();
-                        Optional<DataType> dataType = dataTypeRepo.findById(dType);
-                        if (dataType.isPresent()) {
-                            DataType dataType1 = dataType.get();
-                            String data = dataType1.getTalk();
-                            if ("Malayalam".equalsIgnoreCase(data)) {
-                                return audioService.updateVideoFirst(malId, commonId, file);
-                            } else if ("English".equalsIgnoreCase(data)) {
-                                return audioService.updateVideoFirst(engId, commonId, file);
-                            } else {
-                                return new ResponseEntity<>("Data Type is required", HttpStatus.BAD_REQUEST);
-                            }
+                        List<VideoFirst> response = new ArrayList<>();
+                        for (int i =0; i < file.length;i++){
+                            response.add(audioService.updateVideoFirst(commonId,file[i],ids.get(i)));
                         }
+                        return new ResponseEntity<>(response,HttpStatus.OK);
                     } else {
                         return new ResponseEntity<>("File is not present. Resend the file.", HttpStatus.BAD_REQUEST);
                     }
@@ -312,6 +359,25 @@ public class AudioController {
                         }
                     } else {
                         return new ResponseEntity<>("CommonId is not valid. Please check", HttpStatus.BAD_REQUEST);
+                    }
+                } else if (fData!=null && "PDF".equalsIgnoreCase(fData)) {
+                    Optional<CommonQRParaId>commonQRParaIdOptional=commonQRParaIdRepo.findByCommonId(commonId);
+                    if (commonQRParaIdOptional.isPresent()){
+                        CommonQRParaId commonQRParaId = commonQRParaIdOptional.get();
+                        String engId=commonQRParaId.getEngId();;
+                        String malId=commonQRParaId.getMalId();
+                        Optional<DataType>dataTypeOptional=dataTypeRepo.findById(dType);
+                        if (dataTypeOptional.isPresent()){
+                            DataType dataType = dataTypeOptional.get();
+                            String data = dataType.getTalk();
+                            if ("Malayalam".equalsIgnoreCase(data)){
+                                return audioService.deletePdfMain(malId);
+                            } else if ("English".equalsIgnoreCase(data)) {
+                                return audioService.deletePdfMain(engId);
+                            }else {
+                                return new ResponseEntity<>("Language is not valid",HttpStatus.BAD_REQUEST);
+                            }
+                        }
                     }
                 } else if (fData != null && "Video".equalsIgnoreCase(fData)) {
                     Optional<CommonQRParaId> commonQRParaIdOptional = commonQRParaIdRepo.findByCommonId(commonId);

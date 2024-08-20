@@ -4,6 +4,8 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.example.MuseumTicketing.Guide.util.S3Service;
+import com.example.MuseumTicketing.appGuide.Pdf.PdfData;
+import com.example.MuseumTicketing.appGuide.Pdf.PdfRepo;
 import com.example.MuseumTicketing.appGuide.mainPara.first.FirstTopicEng;
 import com.example.MuseumTicketing.appGuide.mainPara.first.FirstTopicEngRepo;
 import com.example.MuseumTicketing.appGuide.mainPara.first.FirstTopicMal;
@@ -70,6 +72,8 @@ public class AudioService {
     private AmazonS3 s3Client;
     @Autowired
     private S3Service s3Service;
+    @Autowired
+    private PdfRepo pdfRepo;
 
     private File convertMultiPartFileToFile(MultipartFile file){
         File convertedFile = new File(file.getOriginalFilename());
@@ -203,7 +207,34 @@ public class AudioService {
         return new ResponseEntity<>(videoFirst, HttpStatus.OK);
     }
 
-    public ResponseEntity<?> updateAudioMain(String malId, String commonId, MultipartFile file) throws IOException{
+
+
+//    public ResponseEntity<?> updateAudioMain(String malId, String commonId, MultipartFile file) throws IOException{
+//        File fileObj = convertMultiPartFileToFile(file);
+//        String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
+//        //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+//        // Use the S3Service's uploadLargeFile method to upload the file
+//        s3Service.uploadLargeFile(fileName, fileObj);
+//        fileObj.delete();
+//        //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+//        // Retrieve the file URL from S3
+//        String fileUrl = s3Service.getFileUrl(fileName);
+//
+//        Optional<AudioMain>audioMainOptional = audionMainRepo.findByCommonIdAndDtId(commonId,malId);
+//        if (audioMainOptional.isPresent()){
+//            AudioMain audioMain =audioMainOptional.get();
+//            if (audioMain.getDtId().equals(malId)){
+//                audioMain.setFName(fileName);
+//                audioMain.setFUrl(fileUrl);
+//                audionMainRepo.save(audioMain);
+//                return new ResponseEntity<>(audioMain,HttpStatus.OK);
+//            }
+//        }
+//
+//        return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+//    }
+
+    public AudioMain updateAudioMain(String malId, String commonId, MultipartFile file, Integer ids)throws IOException {
         File fileObj = convertMultiPartFileToFile(file);
         String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
         //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
@@ -213,22 +244,20 @@ public class AudioService {
         //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
         // Retrieve the file URL from S3
         String fileUrl = s3Service.getFileUrl(fileName);
-
-        Optional<AudioMain>audioMainOptional = audionMainRepo.findByCommonIdAndDtId(commonId,malId);
+        Optional<AudioMain>audioMainOptional=audionMainRepo.findByDtIdAndId(malId,ids);
         if (audioMainOptional.isPresent()){
-            AudioMain audioMain =audioMainOptional.get();
-            if (audioMain.getDtId().equals(malId)){
-                audioMain.setFName(fileName);
+            AudioMain audioMain= audioMainOptional.get();
+            if (audioMain.getCommonId().equals(commonId)){
                 audioMain.setFUrl(fileUrl);
+                audioMain.setFName(fileName);
                 audionMainRepo.save(audioMain);
-                return new ResponseEntity<>(audioMain,HttpStatus.OK);
+                return audioMain;
             }
         }
-
-        return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+        return null;
     }
 
-    public ResponseEntity<?> updateAudioFirst(String malId, String commonId, MultipartFile file) throws IOException {
+    public AudioFirst updateAudioFirst(String malId, String commonId, MultipartFile file, Integer ids) throws IOException{
         File fileObj = convertMultiPartFileToFile(file);
         String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
         //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
@@ -238,20 +267,42 @@ public class AudioService {
         //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
         // Retrieve the file URL from S3
         String fileUrl = s3Service.getFileUrl(fileName);
-        Optional<AudioFirst>audioFirstOptional = audioFirstRepo.findByFsCommonIdAndDtId(commonId,malId);
+        Optional<AudioFirst>audioFirstOptional=audioFirstRepo.findByDtIdAndId(malId,ids);
         if (audioFirstOptional.isPresent()){
             AudioFirst audioFirst = audioFirstOptional.get();
-            if (audioFirst.getDtId().equals(malId)){
+            if (audioFirst.getFsCommonId().equals(commonId)){
                 audioFirst.setFUrl(fileUrl);
                 audioFirst.setFName(fileName);
                 audioFirstRepo.save(audioFirst);
-                return new ResponseEntity<>(audioFirst,HttpStatus.OK);
+                return audioFirst;
             }
-        }
-        return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+        }return null;
     }
 
-    public ResponseEntity<?> updateVideoMain(String malId, String commonId, MultipartFile file) throws IOException{
+//    public ResponseEntity<?> updateAudioFirst(String malId, String commonId, MultipartFile file) throws IOException {
+//        File fileObj = convertMultiPartFileToFile(file);
+//        String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
+//        //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+//        // Use the S3Service's uploadLargeFile method to upload the file
+//        s3Service.uploadLargeFile(fileName, fileObj);
+//        fileObj.delete();
+//        //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+//        // Retrieve the file URL from S3
+//        String fileUrl = s3Service.getFileUrl(fileName);
+//        Optional<AudioFirst>audioFirstOptional = audioFirstRepo.findByFsCommonIdAndDtId(commonId,malId);
+//        if (audioFirstOptional.isPresent()){
+//            AudioFirst audioFirst = audioFirstOptional.get();
+//            if (audioFirst.getDtId().equals(malId)){
+//                audioFirst.setFUrl(fileUrl);
+//                audioFirst.setFName(fileName);
+//                audioFirstRepo.save(audioFirst);
+//                return new ResponseEntity<>(audioFirst,HttpStatus.OK);
+//            }
+//        }
+//        return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+//    }
+
+    public VideoMain updateVideoMain(String commonId, MultipartFile file, Integer ids) throws IOException{
         File fileObj = convertMultiPartFileToFile(file);
         String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
         //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
@@ -261,30 +312,18 @@ public class AudioService {
         //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
         // Retrieve the file URL from S3
         String fileUrl = s3Service.getFileUrl(fileName);
-        Optional<VideoMain>videoMainOptional =videoMainRepo.findByDtIdAndMalId(commonId,malId);
+        Optional<VideoMain>videoMainOptional=videoMainRepo.findByDtIdAndId(commonId,ids);
         if (videoMainOptional.isPresent()){
-            VideoMain videoMain =videoMainOptional.get();
-            if (videoMain.getMalId().equals(malId)) {
-                videoMain.setFUrl(fileUrl);
-                videoMain.setFName(fileName);
-                videoMainRepo.save(videoMain);
-                return new ResponseEntity<>(videoMain, HttpStatus.OK);
-            }
+            VideoMain videoMain = videoMainOptional.get();
+            videoMain.setFName(fileName);
+            videoMain.setFUrl(fileUrl);
+            videoMainRepo.save(videoMain);
+            return videoMain;
         }
-        Optional<VideoMain>videoMainOptional1 =videoMainRepo.findByDtIdAndEngId(commonId,malId);
-        if (videoMainOptional1.isPresent()){
-            VideoMain videoMain1 = videoMainOptional1.get();
-            if (videoMain1.getEngId().equals(malId)){
-                videoMain1.setFName(fileName);
-                videoMain1.setFUrl(fileUrl);
-                videoMainRepo.save(videoMain1);
-                return new ResponseEntity<>(videoMain1,HttpStatus.OK);
-            }
-        }
-        return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+        return null;
     }
 
-    public ResponseEntity<?> updateVideoFirst(String malId, String commonId, MultipartFile file) throws IOException{
+    public VideoFirst updateVideoFirst(String commonId, MultipartFile file, Integer ids) throws IOException{
         File fileObj = convertMultiPartFileToFile(file);
         String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
         //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
@@ -294,17 +333,71 @@ public class AudioService {
         //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
         // Retrieve the file URL from S3
         String fileUrl = s3Service.getFileUrl(fileName);
-        List<VideoFirst>videoFirstOptional = videoFirstRepo.findBydtId(commonId);
-        if (!videoFirstOptional.isEmpty()){
-            for (VideoFirst videoFirst : videoFirstOptional){
-                videoFirst.setFName(fileName);
-                videoFirst.setFUrl(fileUrl);
-                videoFirstRepo.save(videoFirst);
-                return new ResponseEntity<>(videoFirst,HttpStatus.OK);
-            }
+        Optional<VideoFirst>videoFirstOptional=videoFirstRepo.findByDtIdAndId(file,ids);
+        if (videoFirstOptional.isPresent()){
+            VideoFirst videoFirst = videoFirstOptional.get();
+            videoFirst.setFUrl(fileUrl);
+            videoFirst.setFName(fileName);
+            videoFirstRepo.save(videoFirst);
+            return videoFirst;
         }
-        return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+        return null;
     }
+
+//    public ResponseEntity<?> updateVideoMain(String malId, String commonId, MultipartFile file) throws IOException{
+//        File fileObj = convertMultiPartFileToFile(file);
+//        String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
+//        //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+//        // Use the S3Service's uploadLargeFile method to upload the file
+//        s3Service.uploadLargeFile(fileName, fileObj);
+//        fileObj.delete();
+//        //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+//        // Retrieve the file URL from S3
+//        String fileUrl = s3Service.getFileUrl(fileName);
+//        Optional<VideoMain>videoMainOptional =videoMainRepo.findByDtIdAndMalId(commonId,malId);
+//        if (videoMainOptional.isPresent()){
+//            VideoMain videoMain =videoMainOptional.get();
+//            if (videoMain.getMalId().equals(malId)) {
+//                videoMain.setFUrl(fileUrl);
+//                videoMain.setFName(fileName);
+//                videoMainRepo.save(videoMain);
+//                return new ResponseEntity<>(videoMain, HttpStatus.OK);
+//            }
+//        }
+//        Optional<VideoMain>videoMainOptional1 =videoMainRepo.findByDtIdAndEngId(commonId,malId);
+//        if (videoMainOptional1.isPresent()){
+//            VideoMain videoMain1 = videoMainOptional1.get();
+//            if (videoMain1.getEngId().equals(malId)){
+//                videoMain1.setFName(fileName);
+//                videoMain1.setFUrl(fileUrl);
+//                videoMainRepo.save(videoMain1);
+//                return new ResponseEntity<>(videoMain1,HttpStatus.OK);
+//            }
+//        }
+//        return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+//    }
+//
+//    public ResponseEntity<?> updateVideoFirst(String malId, String commonId, MultipartFile file) throws IOException{
+//        File fileObj = convertMultiPartFileToFile(file);
+//        String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
+//        //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+//        // Use the S3Service's uploadLargeFile method to upload the file
+//        s3Service.uploadLargeFile(fileName, fileObj);
+//        fileObj.delete();
+//        //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+//        // Retrieve the file URL from S3
+//        String fileUrl = s3Service.getFileUrl(fileName);
+//        List<VideoFirst>videoFirstOptional = videoFirstRepo.findBydtId(commonId);
+//        if (!videoFirstOptional.isEmpty()){
+//            for (VideoFirst videoFirst : videoFirstOptional){
+//                videoFirst.setFName(fileName);
+//                videoFirst.setFUrl(fileUrl);
+//                videoFirstRepo.save(videoFirst);
+//                return new ResponseEntity<>(videoFirst,HttpStatus.OK);
+//            }
+//        }
+//        return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+//    }
 
     public int deleteAudioMain(String malId, String commonId) {
         Optional<CommonQRParaId>commonQRParaIdOptional = commonQRParaIdRepo.findByCommonId(commonId);
@@ -391,4 +484,85 @@ public class AudioService {
         }
         return 0;
     }
+
+    public ResponseEntity<?> uploadPDF(String uId, MultipartFile file) throws IOException{
+        File fileObj = convertMultiPartFileToFile(file);
+        String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
+        s3Service.uploadLargeFile(fileName, fileObj);
+        fileObj.delete();
+        String fileUrl = s3Service.getFileUrl(fileName);
+        PdfData pdfData = new PdfData(fileName,fileUrl,uId);
+        Optional<CommonQRParaId>commonQRParaIdOptional =  commonQRParaIdRepo.findByEngId(uId);
+        Optional<CommonQRParaId>commonQRParaIdOptional1 = commonQRParaIdRepo.findByMalId(uId);
+        if (commonQRParaIdOptional.isPresent()){
+            CommonQRParaId commonQRParaId = commonQRParaIdOptional.get();
+            if (commonQRParaId.getEngId().equals(uId)){
+                pdfData.setCommonId(commonQRParaId.getCommonId());
+            }
+        } else if (commonQRParaIdOptional1.isPresent()) {
+            CommonQRParaId commonQRParaId = commonQRParaIdOptional1.get();
+            if (commonQRParaId.getMalId().equals(uId)){
+                pdfData.setCommonId(commonQRParaId.getCommonId());
+            }
+        }else {
+            pdfData.setCommonId(null);
+        }
+        pdfRepo.save(pdfData);
+        return new ResponseEntity<>(pdfData,HttpStatus.OK);
+    }
+
+    public PdfData updatePDF(String malId, String commonId, MultipartFile file, Integer ids) throws IOException{
+        File fileObj = convertMultiPartFileToFile(file);
+        String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
+        //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        // Use the S3Service's uploadLargeFile method to upload the file
+        s3Service.uploadLargeFile(fileName, fileObj);
+        fileObj.delete();
+        //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+        // Retrieve the file URL from S3
+        String fileUrl = s3Service.getFileUrl(fileName);
+        Optional<PdfData>pdfDataOptional=pdfRepo.findByuIdAndId(malId,ids);
+        if (pdfDataOptional.isPresent()){
+            PdfData pdfData  = pdfDataOptional.get();
+            if (pdfData.getCommonId().equals(commonId)){
+                pdfData.setFName(fileName);
+                pdfData.setFUrl(fileUrl);
+                pdfRepo.save(pdfData);
+                return pdfData;
+            }
+        }
+        return null;
+    }
+
+//    public ResponseEntity<?> updatePDF(MultipartFile file, String malId) throws IOException{
+//        File fileObj = convertMultiPartFileToFile(file);
+//        String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
+//        s3Service.uploadLargeFile(fileName, fileObj);
+//        fileObj.delete();
+//        String fileUrl = s3Service.getFileUrl(fileName);
+//        List<PdfData>pdfDataList = pdfRepo.findByuId(malId);
+//        if (!pdfDataList.isEmpty()){
+//            for (PdfData pdfData :pdfDataList){
+//                pdfData.setFUrl(fileUrl);
+//                pdfData.setFName(fileName);
+//                pdfRepo.save(pdfData);
+//                return new ResponseEntity<>(pdfData,HttpStatus.OK);
+//            }
+//        }
+//        return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+//    }
+
+    public ResponseEntity<?> deletePdfMain(String malId) {
+        List<PdfData>pdfDataList=pdfRepo.findByuId(malId);
+        if (!pdfDataList.isEmpty()){
+            for (PdfData pdfData :pdfDataList){
+                String fileName =pdfData.getFName();
+                s3Client.deleteObject(new DeleteObjectRequest(bucketName,fileName));
+                pdfRepo.delete(pdfData);
+                return new ResponseEntity<>("Pdf is deleted",HttpStatus.OK);
+            }
+        }
+        return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
 }

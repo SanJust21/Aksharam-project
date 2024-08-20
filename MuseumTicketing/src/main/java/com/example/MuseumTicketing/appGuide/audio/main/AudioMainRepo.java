@@ -12,5 +12,6 @@ public interface AudioMainRepo extends JpaRepository<AudioMain,Integer> {
 
     Optional<AudioMain> findByCommonId(String commonId);
 
-    Optional<AudioMain> findByCommonIdAndDtId(String commonId, String malId);
+
+    Optional<AudioMain> findByDtIdAndId(String malId, Integer ids);
 }

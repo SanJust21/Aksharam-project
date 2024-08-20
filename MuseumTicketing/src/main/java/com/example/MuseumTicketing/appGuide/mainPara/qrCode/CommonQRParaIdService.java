@@ -5,6 +5,8 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.example.MuseumTicketing.Guide.Language.DataType;
 import com.example.MuseumTicketing.Guide.Language.DataTypeRepo;
 import com.example.MuseumTicketing.Guide.util.AlphaNumeric;
+import com.example.MuseumTicketing.appGuide.Pdf.PdfData;
+import com.example.MuseumTicketing.appGuide.Pdf.PdfRepo;
 import com.example.MuseumTicketing.appGuide.audio.first.AudioFirst;
 import com.example.MuseumTicketing.appGuide.audio.first.AudioFirstRepo;
 import com.example.MuseumTicketing.appGuide.audio.main.AudioMain;
@@ -88,6 +90,8 @@ public class CommonQRParaIdService {
     private DataTypeRepo dataTypeRepo;
     @Autowired
     private MobileRegRepo mobileRegRepo;
+    @Autowired
+    private PdfRepo pdfRepo;
 
     private File convertBytesToFile(byte[] bytes, String fileName) throws IOException {
         File file = new File(fileName);
@@ -166,6 +170,7 @@ public class CommonQRParaIdService {
                     combinedData1.setQrCodeImage(commonIdQR.get().getQrCodeImage());
                 }
 
+
                 List<FirstTopicEng> subParaEngs = firstTopicEngRepo.findByMainUid(mainId);
                 subParaEngs.sort(Comparator.comparing(FirstTopicEng::getId));
                 List<CombinedSubPara> combinedDataSubList = new ArrayList<>();
@@ -184,6 +189,12 @@ public class CommonQRParaIdService {
                         combinedDataSub.setFsCommonId(comId.getFsCommonId());
                         combinedDataSub.setFsEngId(comId.getFsEngId());
                         combinedDataSub.setFsMalId(comId.getFsMalId());
+                    }
+
+                    List<PdfData>pdfDataList=pdfRepo.findByuId(mainTopicEng.getMEngUid());
+                    if (!pdfDataList.isEmpty()){
+                        pdfDataList.sort(Comparator.comparing(PdfData::getId));
+                        combinedData1.setPdfDataList(pdfDataList);
                     }
 
                     // Fetching images for subpara
@@ -250,6 +261,12 @@ public class CommonQRParaIdService {
                     combinedData.setEngId(commonIdQR.get().getEngId());
                     combinedData.setMalId(commonIdQR.get().getMalId());
                     combinedData.setQrCodeImage(commonIdQR.get().getQrCodeImage());
+                }
+
+                List<PdfData>pdfDataList=pdfRepo.findByuId(mainTopicMal.getMMalUid());
+                if (!pdfDataList.isEmpty()){
+                    pdfDataList.sort(Comparator.comparing(PdfData::getId));
+                    combinedData.setPdfDataList(pdfDataList);
                 }
 
                 List<FirstTopicMal> subParaMals = firstTopicMalRepo.findByMainUid(mainId);
@@ -404,6 +421,12 @@ public class CommonQRParaIdService {
                         combinedGetAllPara.setEngUniqueId(commonQRParaId.getEngId());
                         combinedGetAllPara.setMalUniqueId(commonQRParaId.getMalId());
                     }
+
+                    List<PdfData>pdfDataList=pdfRepo.findByuId(mainTopicMal.getMMalUid());
+                    if (!pdfDataList.isEmpty()){
+                        pdfDataList.sort(Comparator.comparing(PdfData::getId));
+                        combinedGetAllPara.setPdfDataList(pdfDataList);
+                    }
                     List<ImgDataMain>imgDataMainOptional=imgDataMainRepo.findByMalId(mainTopicMal.getMMalUid());
                     if (!imgDataMainOptional.isEmpty()){
                         imgDataMainOptional.sort(Comparator.comparing(ImgDataMain::getId));
@@ -476,6 +499,12 @@ public class CommonQRParaIdService {
                         combinedGetAllPara.setQrCodeUrl(commonQRParaId.getQrCodeUrl());
                         combinedGetAllPara.setQrCodeImage(commonQRParaId.getQrCodeImage());
                     }
+
+                    List<PdfData>pdfDataList=pdfRepo.findByuId(mainTopicEng.getMEngUid());
+                    if (!pdfDataList.isEmpty()){
+                        pdfDataList.sort(Comparator.comparing(PdfData::getId));
+                        combinedGetAllPara.setPdfDataList(pdfDataList);
+                    }
                     List<ImgDataMain>imgDataMainOptional=imgDataMainRepo.findByEngId(mainTopicEng.getMEngUid());
                     if (!imgDataMainOptional.isEmpty()){
                         imgDataMainOptional.sort(Comparator.comparing(ImgDataMain::getId));
@@ -533,16 +562,4 @@ public class CommonQRParaIdService {
             }
         }return new ResponseEntity<>(new ArrayList<>(),HttpStatus.BAD_REQUEST);
     }
-
-
-//    public ResponseEntity<List<CombinedPara>> getAllDetailsByDataType(Integer dtId) {
-//        Optional<DataType>dataTypeOptional=dataTypeRepo.findById(dtId);
-//        if (dataTypeOptional.isPresent()){
-//            DataType dataType=dataTypeOptional.get();
-//            String talk= dataType.getTalk();
-//            if ("Malayalam".equalsIgnoreCase(talk)){
-//
-//            }
-//        }return new ResponseEntity<>(new ArrayList<>(),HttpStatus.BAD_REQUEST);
-//    }
 }

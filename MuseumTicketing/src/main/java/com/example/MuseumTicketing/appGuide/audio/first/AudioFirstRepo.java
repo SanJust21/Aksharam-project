@@ -8,5 +8,5 @@ import java.util.Optional;
 public interface AudioFirstRepo extends JpaRepository<AudioFirst,Integer> {
     List<AudioFirst> findBydtId(String fsUid);
 
-    Optional<AudioFirst> findByFsCommonIdAndDtId(String commonId, String malId);
+    Optional<AudioFirst> findByDtIdAndId(String malId, Integer ids);
 }

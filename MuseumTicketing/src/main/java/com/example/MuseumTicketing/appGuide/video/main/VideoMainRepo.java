@@ -12,8 +12,10 @@ public interface VideoMainRepo extends JpaRepository<VideoMain,Integer> {
 
     Optional<VideoMain> findBydtId(String commonId);
 
-    Optional<VideoMain> findByDtIdAndMalId(String commonId, String malId);
+//    Optional<VideoMain> findByDtIdAndMalId(String commonId, String malId);
+//
+//    Optional<VideoMain> findByDtIdAndEngId(String commonId, String malId);
 
-    Optional<VideoMain> findByDtIdAndEngId(String commonId, String malId);
+    Optional<VideoMain> findByDtIdAndId(String commonId, Integer ids);
 //    List<VideoMain> findBydtId(String mEngUid);
 }
