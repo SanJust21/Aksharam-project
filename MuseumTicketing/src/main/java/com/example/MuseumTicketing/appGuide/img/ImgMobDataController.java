@@ -46,8 +46,9 @@ public class ImgMobDataController {
 
 
     @PostMapping(path = "/jpgUpload")
-    public ResponseEntity<?>uploadJpgData(@RequestParam MultipartFile[] files,
-                                          @RequestParam String commonId){
+    public ResponseEntity<?>uploadJpgData(@RequestParam MultipartFile[] files,@RequestParam String commonId,
+                                          @RequestParam("imgName")String[] imgName,
+                                          @RequestParam("imgUrls")String[] imgUrl ){
         try {
             if (commonId.isEmpty()||commonId.isBlank()||commonId==null||"undefined".equals(commonId)){
                 return new ResponseEntity<>("CommonId is required",HttpStatus.BAD_REQUEST);
@@ -60,8 +61,11 @@ public class ImgMobDataController {
                     String engId = commonIdQRCode.getEngId();
                     String malId = commonIdQRCode.getMalId();
                     List<ImgDataMain> responses = new ArrayList<>();
-                    for (MultipartFile file : files){
-                        responses.add(imgMobDataService.uploadJPGMain(file,engId,malId,commonId));
+                    for (int i =0;i< files.length;i++){
+                        String imageName =imgName[i];
+                        String imageUrl = imgUrl[i];
+                        MultipartFile file = files[i];
+                        responses.add(imgMobDataService.uploadJPGMain(file,engId,malId,commonId,imageName,imageUrl));
                     }
                     return new ResponseEntity<>(responses,HttpStatus.OK);
                 }
@@ -71,8 +75,11 @@ public class ImgMobDataController {
                     String engId = commonIdFs.getFsEngId();
                     String malId = commonIdFs.getFsMalId();
                     List<ImgDataFirst> responses = new ArrayList<>();
-                    for (MultipartFile file : files){
-                        responses.add(imgMobDataService.uploadJPGFirst(file,engId,malId,commonId));
+                    for (int i =0;i< files.length;i++){
+                        String imageName = imgName[i];
+                        String imageUrl = imgUrl[i];
+                        MultipartFile file = files[i];
+                        responses.add(imgMobDataService.uploadJPGFirst(file,engId,malId,commonId,imageName,imageUrl));
                     }
                     return new ResponseEntity<>(responses,HttpStatus.OK);
                 }
@@ -89,7 +96,9 @@ public class ImgMobDataController {
     @PutMapping(path = "/updateJPG/{commonId}")
     public ResponseEntity<?>updateImages(@RequestParam(value = "files") MultipartFile[] files,
                                         @RequestParam List<Integer> imgIds,
-                                        @PathVariable String commonId){
+                                        @PathVariable String commonId,
+                                         @RequestParam("imgName")String[] imgName,
+                                         @RequestParam("imgUrls")String[] imgUrl){
         try {
             if (commonId == null || imgIds.isEmpty() || files.length != imgIds.size()||"undefined".equalsIgnoreCase(commonId)) {
                 return new ResponseEntity<>("Common ID, image IDs, and files are required, and the number of files must match the number of image IDs", HttpStatus.BAD_REQUEST);
@@ -100,13 +109,19 @@ public class ImgMobDataController {
             if (!existingImgDataMainList.isEmpty()) {
                 List<ImgDataMain> responses = new ArrayList<>();
                 for (int i = 0; i < files.length; i++) {
-                    responses.add(imgMobDataService.updateMainJPG(files[i], imgIds.get(i), commonId));
+                    String imageName = imgName[i];
+                    String imageUrl = imgUrl[i];
+                    MultipartFile file = files[i];
+                    responses.add(imgMobDataService.updateMainJPG(files[i], imgIds.get(i), commonId,imageName,imageUrl));
                 }
                 return new ResponseEntity<>(responses, HttpStatus.OK);
             } else if (!existingImgDataFirstList.isEmpty()) {
                 List<ImgDataFirst> responses = new ArrayList<>();
                 for (int i =0; i< files.length;i++){
-                    responses.add(imgMobDataService.updateFirstJPG(files[i],imgIds.get(i),commonId));
+                    String imageName = imgName[i];
+                    String imageUrl = imgUrl[i];
+                    MultipartFile file = files[i];
+                    responses.add(imgMobDataService.updateFirstJPG(files[i],imgIds.get(i),commonId,imageName,imageUrl));
                 }
                 return new ResponseEntity<>(responses,HttpStatus.OK);
             } else {

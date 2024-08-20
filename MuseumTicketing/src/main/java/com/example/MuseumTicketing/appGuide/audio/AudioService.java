@@ -333,7 +333,7 @@ public class AudioService {
         //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
         // Retrieve the file URL from S3
         String fileUrl = s3Service.getFileUrl(fileName);
-        Optional<VideoFirst>videoFirstOptional=videoFirstRepo.findByDtIdAndId(file,ids);
+        Optional<VideoFirst>videoFirstOptional=videoFirstRepo.findByDtIdAndId(commonId,ids);
         if (videoFirstOptional.isPresent()){
             VideoFirst videoFirst = videoFirstOptional.get();
             videoFirst.setFUrl(fileUrl);
@@ -534,24 +534,6 @@ public class AudioService {
         return null;
     }
 
-//    public ResponseEntity<?> updatePDF(MultipartFile file, String malId) throws IOException{
-//        File fileObj = convertMultiPartFileToFile(file);
-//        String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
-//        s3Service.uploadLargeFile(fileName, fileObj);
-//        fileObj.delete();
-//        String fileUrl = s3Service.getFileUrl(fileName);
-//        List<PdfData>pdfDataList = pdfRepo.findByuId(malId);
-//        if (!pdfDataList.isEmpty()){
-//            for (PdfData pdfData :pdfDataList){
-//                pdfData.setFUrl(fileUrl);
-//                pdfData.setFName(fileName);
-//                pdfRepo.save(pdfData);
-//                return new ResponseEntity<>(pdfData,HttpStatus.OK);
-//            }
-//        }
-//        return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
-//    }
-
     public ResponseEntity<?> deletePdfMain(String malId) {
         List<PdfData>pdfDataList=pdfRepo.findByuId(malId);
         if (!pdfDataList.isEmpty()){
@@ -565,4 +547,50 @@ public class AudioService {
         return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    public ResponseEntity<?> deleteAudioSingleItem(String engId, Integer itemId) {
+        Optional<AudioMain>audioMainOptional=audionMainRepo.findByDtIdAndId(engId,itemId);
+        Optional<AudioFirst>audioFirstOptional=audioFirstRepo.findByDtIdAndId(engId,itemId);
+        if (audioMainOptional.isPresent()){
+            AudioMain audioMain = audioMainOptional.get();
+            String fileName = audioMain.getFName();
+            s3Client.deleteObject(new DeleteObjectRequest(bucketName,fileName));
+            audionMainRepo.delete(audioMain);
+            return new ResponseEntity<>("Audio is deleted. ",HttpStatus.OK);
+        } else if (audioFirstOptional.isPresent()) {
+            AudioFirst audioFirst = audioFirstOptional.get();
+            String fileName = audioFirst.getFName();
+            s3Client.deleteObject(new DeleteObjectRequest(bucketName,fileName));
+            audioFirstRepo.delete(audioFirst);
+            return new ResponseEntity<>("Audio is deleted. ",HttpStatus.OK);
+        }return new ResponseEntity<>("UId : "+engId+"  and itemId : "+itemId+" is not matching. ",HttpStatus.NOT_FOUND);
+    }
+
+    public ResponseEntity<?> deleteVideoSingleItem(String commonId, Integer itemId) {
+        Optional<VideoMain>videoMainOptional=videoMainRepo.findByDtIdAndId(commonId,itemId);
+        Optional<VideoFirst>videoFirstOptional=videoFirstRepo.findByDtIdAndId(commonId,itemId);
+        if (videoMainOptional.isPresent()){
+            VideoMain videoMain = videoMainOptional.get();
+            String fileName = videoMain.getFName();
+            s3Client.deleteObject(new DeleteObjectRequest(bucketName,fileName));
+            videoMainRepo.delete(videoMain);
+            return new ResponseEntity<>("Video is deleted. ",HttpStatus.OK);
+        } else if (videoFirstOptional.isPresent()) {
+            VideoFirst videoFirst = videoFirstOptional.get();
+            String fileName = videoFirst.getFName();
+            s3Client.deleteObject(new DeleteObjectRequest(bucketName,fileName));
+            videoFirstRepo.delete(videoFirst);
+            return new ResponseEntity<>("Video is deleted. ",HttpStatus.OK);
+        }return new ResponseEntity<>("CommonId : "+commonId+"  and itemId : "+itemId+" is not matching. ",HttpStatus.NOT_FOUND);
+    }
+
+    public ResponseEntity<?> deletePdfSingleItem(String malId, Integer itemId) {
+        Optional<PdfData>pdfDataOptional=pdfRepo.findByuIdAndId(malId,itemId);
+        if (pdfDataOptional.isPresent()){
+            PdfData pdfData = pdfDataOptional.get();
+            String fileName = pdfData.getFName();
+            s3Client.deleteObject(new DeleteObjectRequest(bucketName,fileName));
+            pdfRepo.delete(pdfData);
+            return new ResponseEntity<>("PDF is deleted. ",HttpStatus.OK);
+        }return new ResponseEntity<>("UId : "+malId+"  and itemId : "+itemId+" is not matching. ",HttpStatus.NOT_FOUND);
+    }
 }

@@ -291,6 +291,7 @@ public class MainTopicService {
     @Transactional
     public ResponseEntity<?> DeleteMainPara(String malId, String engId, String commonId) {
         Optional<MainTopicEng>mainTopicEngOptional = mainTopicEngRepo.findBymEngUid(engId);
+        Optional<MainTopicMal>mainTopicMalOptional = mainTopicMalRepo.findBymMalUid(malId);
         if (mainTopicEngOptional.isPresent()){
             MainTopicEng mainTopicEng = mainTopicEngOptional.get();
             if (mainTopicEng.getMEngUid().equals(engId)){
@@ -302,36 +303,6 @@ public class MainTopicService {
                     String fileName = audioMain.getFName();
                     s3Client.deleteObject(new DeleteObjectRequest(bucketName,fileName));
                     audioMainRepo.delete(audioMain);
-                }
-            }
-            List<ImgDataMain>imgDataMainList = imgDataMainRepo.findByCommonId(commonId);
-            if (!imgDataMainList.isEmpty()){
-                for (ImgDataMain imgDataMain : imgDataMainList){
-                    String fileName = imgDataMain.getFName();
-                    s3Client.deleteObject(new DeleteObjectRequest(bucketName,fileName));
-                    imgDataMainRepo.delete(imgDataMain);
-                }
-            }
-            Optional<VideoMain>videoMainOptional=videoMainRepo.findBydtId(commonId);
-            if (videoMainOptional.isPresent()){
-                VideoMain videoMain = videoMainOptional.get();
-                String fileName = videoMain.getFName();
-                s3Client.deleteObject(new DeleteObjectRequest(bucketName,fileName));
-                videoMainRepo.delete(videoMain);
-            }
-            Optional<MainTopicMal>mainTopicMalOptional = mainTopicMalRepo.findBymMalUid(malId);
-            if (mainTopicMalOptional.isPresent()){
-                MainTopicMal mainTopicMal = mainTopicMalOptional.get();
-                if (mainTopicMal.getMMalId().equals(malId)){
-                    mainTopicMalRepo.delete(mainTopicMal);
-                }
-                List<AudioMain>audioMainListMal = audioMainRepo.findBydtId(malId);
-                if (!audioMainListMal.isEmpty()){
-                    for (AudioMain audioMain : audioMainList){
-                        String fileName = audioMain.getFName();
-                        s3Client.deleteObject(new DeleteObjectRequest(bucketName,fileName));
-                        audioMainRepo.delete(audioMain);
-                    }
                 }
             }
             List<FirstTopicEng>firstTopicEngList = firstTopicEngRepo.findByMainUid(engId);
@@ -395,11 +366,38 @@ public class MainTopicService {
                     commonQRParaIdRepo.delete(commonQRParaId);
                 }
             }
-            return new ResponseEntity<>("Main topic deleted successfully",HttpStatus.OK);
-        }else {
-            return new ResponseEntity<>("Main topic isn't deleted.Id isn't present ",HttpStatus.BAD_REQUEST);
         }
-
+        Optional<VideoMain>videoMainOptional=videoMainRepo.findBydtId(commonId);
+        if (videoMainOptional.isPresent()){
+            VideoMain videoMain = videoMainOptional.get();
+            String fileName = videoMain.getFName();
+            s3Client.deleteObject(new DeleteObjectRequest(bucketName,fileName));
+            videoMainRepo.delete(videoMain);
+        }
+        List<ImgDataMain>imgDataMainList = imgDataMainRepo.findByCommonId(commonId);
+        if (!imgDataMainList.isEmpty()){
+            for (ImgDataMain imgDataMain : imgDataMainList){
+                String fileName = imgDataMain.getFName();
+                s3Client.deleteObject(new DeleteObjectRequest(bucketName,fileName));
+                imgDataMainRepo.delete(imgDataMain);
+            }
+        }
+        if (mainTopicMalOptional.isPresent()){
+            MainTopicMal mainTopicMal = mainTopicMalOptional.get();
+            if (mainTopicMal.getMMalId().equals(malId)){
+                mainTopicMalRepo.delete(mainTopicMal);
+            }
+            List<AudioMain>audioMainListMal = audioMainRepo.findBydtId(malId);
+            if (!audioMainListMal.isEmpty()){
+                for (AudioMain audioMain : audioMainListMal){
+                    String fileName = audioMain.getFName();
+                    s3Client.deleteObject(new DeleteObjectRequest(bucketName,fileName));
+                    audioMainRepo.delete(audioMain);
+                }
+            }
+            return new ResponseEntity<>("Main topic deleted successfully",HttpStatus.OK);
+        }
+        return new ResponseEntity<>("Main topic isn't deleted.Id isn't present ",HttpStatus.BAD_REQUEST);
     }
 
 

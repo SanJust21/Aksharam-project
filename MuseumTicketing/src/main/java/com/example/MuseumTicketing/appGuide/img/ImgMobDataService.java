@@ -84,7 +84,7 @@ public class ImgMobDataService {
         return convertedFile;
     }
 
-    public ImgDataMain uploadJPGMain(MultipartFile file, String engId, String malId, String commonId) throws IOException {
+    public ImgDataMain uploadJPGMain(MultipartFile file, String engId, String malId, String commonId, String imageName, String imageUrl) throws IOException{
         File fileObj = convertMultiPartFileToFile(file);
         String fileName = System.currentTimeMillis()+"_"+file.getOriginalFilename();
         //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
@@ -94,7 +94,7 @@ public class ImgMobDataService {
         //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
         // Retrieve the file URL from S3
         String fileUrl = s3Service.getFileUrl(fileName);
-        ImgDataMain imgDataMain = new ImgDataMain(fileName,fileUrl,commonId);
+        ImgDataMain imgDataMain = new ImgDataMain(fileName,fileUrl,commonId,imageName,imageUrl);
         Optional<MainTopicEng> mainTopicEngOptional = mainTopicEngRepo.findBymEngUid(engId);
         if (mainTopicEngOptional.isPresent()){
             imgDataMain.setEngId(engId);
@@ -114,7 +114,7 @@ public class ImgMobDataService {
         return imgDataMain;
     }
 
-    public ImgDataFirst uploadJPGFirst(MultipartFile file, String engId, String malId, String commonId) throws IOException{
+    public ImgDataFirst uploadJPGFirst(MultipartFile file, String engId, String malId, String commonId, String imageName, String imageUrl) throws IOException{
         File fileObj = convertMultiPartFileToFile(file);
         String fileName = System.currentTimeMillis()+"_"+file.getOriginalFilename();
         //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
@@ -124,7 +124,7 @@ public class ImgMobDataService {
         //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
         // Retrieve the file URL from S3
         String fileUrl = s3Service.getFileUrl(fileName);
-        ImgDataFirst imgDataFirst = new ImgDataFirst(fileName,fileUrl,commonId);
+        ImgDataFirst imgDataFirst = new ImgDataFirst(fileName,fileUrl,commonId,imageName,imageUrl);
         Optional<FirstTopicEng> firstTopicEngOptional = firstTopicEngRepo.findByfsUid(engId);
         if (firstTopicEngOptional.isPresent()){
             FirstTopicEng firstTopicEng = firstTopicEngOptional.get();
@@ -151,15 +151,7 @@ public class ImgMobDataService {
         return imgDataFirst;
     }
 
-    public ImgDataMain updateMainJPG(MultipartFile file, Integer imgId, String commonId) throws IOException{
-//        try {
-//
-//        }catch (Exception e){
-//            //e.printStackTrace();
-//
-//        }
-//        return new ImgDataMain();
-        // Convert file and upload to S3
+    public ImgDataMain updateMainJPG(MultipartFile file, Integer imgId, String commonId, String imageName, String imageUrl) throws IOException{
         File fileObj = convertMultiPartFileToFile(file);
         String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
         //s3Client.putObject(new PutObjectRequest(bucketName, fileName, fileObj));
@@ -179,6 +171,8 @@ public class ImgMobDataService {
                     ImgDataMain imgDataMain = existingImgDataOptional.get();
                     imgDataMain.setFName(fileName);
                     imgDataMain.setFUrl(fileUrl);
+                    imgDataMain.setImageName(imageName);
+                    imgDataMain.setImageRefUrl(imageUrl);
                     imgDataMainRepo.save(imgDataMain);  // Save the updated entity
                     return imgDataMain;
                 }
@@ -187,7 +181,7 @@ public class ImgMobDataService {
         return new ImgDataMain();
     }
 
-    public ImgDataFirst updateFirstJPG(MultipartFile file, Integer imgId, String commonId) throws IOException{
+    public ImgDataFirst updateFirstJPG(MultipartFile file, Integer imgId, String commonId, String imageName, String imageUrl) throws IOException{
         File fileObj = convertMultiPartFileToFile(file);
         String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
         //s3Client.putObject(new PutObjectRequest(bucketName, fileName, fileObj));
@@ -206,6 +200,8 @@ public class ImgMobDataService {
                     ImgDataFirst imgDataFirst = existingImgDataOptional.get();
                     imgDataFirst.setFName(fileName);
                     imgDataFirst.setFUrl(fileUrl);
+                    imgDataFirst.setImageName(imageName);
+                    imgDataFirst.setImageRefUrl(imageUrl);
                     imgDataFirstRepo.save(imgDataFirst);
                     return imgDataFirst;
                 }
@@ -213,7 +209,6 @@ public class ImgMobDataService {
         }
         return new ImgDataFirst();
     }
-
 
     public int deleteImagesByCommonId(String commonId) {
         Optional<CommonQRParaId> commonQRParaIdOptional = commonQRParaIdRepo.findByCommonId(commonId);
@@ -272,4 +267,5 @@ public class ImgMobDataService {
             }
         }return 0;
     }
+
 }

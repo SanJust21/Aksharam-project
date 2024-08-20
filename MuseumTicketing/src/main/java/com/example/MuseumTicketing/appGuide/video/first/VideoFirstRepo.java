@@ -13,6 +13,8 @@ public interface VideoFirstRepo extends JpaRepository<VideoFirst,Integer> {
 
     List<VideoFirst> findBydtId(String fsCommonId);
 
-    Optional<VideoFirst> findByDtIdAndId(MultipartFile file, Integer ids);
+    Optional<VideoFirst> findByDtIdAndId(String commonId, Integer ids);
+
+
 //    List<VideoFirst> findBydtId(String fsUid);
 }

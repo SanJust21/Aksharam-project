@@ -407,4 +407,98 @@ public class AudioController {
         }
         return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @DeleteMapping(path = "/deleteSingleItem/{commonId}")
+    public ResponseEntity<?>deleteSingleItem(@PathVariable String commonId,@RequestParam Integer mtId,
+                                             @RequestParam Integer dataType,@RequestParam Integer itemId){
+        try {
+            Optional<CommonQRParaId>commonQRParaIdOptional=commonQRParaIdRepo.findByCommonId(commonId);
+            Optional<SubComId>subComIdOptional=subComIdRepo.findByFsCommonId(commonId);
+            if (commonQRParaIdOptional.isPresent()){
+                CommonQRParaId commonQRParaId = commonQRParaIdOptional.get();
+                String malId = commonQRParaId.getMalId();
+                String engId = commonQRParaId.getEngId();
+                Optional<DataType>dataTypeOptional = dataTypeRepo.findById(dataType);
+                if (dataTypeOptional.isPresent()){
+                    DataType dataType1 = dataTypeOptional.get();
+                    String talk = dataType1.getTalk();
+                    if ("Malayalam".equalsIgnoreCase(talk)){
+                        Optional<FileType>fileTypeOptional=fileTypeRepo.findById(mtId);
+                        if (fileTypeOptional.isPresent()){
+                            FileType fileType = fileTypeOptional.get();
+                            String type=fileType.getFileType();
+                            if ("Audio".equalsIgnoreCase(type)){
+                                return audioService.deleteAudioSingleItem(malId,itemId);
+                            } else if ("Video".equalsIgnoreCase(type)) {
+                                return audioService.deleteVideoSingleItem(commonId,itemId);
+                            } else if ("Pdf".equalsIgnoreCase(type)) {
+                                return audioService.deletePdfSingleItem(malId,itemId);
+                            }else {
+                                return new ResponseEntity<>("File Type is not valid : "+type,HttpStatus.BAD_REQUEST);
+                            }
+                        }return new ResponseEntity<>("File type is not valid : "+mtId,HttpStatus.NOT_FOUND);
+                    } else if ("English".equalsIgnoreCase(talk)) {
+                        Optional<FileType>fileTypeOptional=fileTypeRepo.findById(mtId);
+                        if (fileTypeOptional.isPresent()){
+                            FileType fileType = fileTypeOptional.get();
+                            String type=fileType.getFileType();
+                            if ("Audio".equalsIgnoreCase(type)){
+                                return audioService.deleteAudioSingleItem(engId,itemId);
+                            } else if ("Video".equalsIgnoreCase(type)) {
+                                return audioService.deleteVideoSingleItem(commonId,itemId);
+                            } else if ("Pdf".equalsIgnoreCase(type)) {
+                                return audioService.deletePdfSingleItem(engId,itemId);
+                            }else {
+                                return new ResponseEntity<>("File Type is not valid : "+type,HttpStatus.BAD_REQUEST);
+                            }
+                        }return new ResponseEntity<>("File type is not valid : "+mtId,HttpStatus.NOT_FOUND);
+                    }else {
+                        return new ResponseEntity<>("Language is not present",HttpStatus.BAD_REQUEST);
+                    }
+                }return new ResponseEntity<>("Language Type is not valid : "+dataType,HttpStatus.NOT_FOUND);
+            } else if (subComIdOptional.isPresent()) {
+                SubComId subComId = subComIdOptional.get();
+                String malId = subComId.getFsMalId();
+                String engId = subComId.getFsEngId();
+                Optional<DataType>dataTypeOptional = dataTypeRepo.findById(dataType);
+                if (dataTypeOptional.isPresent()){
+                    DataType dataType1 = dataTypeOptional.get();
+                    String talk = dataType1.getTalk();
+                    if ("Malayalam".equalsIgnoreCase(talk)){
+                        Optional<FileType>fileTypeOptional=fileTypeRepo.findById(mtId);
+                        if (fileTypeOptional.isPresent()){
+                            FileType fileType = fileTypeOptional.get();
+                            String type=fileType.getFileType();
+                            if ("Audio".equalsIgnoreCase(type)){
+                                return audioService.deleteAudioSingleItem(malId,itemId);
+                            } else if ("Video".equalsIgnoreCase(type)) {
+                                return audioService.deleteVideoSingleItem(commonId,itemId);
+                            } else {
+                                return new ResponseEntity<>("File Type is not valid : "+type,HttpStatus.BAD_REQUEST);
+                            }
+                        }return new ResponseEntity<>("File type is not valid : "+mtId,HttpStatus.NOT_FOUND);
+                    } else if ("English".equalsIgnoreCase(talk)) {
+                        Optional<FileType>fileTypeOptional=fileTypeRepo.findById(mtId);
+                        if (fileTypeOptional.isPresent()){
+                            FileType fileType = fileTypeOptional.get();
+                            String type=fileType.getFileType();
+                            if ("Audio".equalsIgnoreCase(type)){
+                                return audioService.deleteAudioSingleItem(engId,itemId);
+                            } else if ("Video".equalsIgnoreCase(type)) {
+                                return audioService.deleteVideoSingleItem(commonId,itemId);
+                            } else {
+                                return new ResponseEntity<>("File Type is not valid : "+type,HttpStatus.BAD_REQUEST);
+                            }
+                        }return new ResponseEntity<>("File type is not valid : "+mtId,HttpStatus.NOT_FOUND);
+                    }else {
+                        return new ResponseEntity<>("Language is not present",HttpStatus.BAD_REQUEST);
+                    }
+                }return new ResponseEntity<>("Language Type is not valid : "+dataType,HttpStatus.NOT_FOUND);
+            }else {
+                return new ResponseEntity<>("CommonId : "+commonId,HttpStatus.BAD_REQUEST);
+            }
+        }catch (Exception e){
+            return errorService.handlerException(e);
+        }
+    }
 }

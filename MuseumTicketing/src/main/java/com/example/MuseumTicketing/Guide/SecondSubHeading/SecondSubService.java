@@ -157,7 +157,7 @@ public class SecondSubService {
                     mp3Data2List.sort(Comparator.comparing(Mp3Data2::getId));
                     combinedDataSubSub.setMp3Data2List(mp3Data2List);
                     // Fetching video for SecondSubEnglish
-                    List<Mp4Data2> mp4Data2List = mp4Data2Repo.findBydtId(secondSubEnglish.getSsUid());
+                    List<Mp4Data2> mp4Data2List = mp4Data2Repo.findBydtId(commonIdSsEng.getSsCommonId());
                     mp4Data2List.sort(Comparator.comparing(Mp4Data2::getId));
                     combinedDataSubSub.setMp4Data2List(mp4Data2List);
 
@@ -214,7 +214,7 @@ public class SecondSubService {
                     mp3Data2List.sort(Comparator.comparing(Mp3Data2::getId));
                     combinedDataSubSub.setMp3Data2List(mp3Data2List);
                     // Fetching video for SecondSubEnglish
-                    List<Mp4Data2> mp4Data2List = mp4Data2Repo.findBydtId(secondSubMalayalam.getSsUid());
+                    List<Mp4Data2> mp4Data2List = mp4Data2Repo.findBydtId(commonIdSsEng.getSsCommonId());
                     mp4Data2List.sort(Comparator.comparing(Mp4Data2::getId));
                     combinedDataSubSub.setMp4Data2List(mp4Data2List);
 

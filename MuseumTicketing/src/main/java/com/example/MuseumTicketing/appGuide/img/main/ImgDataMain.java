@@ -31,6 +31,12 @@ public class ImgDataMain {
     @Column(name = "commonId")
     private String commonId;
 
+    @Column(name = "imageName")
+    private String imageName;
+
+    @Column(name = "imageRefUrl")
+    private String imageRefUrl;
+
     public ImgDataMain() {
     }
 
@@ -40,4 +46,11 @@ public class ImgDataMain {
         this.commonId = commonId;
     }
 
+    public ImgDataMain(String fName, String fUrl, String commonId, String imageName, String imageRefUrl) {
+        this.fName = fName;
+        this.fUrl = fUrl;
+        this.commonId = commonId;
+        this.imageName = imageName;
+        this.imageRefUrl = imageRefUrl;
+    }
 }
