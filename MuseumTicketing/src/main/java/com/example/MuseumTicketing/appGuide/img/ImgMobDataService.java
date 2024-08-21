@@ -33,6 +33,8 @@ import com.example.MuseumTicketing.appGuide.mainPara.qrCode.first.SubComIdRepo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -268,4 +270,21 @@ public class ImgMobDataService {
         }return 0;
     }
 
+    public ResponseEntity<?> updateNameAndUrl(String commonId, Integer id, String imgName, String imgUrl) {
+        Optional<ImgDataMain>imgDataMainOptional=imgDataMainRepo.findByIdAndCommonId(id,commonId);
+        Optional<ImgDataFirst>imgDataFirstOptional=imgDataFirstRepo.findByIdAndCommonId(id,commonId);
+        if (imgDataMainOptional.isPresent()){
+            ImgDataMain imgDataMain = imgDataMainOptional.get();
+            imgDataMain.setImageName(imgName);
+            imgDataMain.setImageRefUrl(imgUrl);
+            imgDataMainRepo.save(imgDataMain);
+            return new ResponseEntity<>(imgDataMain,HttpStatus.OK);
+        } else if (imgDataFirstOptional.isPresent()) {
+            ImgDataFirst imgDataFirst = imgDataFirstOptional.get();
+            imgDataFirst.setImageName(imgName);
+            imgDataFirst.setImageRefUrl(imgUrl);
+            imgDataFirstRepo.save(imgDataFirst);
+            return new ResponseEntity<>(imgDataFirst,HttpStatus.OK);
+        }return new ResponseEntity<>("CommonId : "+commonId+" and tableId : "+id+" is not matching", HttpStatus.NOT_FOUND);
+    }
 }

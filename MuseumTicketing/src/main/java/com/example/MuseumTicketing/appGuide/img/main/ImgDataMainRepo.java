@@ -12,9 +12,13 @@ public interface ImgDataMainRepo extends JpaRepository<ImgDataMain,Integer> {
 
     List<ImgDataMain> findByMalId(String mMalUid);
 
-    List<ImgDataMain> findByCommonId(String commonId);
+    
 
     Optional<ImgDataMain> findByIdAndCommonId(Integer imgId, String commonId);
 
 
+    List<ImgDataMain> findByCommonId(String commonId);
+
+
+    Optional<ImgDataMain> findByCommonIdAndId(String commonId, Integer id);
 }

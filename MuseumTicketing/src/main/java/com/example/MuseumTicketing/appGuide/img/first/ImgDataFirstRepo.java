@@ -15,4 +15,5 @@ public interface ImgDataFirstRepo extends JpaRepository<ImgDataFirst,Integer> {
     Optional<ImgDataFirst> findByIdAndCommonId(Integer imgId, String commonId);
 
 
+    Optional<ImgDataFirst> findByCommonIdAndId(String commonId, Integer id);
 }

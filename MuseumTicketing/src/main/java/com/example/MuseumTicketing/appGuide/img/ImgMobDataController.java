@@ -112,7 +112,7 @@ public class ImgMobDataController {
                     String imageName = imgName[i];
                     String imageUrl = imgUrl[i];
                     MultipartFile file = files[i];
-                    responses.add(imgMobDataService.updateMainJPG(files[i], imgIds.get(i), commonId,imageName,imageUrl));
+                    responses.add(imgMobDataService.updateMainJPG(file, imgIds.get(i), commonId,imageName,imageUrl));
                 }
                 return new ResponseEntity<>(responses, HttpStatus.OK);
             } else if (!existingImgDataFirstList.isEmpty()) {
@@ -121,7 +121,7 @@ public class ImgMobDataController {
                     String imageName = imgName[i];
                     String imageUrl = imgUrl[i];
                     MultipartFile file = files[i];
-                    responses.add(imgMobDataService.updateFirstJPG(files[i],imgIds.get(i),commonId,imageName,imageUrl));
+                    responses.add(imgMobDataService.updateFirstJPG(file,imgIds.get(i),commonId,imageName,imageUrl));
                 }
                 return new ResponseEntity<>(responses,HttpStatus.OK);
             } else {
@@ -133,6 +133,25 @@ public class ImgMobDataController {
         }
         //return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @PutMapping(path = "/editNameAndUrl/{commonId}/{id}")
+    public ResponseEntity<?>updateNameAndUrl(@PathVariable String commonId,@RequestParam String imgName,
+                                             @RequestParam String imgUrl,@PathVariable Integer id){
+        try {
+            Optional<ImgDataMain>imgDataMainOptional=imgDataMainRepo.findByCommonIdAndId(commonId,id);
+            Optional<ImgDataFirst>imgDataFirstOptional=imgDataFirstRepo.findByCommonIdAndId(commonId,id);
+            if (imgDataMainOptional.isPresent()){
+                return imgMobDataService.updateNameAndUrl(commonId,id,imgName,imgUrl);
+            } else if (imgDataFirstOptional.isPresent()) {
+                return imgMobDataService.updateNameAndUrl(commonId,id,imgName,imgUrl);
+            }return new ResponseEntity<>("CommonId : "+commonId,HttpStatus.BAD_REQUEST);
+        }catch (Exception e){
+            return errorService.handlerException(e);
+        }
+
+    }
+
+
 
     @DeleteMapping(path = "/deleteJPG/{commonId}")
     public ResponseEntity<?>deleteImages(@PathVariable String commonId,

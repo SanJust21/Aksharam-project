@@ -40,6 +40,7 @@ public class ImgDataMain {
     public ImgDataMain() {
     }
 
+
     public ImgDataMain(String fName, String fUrl,String commonId) {
         this.fName = fName;
         this.fUrl = fUrl;
