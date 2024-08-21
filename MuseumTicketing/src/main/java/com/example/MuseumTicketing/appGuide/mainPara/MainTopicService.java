@@ -339,6 +339,21 @@ public class MainTopicService {
                     }
                     firstTopicEngRepo.delete(firstTopicEng);
                 }
+            }
+
+            if (mainTopicMalOptional.isPresent()){
+                MainTopicMal mainTopicMal = mainTopicMalOptional.get();
+                if (mainTopicMal.getMMalUid().equals(malId)){
+                    mainTopicMalRepo.delete(mainTopicMal);
+                }
+                List<AudioMain>audioMainListMal = audioMainRepo.findBydtId(malId);
+                if (!audioMainListMal.isEmpty()){
+                    for (AudioMain audioMain : audioMainListMal){
+                        String fileName = audioMain.getFName();
+                        s3Client.deleteObject(new DeleteObjectRequest(bucketName,fileName));
+                        audioMainRepo.delete(audioMain);
+                    }
+                }
                 List<FirstTopicMal>firstTopicMalList = firstTopicMalRepo.findByMainUid(malId);
                 if (!firstTopicMalList.isEmpty()){
                     for (FirstTopicMal firstTopicMal : firstTopicMalList){
@@ -359,6 +374,22 @@ public class MainTopicService {
                     }
                 }
             }
+
+            Optional<VideoMain>videoMainOptional=videoMainRepo.findBydtId(commonId);
+            if (videoMainOptional.isPresent()){
+                VideoMain videoMain = videoMainOptional.get();
+                String fileName = videoMain.getFName();
+                s3Client.deleteObject(new DeleteObjectRequest(bucketName,fileName));
+                videoMainRepo.delete(videoMain);
+            }
+            List<ImgDataMain>imgDataMainList = imgDataMainRepo.findByCommonId(commonId);
+            if (!imgDataMainList.isEmpty()){
+                for (ImgDataMain imgDataMain : imgDataMainList){
+                    String fileName = imgDataMain.getFName();
+                    s3Client.deleteObject(new DeleteObjectRequest(bucketName,fileName));
+                    imgDataMainRepo.delete(imgDataMain);
+                }
+            }
             Optional<CommonQRParaId>commonQRParaIdOptional = commonQRParaIdRepo.findByCommonId(commonId);
             if (commonQRParaIdOptional.isPresent()){
                 CommonQRParaId commonQRParaId = commonQRParaIdOptional.get();
@@ -366,36 +397,7 @@ public class MainTopicService {
                     commonQRParaIdRepo.delete(commonQRParaId);
                 }
             }
-        }
-        Optional<VideoMain>videoMainOptional=videoMainRepo.findBydtId(commonId);
-        if (videoMainOptional.isPresent()){
-            VideoMain videoMain = videoMainOptional.get();
-            String fileName = videoMain.getFName();
-            s3Client.deleteObject(new DeleteObjectRequest(bucketName,fileName));
-            videoMainRepo.delete(videoMain);
-        }
-        List<ImgDataMain>imgDataMainList = imgDataMainRepo.findByCommonId(commonId);
-        if (!imgDataMainList.isEmpty()){
-            for (ImgDataMain imgDataMain : imgDataMainList){
-                String fileName = imgDataMain.getFName();
-                s3Client.deleteObject(new DeleteObjectRequest(bucketName,fileName));
-                imgDataMainRepo.delete(imgDataMain);
-            }
-        }
-        if (mainTopicMalOptional.isPresent()){
-            MainTopicMal mainTopicMal = mainTopicMalOptional.get();
-            if (mainTopicMal.getMMalId().equals(malId)){
-                mainTopicMalRepo.delete(mainTopicMal);
-            }
-            List<AudioMain>audioMainListMal = audioMainRepo.findBydtId(malId);
-            if (!audioMainListMal.isEmpty()){
-                for (AudioMain audioMain : audioMainListMal){
-                    String fileName = audioMain.getFName();
-                    s3Client.deleteObject(new DeleteObjectRequest(bucketName,fileName));
-                    audioMainRepo.delete(audioMain);
-                }
-            }
-            return new ResponseEntity<>("Main topic deleted successfully",HttpStatus.OK);
+            return new ResponseEntity<>("Main topic is delete",HttpStatus.OK);
         }
         return new ResponseEntity<>("Main topic isn't deleted.Id isn't present ",HttpStatus.BAD_REQUEST);
     }

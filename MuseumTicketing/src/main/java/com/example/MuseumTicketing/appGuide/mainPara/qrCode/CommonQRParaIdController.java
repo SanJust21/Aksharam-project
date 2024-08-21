@@ -92,9 +92,9 @@ public class CommonQRParaIdController {
         try {
             return commonQRParaIdService.userMobileReg(mobileReg);
         }catch (Exception e){
-            e.printStackTrace();
+            return errorService.handlerException(e);
         }
-        return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+
 
     }
 

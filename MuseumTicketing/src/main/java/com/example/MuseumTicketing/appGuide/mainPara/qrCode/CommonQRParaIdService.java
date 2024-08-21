@@ -371,13 +371,15 @@ public class CommonQRParaIdService {
 
         Optional<MobileReg> existingMobileReg = mobileRegRepo.findByPhNumber(mobileReg.getPhNumber());
         if (existingMobileReg.isPresent()) {
-            return new ResponseEntity<>("Mobile number already registered", HttpStatus.CONFLICT);
+            MobileReg mobileReg1 = existingMobileReg.get();
+            return new ResponseEntity<>("Mobile number "+mobileReg1.getPhNumber()+" is already registered", HttpStatus.CONFLICT);
         }
         if (mobileReg.getEmail().endsWith("@gmail.com")){
             MobileReg mobileReg1 = new MobileReg();
             mobileReg1.setEmail(mobileReg.getEmail());
             if (mobileReg.getPhNumber().length()>=10){
                 mobileReg1.setPhNumber(mobileReg.getPhNumber());
+                mobileReg1.setFullName(mobileReg.getFullName());
                 mobileRegRepo.save(mobileReg1);
                 return new ResponseEntity<>(mobileReg1,HttpStatus.OK);
             }else {
