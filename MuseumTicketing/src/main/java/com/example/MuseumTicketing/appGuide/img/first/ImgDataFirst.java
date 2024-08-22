@@ -35,10 +35,10 @@ public class ImgDataFirst {
     @Column(name = "commonId")
     private String commonId;
 
-    @Column(name = "imageName")
+    @Column(name = "imageName",length = 10000)
     private String imageName;
 
-    @Column(name = "imageRefUrl")
+    @Column(name = "imageRefUrl",length = 10000)
     private String imageRefUrl;
 
     public ImgDataFirst() {

@@ -31,10 +31,10 @@ public class ImgDataMain {
     @Column(name = "commonId")
     private String commonId;
 
-    @Column(name = "imageName")
+    @Column(name = "imageName",length = 100000)
     private String imageName;
 
-    @Column(name = "imageRefUrl")
+    @Column(name = "imageRefUrl",length = 10000)
     private String imageRefUrl;
 
     public ImgDataMain() {
