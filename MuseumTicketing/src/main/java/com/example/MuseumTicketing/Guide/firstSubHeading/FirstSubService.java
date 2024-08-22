@@ -152,6 +152,11 @@ public class FirstSubService {
                 combinedData1.setuId(firstSubEnglish.getFsUid());
                 combinedData1.setmUid(firstSubEnglish.getMainUid());
 
+                CommonIdFs commonIdFs=fsCommonIdRepo.findByfsEngId(firstSubEnglish.getFsUid());
+                combinedData1.setFsCommonId(commonIdFs.getFsCommonId());
+                combinedData1.setFsEngId(commonIdFs.getFsEngId());
+                combinedData1.setFsMalId(commonIdFs.getFsMalId());
+
                 List<ImgSubFirst> imgData =imgSubFirstRepo.findByengId(firstSubEnglish.getFsUid());
                 imgData.sort(Comparator.comparing(ImgSubFirst::getImgID));
                 combinedData1.setImgDataList(imgData);
@@ -163,7 +168,7 @@ public class FirstSubService {
                 mp3Data.sort(Comparator.comparing(Mp3Data1::getId));
                 combinedData1.setMp3DataList(mp3Data);
 
-                List<Mp4Data1> mp4Data = mp4Data1Repo.findBydtId(firstSubEnglish.getFsUid());
+                List<Mp4Data1> mp4Data = mp4Data1Repo.findBydtId(commonIdFs.getFsCommonId());
                 mp4Data.sort(Comparator.comparing(Mp4Data1::getId));
                 combinedData1.setMp4DataList(mp4Data);
 
@@ -190,6 +195,11 @@ public class FirstSubService {
                 combinedData1.setmUid(firstSubMalayalam.getMainUid());
                 combinedData1.setuId(firstSubMalayalam.getFsUid());
 
+                CommonIdFs commonIdFs=fsCommonIdRepo.findByfsEngId(firstSubMalayalam.getFsUid());
+                combinedData1.setFsCommonId(commonIdFs.getFsCommonId());
+                combinedData1.setFsEngId(commonIdFs.getFsEngId());
+                combinedData1.setFsMalId(commonIdFs.getFsMalId());
+
                 List<ImgSubFirst> imgData =imgSubFirstRepo.findBymalId(firstSubMalayalam.getFsUid());
                 imgData.sort(Comparator.comparing(ImgSubFirst::getImgID));
                 combinedData1.setImgDataList(imgData);
@@ -201,7 +211,7 @@ public class FirstSubService {
                 mp3Data.sort(Comparator.comparing(Mp3Data1::getId));
                 combinedData1.setMp3DataList(mp3Data);
 
-                List<Mp4Data1> mp4Data = mp4Data1Repo.findBydtId(firstSubMalayalam.getFsUid());
+                List<Mp4Data1> mp4Data = mp4Data1Repo.findBydtId(commonIdFs.getFsCommonId());
                 mp4Data.sort(Comparator.comparing(Mp4Data1::getId));
                 combinedData1.setMp4DataList(mp4Data);
 
@@ -250,6 +260,8 @@ public class FirstSubService {
                         combinedDataSub.setReferenceUrl(firstSubEnglish1.getRef());
                         combinedDataSub.setFsMalId(fsMalId);
                         combinedDataSub.setFsCommonId(commonIdFs.getFsCommonId());
+                        combinedDataSub.setFsEngId(commonIdFs.getFsEngId());
+                        combinedDataSub.setFsMalId(commonIdFs.getFsMalId());
                         combinedDataSub.setuId(firstSubEnglish1.getFsUid());
                         combinedDataSub.setmUid(firstSubEnglish1.getMainUid());
 
@@ -264,7 +276,7 @@ public class FirstSubService {
                         mp3Data1List.sort(Comparator.comparing(Mp3Data1::getId));
                         combinedDataSub.setMp3DataList(mp3Data1List);
 
-                        List<Mp4Data1> mp4Data1List = mp4Data1Repo.findBydtId(firstSubEnglish1.getFsUid());
+                        List<Mp4Data1> mp4Data1List = mp4Data1Repo.findBydtId(commonIdFs.getFsCommonId());
                         mp4Data1List.sort(Comparator.comparing(Mp4Data1::getId));
                         combinedDataSub.setMp4DataList(mp4Data1List);
 
@@ -302,7 +314,8 @@ public class FirstSubService {
                             mp3Data2List.sort(Comparator.comparing(Mp3Data2::getId));
                             combinedDataSubSub.setMp3Data2List(mp3Data2List);
                             // Fetching video for SecondSubEnglish
-                            List<Mp4Data2> mp4Data2List = mp4Data2Repo.findBydtId(secondSubEnglish.getSsUid());
+                            CommonIdSs commonId = commonIdSs.get();
+                            List<Mp4Data2> mp4Data2List = mp4Data2Repo.findBydtId(commonId.getSsCommonId());
                             mp4Data2List.sort(Comparator.comparing(Mp4Data2::getId));
                             combinedDataSubSub.setMp4Data2List(mp4Data2List);
 
@@ -359,7 +372,7 @@ public class FirstSubService {
                         mp3Data1List.sort(Comparator.comparing(Mp3Data1::getId));
                         combinedDataSub.setMp3DataList(mp3Data1List);
 
-                        List<Mp4Data1> mp4Data1List = mp4Data1Repo.findBydtId(firstSubMalayalam1.getFsUid());
+                        List<Mp4Data1> mp4Data1List = mp4Data1Repo.findBydtId(commonIdFs.getFsCommonId());
                         mp4Data1List.sort(Comparator.comparing(Mp4Data1::getId));
                         combinedDataSub.setMp4DataList(mp4Data1List);
 
@@ -395,7 +408,9 @@ public class FirstSubService {
                             mp3Data2List.sort(Comparator.comparing(Mp3Data2::getId));
                             combinedDataSubSub.setMp3Data2List(mp3Data2List);
                             // Fetching video for SecondSubMalayalam
-                            List<Mp4Data2> mp4Data2List = mp4Data2Repo.findBydtId(secondSubMalayalam.getSsUid());
+
+                            CommonIdSs commonIdSs1 = commonIdSs.get();
+                            List<Mp4Data2> mp4Data2List = mp4Data2Repo.findBydtId(commonIdSs1.getSsCommonId());
                             mp4Data2List.sort(Comparator.comparing(Mp4Data2::getId));
                             combinedDataSubSub.setMp4Data2List(mp4Data2List);
                             combinedDataSubSubList.add(combinedDataSubSub);
