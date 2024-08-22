@@ -6,6 +6,7 @@ import com.example.MuseumTicketing.Guide.QR.QRCodeResponse;
 import com.example.MuseumTicketing.Guide.util.ErrorService;
 import com.example.MuseumTicketing.appGuide.mainPara.CombinedPara;
 import com.example.MuseumTicketing.appGuide.mainPara.qrCode.mobileReg.MobileReg;
+import com.example.MuseumTicketing.appGuide.mainPara.qrCode.mobileReg.MobileRegRepo;
 import com.google.zxing.WriterException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -27,6 +28,8 @@ public class CommonQRParaIdController {
     private CommonQRParaIdRepo commonQRParaIdRepo;
     @Autowired
     private ErrorService errorService;
+    @Autowired
+    private MobileRegRepo mobileRegRepo;
 
     @GetMapping("/generate")
     public ResponseEntity<QRCodeResponse>generateQRCode(@RequestParam String mMalUid, @RequestParam String mEngUid){
@@ -94,8 +97,6 @@ public class CommonQRParaIdController {
         }catch (Exception e){
             return errorService.handlerException(e);
         }
-
-
     }
 
     @GetMapping(path = "/getAllUsers")
@@ -106,5 +107,30 @@ public class CommonQRParaIdController {
             e.printStackTrace();
         }
         return new ResponseEntity<>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @DeleteMapping(path = "/deleteMobileReg")
+    public ResponseEntity<?>deleteMobileReg(
+            @RequestParam(required = false) Long id,
+            @RequestParam(required = false) String phNumber){
+        if (id != null) {
+            Optional<MobileReg> existingMobileReg = mobileRegRepo.findById(id);
+            if (existingMobileReg.isPresent()) {
+                mobileRegRepo.delete(existingMobileReg.get());
+                return new ResponseEntity<>("Mobile registration deleted successfully by ID", HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>("Mobile registration not found by ID", HttpStatus.NOT_FOUND);
+            }
+        } else if (phNumber != null) {
+            Optional<MobileReg> existingMobileReg = mobileRegRepo.findByPhNumber(phNumber);
+            if (existingMobileReg.isPresent()) {
+                mobileRegRepo.delete(existingMobileReg.get());
+                return new ResponseEntity<>("Mobile registration deleted successfully by phone number", HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>("Mobile registration not found by phone number", HttpStatus.NOT_FOUND);
+            }
+        } else {
+            return new ResponseEntity<>("Please provide either an ID or phone number", HttpStatus.BAD_REQUEST);
+        }
     }
 }
