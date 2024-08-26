@@ -3,6 +3,7 @@ package com.example.MuseumTicketing.appGuide.mainPara.qrCode;
 import com.example.MuseumTicketing.Guide.Language.DataType;
 import com.example.MuseumTicketing.Guide.QR.CommonIdQRCode;
 import com.example.MuseumTicketing.Guide.QR.QRCodeResponse;
+import com.example.MuseumTicketing.Guide.util.ErrorResponse;
 import com.example.MuseumTicketing.Guide.util.ErrorService;
 import com.example.MuseumTicketing.appGuide.mainPara.CombinedPara;
 import com.example.MuseumTicketing.appGuide.mainPara.qrCode.mobileReg.MobileReg;
@@ -95,21 +96,45 @@ public class CommonQRParaIdController {
                                           @RequestParam(required = false) String email,
                                           @RequestParam(required = false)String fullName){
         try {
-            if (phNumber!=null){
-                Optional<MobileReg>mobileRegOptional=mobileRegRepo.findByPhNumber(phNumber);
-                if (mobileRegOptional.isPresent()){
-                    MobileReg mobileReg = mobileRegOptional.get();
-                    if (phNumber.equals(mobileReg.getPhNumber())){
-                        return new ResponseEntity<>("Mobile Number is already present. phoneNumber : "+mobileReg.getPhNumber()+
-                                ". emailId : "+mobileReg.getEmail()+". Name : "+mobileReg.getFullName(),HttpStatus.ACCEPTED);
-                    }
-                } else if (email==null&&fullName==null) {
-                    return new ResponseEntity<>("mobile Number is not present.New User",HttpStatus.OK);
-                }else {
-                    return commonQRParaIdService.userMobileReg(phNumber, email, fullName);
-                }
+//            if (phNumber!=null){
+//                Optional<MobileReg>mobileRegOptional=mobileRegRepo.findByPhNumber(phNumber);
+//                if (mobileRegOptional.isPresent()){
+//                    MobileReg mobileReg = mobileRegOptional.get();
+//                    if (phNumber.equals(mobileReg.getPhNumber())){
+//                        return new ResponseEntity<>("Mobile Number is already present. phoneNumber : "+mobileReg.getPhNumber()+
+//                                ". emailId : "+mobileReg.getEmail()+". Name : "+mobileReg.getFullName(),HttpStatus.ACCEPTED);
+//                    }
+//                } else if (email==null&&fullName==null) {
+//                    return new ResponseEntity<>("mobile Number is not present.New User",HttpStatus.OK);
+//                }else {
+//                    return commonQRParaIdService.userMobileReg(phNumber, email, fullName);
+//                }
+//            }
+//            return new ResponseEntity<>(null,HttpStatus.BAD_REQUEST);
+            Optional<MobileReg> existingMobileReg = mobileRegRepo.findByPhNumber(phNumber);
+            if (existingMobileReg.isPresent()) {
+                // If the mobile number exists, return true with an error message
+                return new ResponseEntity<>(new ErrorResponse("Mobile number already registered",1), HttpStatus.ACCEPTED);
+            } else if (email == null && fullName == null) {
+                // If the mobile number does not exist and email/fullName are not provided
+                return new ResponseEntity<>(new ErrorResponse("Mobile number not registered", 0), HttpStatus.OK);
             }
-            return new ResponseEntity<>(null,HttpStatus.BAD_REQUEST);
+
+            // Step 2: Register the mobile number with email and full name
+            if (email != null && fullName != null) {
+                if (phNumber.length() >= 10) {
+                    MobileReg mobileReg = new MobileReg();
+                    mobileReg.setPhNumber(phNumber);
+                    mobileReg.setEmail(email);
+                    mobileReg.setFullName(fullName);
+                    mobileRegRepo.save(mobileReg);
+                    return new ResponseEntity<>(new ErrorResponse(fullName, 0), HttpStatus.OK);
+                } else {
+                    return new ResponseEntity<>("Enter a 10-digit mobile number", HttpStatus.BAD_REQUEST);
+                }
+
+            }
+            return new ResponseEntity<>("Missing required parameters", HttpStatus.BAD_REQUEST);
 
         }catch (Exception e){
             return errorService.handlerException(e);
