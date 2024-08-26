@@ -367,28 +367,18 @@ public class CommonQRParaIdService {
         }
     }
 
-    public ResponseEntity<?> userMobileReg(MobileReg mobileReg) {
-
-        Optional<MobileReg> existingMobileReg = mobileRegRepo.findByPhNumber(mobileReg.getPhNumber());
-        if (existingMobileReg.isPresent()) {
-            MobileReg mobileReg1 = existingMobileReg.get();
-            return new ResponseEntity<>("Mobile number "+mobileReg1.getPhNumber()+" is already registered", HttpStatus.CONFLICT);
+    public ResponseEntity<?> userMobileReg(String phNumber, String email, String fullName) {
+        if (phNumber.length()>=10 && email!=null && fullName!=null){
+            MobileReg mobileReg = new MobileReg();
+            mobileReg.setEmail(email);
+            mobileReg.setFullName(fullName);
+            mobileReg.setPhNumber(phNumber);
+            mobileRegRepo.save(mobileReg);
+            return new ResponseEntity<>(mobileReg,HttpStatus.OK);
         }
-        if (mobileReg.getEmail().endsWith("@gmail.com")){
-            MobileReg mobileReg1 = new MobileReg();
-            mobileReg1.setEmail(mobileReg.getEmail());
-            if (mobileReg.getPhNumber().length()>=10){
-                mobileReg1.setPhNumber(mobileReg.getPhNumber());
-                mobileReg1.setFullName(mobileReg.getFullName());
-                mobileRegRepo.save(mobileReg1);
-                return new ResponseEntity<>(mobileReg1,HttpStatus.OK);
-            }else {
-                return new ResponseEntity<>("Enter 10 digit mobile number",HttpStatus.BAD_REQUEST);
-            }
-        }else {
-            return new ResponseEntity<>("Enter a valid email Id",HttpStatus.UNPROCESSABLE_ENTITY);
-        }
+        return new ResponseEntity<>("Enter a valid data. Null filed is not allowed",HttpStatus.BAD_REQUEST);
     }
+
 
     public ResponseEntity<List<MobileReg>> getAllUsersData() {
         try {
@@ -564,4 +554,6 @@ public class CommonQRParaIdService {
             }
         }return new ResponseEntity<>(new ArrayList<>(),HttpStatus.BAD_REQUEST);
     }
+
+
 }

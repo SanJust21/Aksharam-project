@@ -91,9 +91,26 @@ public class CommonQRParaIdController {
     }
 
     @PostMapping(path="/mobReg")
-    public ResponseEntity<?>userMobileReg(@RequestBody MobileReg mobileReg){
+    public ResponseEntity<?>userMobileReg(@RequestParam(required = true) String phNumber,
+                                          @RequestParam(required = false) String email,
+                                          @RequestParam(required = false)String fullName){
         try {
-            return commonQRParaIdService.userMobileReg(mobileReg);
+            if (phNumber!=null){
+                Optional<MobileReg>mobileRegOptional=mobileRegRepo.findByPhNumber(phNumber);
+                if (mobileRegOptional.isPresent()){
+                    MobileReg mobileReg = mobileRegOptional.get();
+                    if (phNumber.equals(mobileReg.getPhNumber())){
+                        return new ResponseEntity<>("Mobile Number is already present. phoneNumber : "+mobileReg.getPhNumber()+
+                                ". emailId : "+mobileReg.getEmail()+". Name : "+mobileReg.getFullName(),HttpStatus.ACCEPTED);
+                    }
+                } else if (email==null&&fullName==null) {
+                    return new ResponseEntity<>("mobile Number is not present.New User",HttpStatus.OK);
+                }else {
+                    return commonQRParaIdService.userMobileReg(phNumber, email, fullName);
+                }
+            }
+            return new ResponseEntity<>(null,HttpStatus.BAD_REQUEST);
+
         }catch (Exception e){
             return errorService.handlerException(e);
         }
