@@ -91,7 +91,7 @@ public class CommonQRParaIdController {
         return new ResponseEntity<>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @PostMapping(path="/mobReg")
+    @GetMapping(path="/mobReg")
     public ResponseEntity<?>userMobileReg(@RequestParam(required = true) String phNumber,
                                           @RequestParam(required = false) String email,
                                           @RequestParam(required = false)String fullName){
