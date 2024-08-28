@@ -28,6 +28,8 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -139,5 +141,17 @@ public class SecondSubDeleteService {
 
     private void deleteImageFromS3(String fileName) {
         s3Client.deleteObject(bucketName, fileName);
+    }
+
+    public ResponseEntity<?> deleteCommonIdSecondSub(String commonId) {
+        Optional<CommonIdSs>commonIdSsOptional=commonIdSsRepo.findBySsCommonId(commonId);
+        if (commonIdSsOptional.isPresent()){
+            CommonIdSs commonIdSs =commonIdSsOptional.get();
+            String malId = commonIdSs.getSsMalId();
+            String engId = commonIdSs.getSsEngId();
+            commonIdSsRepo.delete(commonIdSs);
+            return new ResponseEntity<>("CommonId is deleted. MalayalamId :"+malId+"EnglishId :"+engId, HttpStatus.OK);
+        }
+        return new ResponseEntity<>("CommonId is not valid ",HttpStatus.BAD_REQUEST);
     }
 }

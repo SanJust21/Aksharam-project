@@ -1,4 +1,5 @@
 package com.example.MuseumTicketing.Guide.DELETE.secondSub;
+import com.example.MuseumTicketing.Guide.SecondSubHeading.commonId.CommonIdSs;
 import com.example.MuseumTicketing.Guide.SecondSubHeading.commonId.CommonIdSsRepo;
 import com.example.MuseumTicketing.Guide.SecondSubHeading.commonId.CommonIdSsRepo;
 import com.example.MuseumTicketing.Guide.util.ErrorService;
@@ -6,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 @RestController
 @RequestMapping(path = "/api/deleteSecond")
@@ -34,6 +37,21 @@ public class SecondSubDeleteController {
             return errorService.handlerException(e);
         }
         //return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @DeleteMapping(path = "/deleteCommonIdSS")
+    public ResponseEntity<?>deleteCommonIdSecondSub(@RequestParam String commonId){
+        try {
+            Optional<CommonIdSs> commonIdSsOptional = commonIdSsRepo.findBySsCommonId(commonId);
+            if (commonIdSsOptional.isPresent()){
+                return secondSubDeleteService.deleteCommonIdSecondSub(commonId);
+            }else {
+                return new ResponseEntity<>("CommonId is not present. ",HttpStatus.BAD_REQUEST);
+            }
+        }catch (Exception e){
+            return errorService.handlerException(e);
+        }
+        //return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 }
