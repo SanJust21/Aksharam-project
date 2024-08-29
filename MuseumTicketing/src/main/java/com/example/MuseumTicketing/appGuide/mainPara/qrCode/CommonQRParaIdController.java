@@ -114,7 +114,7 @@ public class CommonQRParaIdController {
             Optional<MobileReg> existingMobileReg = mobileRegRepo.findByPhNumber(phNumber);
             if (existingMobileReg.isPresent()) {
                 // If the mobile number exists, return true with an error message
-                return new ResponseEntity<>(new ErrorResponse("Mobile number already registered",1), HttpStatus.ACCEPTED);
+                return new ResponseEntity<>(new ErrorResponse("Mobile number already registered",1), HttpStatus.OK);
             } else if (email == null && fullName == null) {
                 // If the mobile number does not exist and email/fullName are not provided
                 return new ResponseEntity<>(new ErrorResponse("Mobile number not registered", 0), HttpStatus.OK);
