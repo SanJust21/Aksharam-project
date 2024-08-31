@@ -5,8 +5,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class DataTypeService {
@@ -29,5 +31,14 @@ public class DataTypeService {
             e.printStackTrace();
         }
         return new ResponseEntity<>(new ArrayList<>(),HttpStatus.BAD_REQUEST);
+    }
+
+    public ResponseEntity<?> deleteTalk(Integer id) {
+        Optional<DataType>dataTypeOptional=dataTypeRepo.findById(id);
+        if (dataTypeOptional.isPresent()){
+            DataType dataType =dataTypeOptional.get();
+            dataTypeRepo.delete(dataType);
+            return new ResponseEntity<>("Language is deleted",HttpStatus.OK);
+        }return new ResponseEntity<>("Id isn't valid",HttpStatus.BAD_REQUEST);
     }
 }

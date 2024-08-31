@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(path = "/api/dataType1")
@@ -27,6 +28,11 @@ public class DataTypeController {
     @GetMapping(path = "/getTalk")
     public ResponseEntity<List<DataType>> getAllTalk(){
         return dataTypeService.getAllTalk();
+    }
+
+    @DeleteMapping(path = "/delete/{id}")
+    public ResponseEntity<?>deleteById(@PathVariable Integer id){
+        return dataTypeService.deleteTalk(id);
     }
 
 }
