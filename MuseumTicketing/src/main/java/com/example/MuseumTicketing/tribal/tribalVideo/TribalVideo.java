@@ -2,10 +2,12 @@ package com.example.MuseumTicketing.tribal.tribalVideo;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 @Data
 @Entity
 @Table(name = "tribalVideo")
+@CrossOrigin
 public class TribalVideo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

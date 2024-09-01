@@ -25,6 +25,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping(path = "/api/tribalData")
+@CrossOrigin
 public class TribalController {
     @Autowired
     private TribalService tribalService;
