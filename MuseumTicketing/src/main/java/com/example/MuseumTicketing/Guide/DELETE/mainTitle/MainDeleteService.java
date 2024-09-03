@@ -68,6 +68,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.example.MuseumTicketing.Guide.util.ErrorService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.Id;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -262,6 +263,80 @@ public class MainDeleteService {
             throw new EntityNotFoundException("MP3 file not found for dtId: " + dtId);
         }
     }
+
+    public void deleteMp3ByDtIdMain(String dtId, Integer id) {
+        Optional<Mp3Data>mp3DataOptional=mp3Repo.findByDtIdAndId(dtId,id);
+        if (mp3DataOptional.isPresent()){
+            Mp3Data mp3Data = mp3DataOptional.get();
+            String fileName = mp3Data.getFName();
+            deleteFileFromS3(fileName);
+            mp3Repo.delete(mp3Data);
+        }
+    }
+
+    public void deleteMp4MainByDtId(String dtId, Integer id) {
+        Optional<Mp4Data>mp4DataOptional=mp4DataRepo.findByDtIdAndId(dtId,id);
+        if (mp4DataOptional.isPresent()){
+            Mp4Data mp4Data = mp4DataOptional.get();
+            String fileName = mp4Data.getFName();
+            deleteFileFromS3(fileName);
+            mp4DataRepo.delete(mp4Data);
+        }
+    }
+
+    public void deleteMp3FirstSubByMainEngId(String mainEngId, Integer id) {
+        Optional<Mp3Data1>mp3Data1Optional=mp3Data1Repo.findByMainEngIdAndId(mainEngId,id);
+        Optional<Mp3Data1>mp3Data1Optional1=mp3Data1Repo.findByMainMalIdAndId(mainEngId,id);
+        if (mp3Data1Optional.isPresent()){
+            Mp3Data1 mp3Data1=mp3Data1Optional.get();
+            String fileName = mp3Data1.getFName();
+            deleteFileFromS3(fileName);
+            mp3Data1Repo.delete(mp3Data1);
+        } else if (mp3Data1Optional1.isPresent()) {
+            Mp3Data1 mp3Data1=mp3Data1Optional.get();
+            String fileName = mp3Data1.getFName();
+            deleteFileFromS3(fileName);
+            mp3Data1Repo.delete(mp3Data1);
+        }
+    }
+
+    public void deleteMp4FirstSubByMain(String mainEngId, Integer id) {
+        Optional<Mp4Data1>mp4Data1Optional=mp4Data1Repo.findByMainEngIdAndId(mainEngId,id);
+        Optional<Mp4Data1>mp4Data1Optional1=mp4Data1Repo.findByMainMalIdAndId(mainEngId,id);
+        if (mp4Data1Optional.isPresent()){
+            Mp4Data1 mp4Data1 = mp4Data1Optional.get();
+            String fileName = mp4Data1.getFName();
+            deleteFileFromS3(fileName);
+            mp4Data1Repo.delete(mp4Data1);
+        } else if (mp4Data1Optional1.isPresent()) {
+            Mp4Data1 mp4Data1 = mp4Data1Optional.get();
+            String fileName = mp4Data1.getFName();
+            deleteFileFromS3(fileName);
+            mp4Data1Repo.delete(mp4Data1);
+        }
+    }
+
+    public void deleteMp3SecondSubByDtId(String dtId, Integer id) {
+        Optional<Mp3Data2>mp3Data2Optional=mp3Data2Repo.findByDtIdAndId(dtId, id);
+        if (mp3Data2Optional.isPresent()){
+            Mp3Data2 mp3Data2=mp3Data2Optional.get();
+            String fileName = mp3Data2.getFName();
+            deleteFileFromS3(fileName);
+            mp3Data2Repo.delete(mp3Data2);
+        }
+    }
+
+    public void deleteMp4SecondSubByDtId(String dtId, Integer id) {
+        Optional<Mp4Data2>mp4Data2Optional=mp4Data2Repo.findByDtIdAndId(dtId,id);
+        if (mp4Data2Optional.isPresent()){
+            Mp4Data2 mp4Data2 = mp4Data2Optional.get();
+            String fileName= mp4Data2.getFName();
+            deleteFileFromS3(fileName);
+            mp4Data2Repo.delete(mp4Data2);
+        }
+    }
+
+
 
     public void deleteMp4ByDtId(String dtId) {
         // Delete MP4 details from the database and S3 bucket
@@ -623,4 +698,7 @@ public class MainDeleteService {
             return errorService.handlerException(e);
         }
     }
+
+
+
 }

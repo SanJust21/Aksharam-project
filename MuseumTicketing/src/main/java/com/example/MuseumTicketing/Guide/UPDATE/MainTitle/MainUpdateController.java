@@ -117,7 +117,8 @@ public class MainUpdateController {
     @PutMapping(path = "/updateMpData")
     public ResponseEntity<?> addMp3Data(@RequestParam String uId,
                                         @RequestParam Integer mtId,
-                                        @RequestParam MultipartFile[] files){
+                                        @RequestParam Integer id,
+                                        @RequestParam MultipartFile files){
         try {
 
             if (uId == null || mtId == null ||uId.isEmpty()||"undefined".equalsIgnoreCase(uId)) {
@@ -129,22 +130,24 @@ public class MainUpdateController {
                 FileType fileType = fileTypeOptional.get();
                 String fData = fileType.getFileType();
                 if (fData != null && "Audio".equalsIgnoreCase(fData)) {
-                    List<MediaTypeDTO> responses = new ArrayList<>();
-                    for (MultipartFile file : files){
-                        responses.add(mediaTypeService.updateUploadMp3(file,uId));
-                    }
-                    return new ResponseEntity<>(responses,HttpStatus.OK);
+//                    List<MediaTypeDTO> responses = new ArrayList<>();
+//                    for (MultipartFile file : files){
+//                        responses.add(mediaTypeService.updateUploadMp3(file,uId));
+//                    }
+//                    return new ResponseEntity<>(responses,HttpStatus.OK);
                     //return mediaTypeService.addMp3(files,dtId);
+                    return mainUpdateService.updateAudioMain(files,uId,id);
                 } else if (fData != null && "Video".equalsIgnoreCase(fData)) {
                     Optional<CommonIdQRCode>commonIdQRCodeOptional = commonIdQRCodeRepo.findByCommonId(uId);
                     if (commonIdQRCodeOptional.isPresent()){
                         CommonIdQRCode commonIdQRCode = commonIdQRCodeOptional.get();
                         if (commonIdQRCode.getCommonId().equals(uId)){
-                            List<MediaTypeDTO> responses = new ArrayList<>();
-                            for (MultipartFile file : files){
-                                responses.add(mediaTypeService.updateUploadMp4(file,uId));
-                            }
-                            return new ResponseEntity<>(responses,HttpStatus.OK);
+//                            List<MediaTypeDTO> responses = new ArrayList<>();
+//                            for (MultipartFile file : files){
+//                                responses.add(mediaTypeService.updateUploadMp4(file,uId));
+//                            }
+//                            return new ResponseEntity<>(responses,HttpStatus.OK);
+                            return mainUpdateService.updateVideoMain(files,uId,id);
                         }else {
                             return new ResponseEntity<>("CommonId : "+uId+"   is not matching",HttpStatus.BAD_REQUEST);
                         }

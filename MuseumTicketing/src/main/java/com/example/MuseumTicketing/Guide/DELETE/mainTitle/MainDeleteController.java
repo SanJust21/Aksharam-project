@@ -232,14 +232,14 @@ public class MainDeleteController {
     }
 
     @DeleteMapping(path = "/deleteMp3")
-    public ResponseEntity<?> deleteMp3(@RequestParam String dtId) {
+    public ResponseEntity<?> deleteMp3(@RequestParam String dtId,@RequestParam Integer id) {
         try {
             if (dtId == null || "undefined".equalsIgnoreCase(dtId)||dtId.isEmpty()) {
                 return new ResponseEntity<>("Common ID is required", HttpStatus.BAD_REQUEST);
             }
             List<Mp3Data> mp3Data = mp3Repo.findBydtId(dtId);
             if (!mp3Data.isEmpty()){
-                mainDeleteService.deleteMp3ByDtId(dtId);
+                mainDeleteService.deleteMp3ByDtIdMain(dtId,id);
                 return new ResponseEntity<>("MP3 deleted successfully", HttpStatus.OK);
             }
         } catch (EntityNotFoundException e) {
@@ -253,14 +253,14 @@ public class MainDeleteController {
 
 
     @DeleteMapping(path = "/deleteMp4")
-    public ResponseEntity<?> deleteMp4(@RequestParam String dtId) {
+    public ResponseEntity<?> deleteMp4(@RequestParam String dtId,@RequestParam Integer id) {
         try {
             if (dtId == null || "undefined".equalsIgnoreCase(dtId)||dtId.isEmpty()) {
                 return new ResponseEntity<>("Common ID is required", HttpStatus.BAD_REQUEST);
             }
             List<Mp4Data> mp4Data = mp4DataRepo.findBydtId(dtId);
             if (!mp4Data.isEmpty()){
-                mainDeleteService.deleteMp4ByDtId(dtId);
+                mainDeleteService.deleteMp4MainByDtId(dtId,id);
                 return new ResponseEntity<>("MP4 deleted successfully", HttpStatus.OK);
             }
         } catch (EntityNotFoundException e) {
@@ -274,23 +274,22 @@ public class MainDeleteController {
 
 
     @DeleteMapping(path = "/deleteMp3First")
-    public ResponseEntity<?> deleteMp3First(@RequestParam String dtId) {
+    public ResponseEntity<?> deleteMp3First(@RequestParam String dtId,@RequestParam Integer id) {
         try {
             if (dtId == null || "undefined".equalsIgnoreCase(dtId)||dtId.isEmpty()) {
                 return new ResponseEntity<>("Common ID is required", HttpStatus.BAD_REQUEST);
             }
-            Optional<Mp3Data1> mp3Data1Optional = mp3Data1Repo.findByDtId(dtId);
-            if (mp3Data1Optional.isPresent()) {
-                Mp3Data1 mp3Data1 = mp3Data1Optional.get();
-                String mainEngId = mp3Data1.getMainEngId();
-                String mainMalId = mp3Data1.getMainMalId();
-
-                if (mainEngId != null) {
-                    mainDeleteService.deleteMp3FirstByMainEngId(mainEngId);
-                } else if (mainMalId != null) {
-                    mainDeleteService.deleteMp3FirstByMainMalId(mainMalId);
+            List<Mp3Data1> mp3Data1Optional = mp3Data1Repo.findBydtId(dtId);
+            if (!mp3Data1Optional.isEmpty()) {
+                for (Mp3Data1 mp3Data1 : mp3Data1Optional){
+                    String mainEngId = mp3Data1.getMainEngId();
+                    String mainMalId = mp3Data1.getMainMalId();
+                    if (mainEngId != null) {
+                        mainDeleteService.deleteMp3FirstSubByMainEngId(mainEngId,id);
+                    } else if (mainMalId != null) {
+                        mainDeleteService.deleteMp3FirstSubByMainEngId(mainMalId,id);
+                    }
                 }
-
                 return new ResponseEntity<>("MP3 deleted successfully", HttpStatus.OK);
             } else {
                 return new ResponseEntity<>("MP3 data not found", HttpStatus.NOT_FOUND);
@@ -308,23 +307,22 @@ public class MainDeleteController {
 
 
     @DeleteMapping(path = "/deleteMp4First")
-    public ResponseEntity<?> deleteMp4First(@RequestParam String dtId) {
+    public ResponseEntity<?> deleteMp4First(@RequestParam String dtId,@RequestParam Integer id) {
         try {
             if (dtId == null || "undefined".equalsIgnoreCase(dtId) || dtId.isEmpty()) {
                 return new ResponseEntity<>("Common ID is required", HttpStatus.BAD_REQUEST);
             }
-            Optional<Mp4Data1> mp4Data1Optional = mp4Data1Repo.findByDtId(dtId);
-            if (mp4Data1Optional.isPresent()) {
-                Mp4Data1 mp4Data1 = mp4Data1Optional.get();
-                String mainEngId = mp4Data1.getMainEngId();
-                String mainMalId = mp4Data1.getMainMalId();
-
-                if (mainEngId != null) {
-                    mainDeleteService.deleteMp4FirstByMainEngId(mainEngId);
-                } else if (mainMalId != null) {
-                    mainDeleteService.deleteMp4FirstByMainMalId(mainMalId);
+            List<Mp4Data1> mp4Data1Optional = mp4Data1Repo.findBydtId(dtId);
+            if (!mp4Data1Optional.isEmpty()) {
+                for (Mp4Data1 mp4Data1:mp4Data1Optional){
+                    String mainEngId = mp4Data1.getMainEngId();
+                    String mainMalId = mp4Data1.getMainMalId();
+                    if (mainEngId != null) {
+                        mainDeleteService.deleteMp4FirstSubByMain(mainEngId,id);
+                    } else if (mainMalId != null) {
+                        mainDeleteService.deleteMp4FirstSubByMain(mainMalId,id);
+                    }
                 }
-
                 return new ResponseEntity<>("MP4 deleted successfully", HttpStatus.OK);
             } else {
                 return new ResponseEntity<>("MP4 data not found", HttpStatus.NOT_FOUND);
@@ -339,14 +337,14 @@ public class MainDeleteController {
     }
 
     @DeleteMapping(path = "/deleteMp3Second")
-    public ResponseEntity<?> deleteMp3Second(@RequestParam String dtId) {
+    public ResponseEntity<?> deleteMp3Second(@RequestParam String dtId,@RequestParam Integer id) {
         try {
             if (dtId == null || "undefined".equalsIgnoreCase(dtId)||dtId.isEmpty()) {
                 return new ResponseEntity<>("Common ID is required", HttpStatus.BAD_REQUEST);
             }
             List<Mp3Data2> mp3Data2s = mp3Data2Repo.findBydtId(dtId);
             if (!mp3Data2s.isEmpty()){
-                mainDeleteService.deleteMp3SecondByDtId(dtId);
+                mainDeleteService.deleteMp3SecondSubByDtId(dtId,id);
                 return new ResponseEntity<>("MP3 deleted successfully", HttpStatus.OK);
             }
 
@@ -360,14 +358,14 @@ public class MainDeleteController {
     }
 
     @DeleteMapping(path = "/deleteMp4Second")
-    public ResponseEntity<?> deleteMp4Second(@RequestParam String dtId) {
+    public ResponseEntity<?> deleteMp4Second(@RequestParam String dtId,@RequestParam Integer id) {
         try {
             if (dtId == null || "undefined".equalsIgnoreCase(dtId)||dtId.isEmpty()) {
                 return new ResponseEntity<>("Common ID is required", HttpStatus.BAD_REQUEST);
             }
             List<Mp4Data2> mp4Data2s = mp4Data2Repo.findBydtId(dtId);
             if (!mp4Data2s.isEmpty()){
-                mainDeleteService.deleteMp4SecondByDtId(dtId);
+                mainDeleteService.deleteMp4SecondSubByDtId(dtId,id);
                 return new ResponseEntity<>("MP4 deleted successfully", HttpStatus.OK);
             }
 

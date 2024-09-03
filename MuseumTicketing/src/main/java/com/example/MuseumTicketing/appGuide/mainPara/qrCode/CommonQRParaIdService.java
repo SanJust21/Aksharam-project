@@ -170,7 +170,6 @@ public class CommonQRParaIdService {
                     combinedData1.setQrCodeImage(commonIdQR.get().getQrCodeImage());
                 }
 
-
                 List<FirstTopicEng> subParaEngs = firstTopicEngRepo.findByMainUid(mainId);
                 subParaEngs.sort(Comparator.comparing(FirstTopicEng::getId));
                 List<CombinedSubPara> combinedDataSubList = new ArrayList<>();
@@ -191,11 +190,7 @@ public class CommonQRParaIdService {
                         combinedDataSub.setFsMalId(comId.getFsMalId());
                     }
 
-                    List<PdfData>pdfDataList=pdfRepo.findByuId(mainTopicEng.getMEngUid());
-                    if (!pdfDataList.isEmpty()){
-                        pdfDataList.sort(Comparator.comparing(PdfData::getId));
-                        combinedData1.setPdfDataList(pdfDataList);
-                    }
+
 
                     // Fetching images for subpara
                     List<ImgDataFirst> subImgList = imgDataFirstRepo.findByEngId(subEng.getFsUid());
@@ -223,6 +218,12 @@ public class CommonQRParaIdService {
                 List<ImgDataMain> mainImage =imgDataMainRepo.findByEngId(mainTopicEng.getMEngUid());
                 mainImage.sort(Comparator.comparing(ImgDataMain::getId));
                 combinedData1.setImgList(mainImage);
+
+                List<PdfData>pdfDataList=pdfRepo.findByuId(mainTopicEng.getMEngUid());
+                if (!pdfDataList.isEmpty()){
+                    pdfDataList.sort(Comparator.comparing(PdfData::getId));
+                    combinedData1.setPdfDataList(pdfDataList);
+                }
 
                 // Fetching audio for mainpara
                 List<AudioMain> mainAudio = audioMainRepo.findBydtId(mainTopicEng.getMEngUid());
@@ -547,7 +548,6 @@ public class CommonQRParaIdService {
                     }
                     combinedGetAllPara.setCombinedAllSubParaList(combinedAllSubParaList);
                     combinedGetAllParaList.add(combinedGetAllPara);
-
                 } return new ResponseEntity<>(combinedGetAllParaList,HttpStatus.OK);
             }else {
                 return new ResponseEntity<>(new ArrayList<>(),HttpStatus.NOT_FOUND);

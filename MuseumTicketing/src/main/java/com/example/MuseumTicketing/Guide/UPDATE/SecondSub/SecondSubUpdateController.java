@@ -124,7 +124,8 @@ public class SecondSubUpdateController {
     @PutMapping(path = "/updateMpData2/{uId}")
     public ResponseEntity<?> addMp3DataSecond(@PathVariable String uId,
                                         @RequestParam Integer mtId,
-                                        @RequestParam MultipartFile[] files){
+                                        @RequestParam Integer id,
+                                        @RequestParam MultipartFile files){
         try {
 
             if (uId == null || mtId == null ||uId.isEmpty()||"undefined".equalsIgnoreCase(uId)) {
@@ -136,22 +137,14 @@ public class SecondSubUpdateController {
                 FileType fileType = fileTypeOptional.get();
                 String fData = fileType.getFileType();
                 if (fData != null && "Audio".equalsIgnoreCase(fData)) {
-                    List<MediaTypeDTO> responses = new ArrayList<>();
-                    for (MultipartFile file : files){
-                        responses.add(mediaTypeService.updateSecondSubUploadMp3(file,uId));
-                    }
-                    return new ResponseEntity<>(responses,HttpStatus.OK);
+                    return secondSubUpdateService.updateSecondSubAudio(files,uId,id);
                     //return mediaTypeService.addMp3(files,dtId);
                 } else if (fData != null && "Video".equalsIgnoreCase(fData)) {
                     Optional<CommonIdSs>commonIdSsOptional = commonIdSsRepo.findBySsCommonId(uId);
                     if (commonIdSsOptional.isPresent()){
                         CommonIdSs commonIdSs = commonIdSsOptional.get();
                         if (commonIdSs.getSsCommonId().equals(uId)){
-                            List<MediaTypeDTO> responses = new ArrayList<>();
-                            for (MultipartFile file : files){
-                                responses.add(mediaTypeService.updateSecondSubUploadMp4(file,uId));
-                            }
-                            return new ResponseEntity<>(responses,HttpStatus.OK);
+                            return secondSubUpdateService.updateSecondSubVideo(files,uId,id);
                         }else {
                             return new ResponseEntity<>("CommonId :"+uId+" is not correct",HttpStatus.BAD_REQUEST);
                         }

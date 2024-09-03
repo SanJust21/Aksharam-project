@@ -22,4 +22,10 @@ public interface Mp3Data1Repo extends JpaRepository<Mp3Data1,Integer> {
     List<Mp3Data1> findByMainMalId(String mainMalId);
 
     Optional<Mp3Data1> findByDtId(String dtId);
+
+    Optional<Mp3Data1> findByMainEngIdAndId(String mainEngId, Integer id);
+
+    Optional<Mp3Data1> findByMainMalIdAndId(String mainEngId, Integer id);
+
+    Optional<Mp3Data1> findByDtIdAndId(String uId, Integer id);
 }
