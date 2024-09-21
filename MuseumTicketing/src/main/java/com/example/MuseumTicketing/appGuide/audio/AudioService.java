@@ -488,7 +488,7 @@ public class AudioService {
     public ResponseEntity<?> uploadPDF(String uId, MultipartFile file) throws IOException{
         File fileObj = convertMultiPartFileToFile(file);
         String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
-        s3Service.uploadLargeFile(fileName, fileObj);
+        s3Service.uploadLargePdf(fileName, fileObj);
         fileObj.delete();
         String fileUrl = s3Service.getFileUrl(fileName);
         PdfData pdfData = new PdfData(fileName,fileUrl,uId);
@@ -516,7 +516,7 @@ public class AudioService {
         String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
         //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
         // Use the S3Service's uploadLargeFile method to upload the file
-        s3Service.uploadLargeFile(fileName, fileObj);
+        s3Service.uploadLargePdf(fileName, fileObj);
         fileObj.delete();
         //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
         // Retrieve the file URL from S3

@@ -29,6 +29,12 @@ public class Mp4Data {
     @Column(name = "malId")
     private String malId;
 
+    @Column(name = "thumbnailUrl")
+    private String thumbnailUrl;
+
+    @Column(name = "thumbnailName")
+    private String thumbnailName;
+
     public Mp4Data() {
     }
     @PrePersist

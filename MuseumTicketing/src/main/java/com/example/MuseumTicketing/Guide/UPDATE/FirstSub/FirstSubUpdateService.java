@@ -14,6 +14,7 @@ import com.example.MuseumTicketing.Guide.mpFileData.mp3.firstSub.Mp3Data1;
 import com.example.MuseumTicketing.Guide.mpFileData.mp3.firstSub.Mp3Data1Repo;
 import com.example.MuseumTicketing.Guide.mpFileData.mp4.firstSub.Mp4Data1;
 import com.example.MuseumTicketing.Guide.mpFileData.mp4.firstSub.Mp4Data1Repo;
+import com.example.MuseumTicketing.Guide.mpFileData.mp4.mainHeading.Mp4Data;
 import com.example.MuseumTicketing.Guide.util.ErrorService;
 import com.example.MuseumTicketing.Guide.util.S3Service;
 import lombok.extern.slf4j.Slf4j;
@@ -141,6 +142,28 @@ public class FirstSubUpdateService {
             mp4Data1.setFUrl(fileUrl);
             mp4Data1Repo.save(mp4Data1);
             return new ResponseEntity<>(mp4Data1+" video is updated.",HttpStatus.OK);
+        }else {
+            return new ResponseEntity<>("Id isn't valid",HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    public ResponseEntity<?> updateThumbnail(MultipartFile files, String uId, Integer id)throws IOException {
+        File fileObj = convertMultiPartFileToFile(files);
+        String fileName =System.currentTimeMillis()+"_"+files.getOriginalFilename();
+        //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        // Use the S3Service's uploadLargeFile method to upload the file
+        s3Service.uploadLargeFile(fileName, fileObj);
+        fileObj.delete();
+        //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+        // Retrieve the file URL from S3
+        String fileUrl = s3Service.getFileUrl(fileName);
+        Optional<Mp4Data1>mp4Data1Optional=mp4Data1Repo.findByDtIdAndId(uId,id);
+        if (mp4Data1Optional.isPresent()){
+            Mp4Data1 mp4Data1=mp4Data1Optional.get();
+            mp4Data1.setThumbnailName(fileName);
+            mp4Data1.setThumbnailUrl(fileUrl);
+            mp4Data1Repo.save(mp4Data1);
+            return new ResponseEntity<>(mp4Data1+" thumbnail is updated.",HttpStatus.OK);
         }else {
             return new ResponseEntity<>("Id isn't valid",HttpStatus.BAD_REQUEST);
         }

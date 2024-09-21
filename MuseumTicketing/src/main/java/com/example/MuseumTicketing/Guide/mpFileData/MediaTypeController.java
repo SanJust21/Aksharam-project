@@ -44,8 +44,9 @@ public class MediaTypeController {
 
     @PostMapping(path = "/mpData")
     public ResponseEntity<?> addMp3Data(@RequestParam String uId,
-                                                         @RequestParam Integer mtId,
-                                                         @RequestParam MultipartFile[] files){
+                                        @RequestParam Integer mtId,
+                                        @RequestParam MultipartFile[] files,
+                                        @RequestParam(required = false) MultipartFile thumbnailFile){
         try {
 
             if (uId == null || mtId == null ||uId.isEmpty()||"undefined".equalsIgnoreCase(uId)) {
@@ -64,7 +65,7 @@ public class MediaTypeController {
                     }
                     return new ResponseEntity<>(responses,HttpStatus.OK);
                 } else if (fData != null && "Video".equalsIgnoreCase(fData)) {//
-                    return mediaTypeService.uploadMp4(files,uId);
+                    return mediaTypeService.uploadMp4(files,thumbnailFile,uId);
                 }
                 //                else if (fData != null && "Pdf".equalsIgnoreCase(fData)) {
 //                    List<MediaTypeDTO> responses = new ArrayList<>();
@@ -89,7 +90,7 @@ public class MediaTypeController {
     @PostMapping(path = "/mpData1")
     public ResponseEntity<?> addMp3Data1(@RequestParam String uId,
                                                          @RequestParam Integer mtId,
-                                                         @RequestParam MultipartFile[] files){
+                                                         @RequestParam MultipartFile[] files,@RequestParam(required = false) MultipartFile thumbnailFile){
         try {
 
             if (uId == null || mtId == null ||uId.isEmpty()||"undefined".equalsIgnoreCase(uId)) {
@@ -108,7 +109,7 @@ public class MediaTypeController {
                     return new ResponseEntity<>(responses,HttpStatus.OK);
                     //return mediaTypeService.addMp3(files,dtId);
                 } else if (fData != null && "Video".equalsIgnoreCase(fData)) {
-                    return mediaTypeService.uploadMp4fs(files,uId);
+                    return mediaTypeService.uploadMp4fs(files,thumbnailFile,uId);
                 } else {
                     return new ResponseEntity<>("File not present. Resend the file.", HttpStatus.BAD_REQUEST);
                 }
@@ -125,7 +126,7 @@ public class MediaTypeController {
     @PostMapping(path = "/mpData2")
     public ResponseEntity<?> addMp3Data2(@RequestParam String uId,
                                                           @RequestParam Integer mtId,
-                                                          @RequestParam MultipartFile[] files){
+                                                          @RequestParam MultipartFile[] files,@RequestParam(required = false) MultipartFile thumbnailFile){
         try {
 
             if (uId == null || mtId == null ||uId.isEmpty()||"undefined".equalsIgnoreCase(uId)) {
@@ -143,7 +144,7 @@ public class MediaTypeController {
                     }
                     return new ResponseEntity<>(responses,HttpStatus.OK);
                 } else if (fData != null && "Video".equalsIgnoreCase(fData)) {
-                    return mediaTypeService.uploadMp4ss(files,uId);
+                    return mediaTypeService.uploadMp4ss(files,thumbnailFile,uId);
                 } else {
                     return new ResponseEntity<>("File not present. Resend the file.", HttpStatus.BAD_REQUEST);
                 }

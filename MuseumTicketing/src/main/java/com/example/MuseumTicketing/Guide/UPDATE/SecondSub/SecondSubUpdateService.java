@@ -150,4 +150,26 @@ public class SecondSubUpdateService {
             return new ResponseEntity<>("Id isn't valid",HttpStatus.BAD_REQUEST);
         }
     }
+
+    public ResponseEntity<?> updateThumbnail(MultipartFile files, String uId, Integer id)throws IOException {
+        File fileObj = convertMultiPartFileToFile(files);
+        String fileName =System.currentTimeMillis()+"_"+files.getOriginalFilename();
+        //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        // Use the S3Service's uploadLargeFile method to upload the file
+        s3Service.uploadLargeFile(fileName, fileObj);
+        fileObj.delete();
+        //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+        // Retrieve the file URL from S3
+        String fileUrl = s3Service.getFileUrl(fileName);
+        Optional<Mp4Data2>mp4Data2Optional=mp4Data2Repo.findByDtIdAndId(uId,id);
+        if (mp4Data2Optional.isPresent()){
+            Mp4Data2 mp4Data2 = mp4Data2Optional.get();
+            mp4Data2.setThumbnailName(fileName);
+            mp4Data2.setThumbnailUrl(fileUrl);
+            mp4Data2Repo.save(mp4Data2);
+            return new ResponseEntity<>(mp4Data2+" ThumbnailVideo is updated",HttpStatus.OK);
+        }else {
+            return new ResponseEntity<>("Id isn't valid",HttpStatus.BAD_REQUEST);
+        }
+    }
 }

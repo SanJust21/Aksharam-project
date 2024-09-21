@@ -402,4 +402,22 @@ public class MainDeleteController {
         //return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @DeleteMapping(path = "deleteThumbnail")
+    public ResponseEntity<?>deleteThumbnailMain(@RequestParam String commonId,@RequestParam Integer tId){
+        try {
+            Optional<Mp4Data>mp4DataOptional=mp4DataRepo.findByDtIdAndId(commonId,tId);
+            Optional<Mp4Data1>mp4Data1Optional=mp4Data1Repo.findByDtIdAndId(commonId,tId);
+            Optional<Mp4Data2>mp4Data2Optional=mp4Data2Repo.findByDtIdAndId(commonId,tId);
+            if (mp4DataOptional.isPresent()){
+                return mainDeleteService.deleteThumbnailMain(commonId,tId);
+            } else if (mp4Data1Optional.isPresent()) {
+                return mainDeleteService.deleteThumbnailFirst(commonId,tId);
+            } else if (mp4Data2Optional.isPresent()) {
+                return mainDeleteService.deleteThumbnailSecond(commonId,tId);
+            }
+            return new ResponseEntity<>("CommonId : "+commonId+" and table id : "+tId+" are not matching",HttpStatus.BAD_REQUEST);
+        }catch (Exception e){
+            return errorService.handlerException(e);
+        }
+    }
 }

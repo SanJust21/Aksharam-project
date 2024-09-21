@@ -279,7 +279,9 @@ public class MainDeleteService {
         if (mp4DataOptional.isPresent()){
             Mp4Data mp4Data = mp4DataOptional.get();
             String fileName = mp4Data.getFName();
+            String thumbnailName =mp4Data.getThumbnailName();
             deleteFileFromS3(fileName);
+            deleteFileFromS3(thumbnailName);
             mp4DataRepo.delete(mp4Data);
         }
     }
@@ -306,12 +308,16 @@ public class MainDeleteService {
         if (mp4Data1Optional.isPresent()){
             Mp4Data1 mp4Data1 = mp4Data1Optional.get();
             String fileName = mp4Data1.getFName();
+            String thumbnailName = mp4Data1.getThumbnailName();
             deleteFileFromS3(fileName);
+            deleteFileFromS3(thumbnailName);
             mp4Data1Repo.delete(mp4Data1);
         } else if (mp4Data1Optional1.isPresent()) {
             Mp4Data1 mp4Data1 = mp4Data1Optional.get();
             String fileName = mp4Data1.getFName();
+            String thumbnailName = mp4Data1.getThumbnailName();
             deleteFileFromS3(fileName);
+            deleteFileFromS3(thumbnailName);
             mp4Data1Repo.delete(mp4Data1);
         }
     }
@@ -331,7 +337,9 @@ public class MainDeleteService {
         if (mp4Data2Optional.isPresent()){
             Mp4Data2 mp4Data2 = mp4Data2Optional.get();
             String fileName= mp4Data2.getFName();
+            String thumbnailName =mp4Data2.getThumbnailName();
             deleteFileFromS3(fileName);
+            deleteFileFromS3(thumbnailName);
             mp4Data2Repo.delete(mp4Data2);
         }
     }
@@ -344,6 +352,7 @@ public class MainDeleteService {
         if (!existingMp4List.isEmpty()) {
             for (Mp4Data mp4 : existingMp4List) {
                 deleteFileFromS3(mp4.getFName());
+                deleteFileFromS3(mp4.getThumbnailName());
                 mp4DataRepo.delete(mp4);
             }
         } else {
@@ -373,6 +382,7 @@ public class MainDeleteService {
         List<Mp4Data1> existingMp4List = mp4Data1Repo.findByMainEngId(mainEngId);
         for (Mp4Data1 mp4 : existingMp4List) {
             deleteFileFromS3(mp4.getFName());
+            deleteFileFromS3(mp4.getThumbnailName());
             mp4Data1Repo.delete(mp4);
         }
     }
@@ -382,6 +392,7 @@ public class MainDeleteService {
         List<Mp4Data1> existingMp4List = mp4Data1Repo.findByMainMalId(mainMalId);
         for (Mp4Data1 mp4 : existingMp4List) {
             deleteFileFromS3(mp4.getFName());
+            deleteFileFromS3(mp4.getThumbnailName());
             mp4Data1Repo.delete(mp4);
         }
     }
@@ -400,6 +411,7 @@ public class MainDeleteService {
         List<Mp4Data2> existingMp4List = mp4Data2Repo.findBydtId(dtId);
         for (Mp4Data2 mp4 : existingMp4List) {
             deleteFileFromS3(mp4.getFName());
+            deleteFileFromS3(mp4.getThumbnailName());
             mp4Data2Repo.delete(mp4);
         }
     }
@@ -699,6 +711,37 @@ public class MainDeleteService {
         }
     }
 
+    public ResponseEntity<?> deleteThumbnailMain(String commonId, Integer tId) {
+        Optional<Mp4Data>mp4DataOptional=mp4DataRepo.findByDtIdAndId(commonId,tId);
+        if (mp4DataOptional.isPresent()){
+            Mp4Data mp4Data = mp4DataOptional.get();
+            String thumbnailName = mp4Data.getThumbnailName();
+            deleteFileFromS3(thumbnailName);
+            mp4DataRepo.delete(mp4Data);
+            return new ResponseEntity<>("Thumbnail is deleted successfully  "+thumbnailName,HttpStatus.OK);
+        }
+        return new ResponseEntity<>("Something went wrong",HttpStatus.BAD_REQUEST);
+    }
 
+    public ResponseEntity<?> deleteThumbnailFirst(String commonId, Integer tId) {
+        Optional<Mp4Data1>mp4Data1Optional=mp4Data1Repo.findByDtIdAndId(commonId,tId);
+        if (mp4Data1Optional.isPresent()){
+            Mp4Data1 mp4Data1 = mp4Data1Optional.get();
+            String thumbnailName = mp4Data1.getThumbnailName();
+            deleteFileFromS3(thumbnailName);
+            mp4Data1Repo.delete(mp4Data1);
+            return new ResponseEntity<>("Thumbnail is deleted successfully  "+thumbnailName,HttpStatus.OK);
+        }return new ResponseEntity<>("Something went wrong",HttpStatus.BAD_REQUEST);
+    }
 
+    public ResponseEntity<?> deleteThumbnailSecond(String commonId, Integer tId) {
+        Optional<Mp4Data2>mp4Data2Optional=mp4Data2Repo.findByDtIdAndId(commonId,tId);
+        if (mp4Data2Optional.isPresent()){
+            Mp4Data2 mp4Data2 = mp4Data2Optional.get();
+            String thumbnailName = mp4Data2.getThumbnailName();
+            deleteFileFromS3(thumbnailName);
+            mp4Data2Repo.delete(mp4Data2);
+            return new ResponseEntity<>("Thumbnail is deleted successfully  "+thumbnailName,HttpStatus.OK);
+        }return new ResponseEntity<>("Something went wrong",HttpStatus.BAD_REQUEST);
+    }
 }

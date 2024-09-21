@@ -6,6 +6,7 @@ import com.example.MuseumTicketing.Guide.SecondSubHeading.english.SecondSubEngli
 import com.example.MuseumTicketing.Guide.SecondSubHeading.english.SecondSubEnglishRepo;
 import com.example.MuseumTicketing.Guide.SecondSubHeading.malayalam.SecondSubMalayalam;
 import com.example.MuseumTicketing.Guide.SecondSubHeading.malayalam.SecondSubMalayalamRepo;
+import com.example.MuseumTicketing.Guide.firstSubHeading.FScommonId.CommonIdFs;
 import com.example.MuseumTicketing.Guide.mainHeading.MainDTO;
 import com.example.MuseumTicketing.Guide.mpFileData.MediaTypeDTO;
 import com.example.MuseumTicketing.Guide.mpFileData.MediaTypeService;
@@ -162,5 +163,26 @@ public class SecondSubUpdateController {
             return errorService.handlerException(e);
         }
         //return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @PutMapping(path = "/updateThumbnail")
+    public ResponseEntity<?>updateThumbNail(@RequestParam String uId,
+                                            @RequestParam Integer id,
+                                            @RequestParam MultipartFile files){
+        try {
+            Optional<CommonIdSs>commonIdSsOptional = commonIdSsRepo.findBySsCommonId(uId);
+            if (commonIdSsOptional.isPresent()){
+                CommonIdSs commonIdSs = commonIdSsOptional.get();
+                if (commonIdSs.getSsCommonId().equals(uId)){
+                    return secondSubUpdateService.updateThumbnail(files,uId,id);
+                }else {
+                    return new ResponseEntity<>("CommonId :"+uId+" is not correct",HttpStatus.BAD_REQUEST);
+                }
+            }else {
+                return new ResponseEntity<>("CommonId : "+uId+ "  is not correct.check CommonId",HttpStatus.BAD_REQUEST);
+            }
+        }catch (Exception e){
+            return errorService.handlerException(e);
+        }
     }
 }

@@ -145,6 +145,9 @@ public class FirstSubDeleteService {
                                 List<String> fileNamesToDelete = mp4Data1s.stream().map(Mp4Data1::getFName)
                                         .collect(Collectors.toList());
                                 deleteDataFromS3(fileNamesToDelete);
+                                List<String> thumbnailNamesToDelete = mp4Data1s.stream().map(Mp4Data1::getThumbnailName)
+                                        .collect(Collectors.toList());
+                                deleteDataFromS3(thumbnailNamesToDelete);
                                 mp4Data1Repo.deleteAllBydtId(commonIdFs.getFsCommonId());
                             }
 
@@ -246,6 +249,9 @@ public class FirstSubDeleteService {
                                             List<String> fileNamesToDelete = mp4Data2s.stream().map(Mp4Data2::getFName)
                                                     .collect(Collectors.toList());
                                             deleteDataFromS3(fileNamesToDelete);
+                                            List<String> thumbnailNamesToDelete = mp4Data2s.stream().map(Mp4Data2::getThumbnailName)
+                                                    .collect(Collectors.toList());
+                                            deleteDataFromS3(thumbnailNamesToDelete);
                                             mp4Data2Repo.deleteAllBydtId(commonIdSs.getSsCommonId());
                                         }
                                         String ssEngId = commonIdSs.getSsEngId();

@@ -167,4 +167,24 @@ public class MainUpdateController {
         }
         //return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @PutMapping(path = "/updateThumbnail")
+    public ResponseEntity<?>updateThumbNail(@RequestParam String uId,
+                                            @RequestParam Integer id,
+                                            @RequestParam MultipartFile files){
+        try {
+            Optional<CommonIdQRCode>commonIdQRCodeOptional = commonIdQRCodeRepo.findByCommonId(uId);
+            if (commonIdQRCodeOptional.isPresent()){
+                CommonIdQRCode commonIdQRCode = commonIdQRCodeOptional.get();
+                if (commonIdQRCode.getCommonId().equals(uId)){
+                    return mainUpdateService.updateThumbnail(files,uId,id);
+                }
+            }else {
+                return new ResponseEntity<>("CommonId : "+uId+ "  is not correct.check CommonId",HttpStatus.BAD_REQUEST);
+            }
+        }catch (Exception e){
+            return errorService.handlerException(e);
+        }
+        return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }

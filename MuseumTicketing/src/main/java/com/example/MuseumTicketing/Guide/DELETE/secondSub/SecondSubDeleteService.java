@@ -98,6 +98,9 @@ public class SecondSubDeleteService {
                     List<String> fileNamesToDelete = mp4Data2s.stream().map(Mp4Data2::getFName)
                             .collect(Collectors.toList());
                     deleteDataFromS3(fileNamesToDelete);
+                    List<String> thumbnailNamesToDelete = mp4Data2s.stream().map(Mp4Data2::getThumbnailName)
+                            .collect(Collectors.toList());
+                    deleteDataFromS3(thumbnailNamesToDelete);
                     mp4Data2Repo.deleteAllBydtId(commonIdSs.getSsCommonId());
                 }
             }

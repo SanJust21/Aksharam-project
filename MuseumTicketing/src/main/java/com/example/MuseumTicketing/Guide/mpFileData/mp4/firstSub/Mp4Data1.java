@@ -35,6 +35,12 @@ public class Mp4Data1 {
     @Column(name = "mainMalId")
     private String mainMalId;
 
+    @Column(name = "thumbnailUrl")
+    private String thumbnailUrl;
+
+    @Column(name = "thumbnailName")
+    private String thumbnailName;
+
     @PrePersist
     @PreUpdate
     public void setDefault(){

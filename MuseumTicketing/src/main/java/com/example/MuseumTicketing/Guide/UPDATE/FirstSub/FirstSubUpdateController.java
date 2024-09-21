@@ -1,5 +1,6 @@
 package com.example.MuseumTicketing.Guide.UPDATE.FirstSub;
 
+import com.example.MuseumTicketing.Guide.QR.CommonIdQRCode;
 import com.example.MuseumTicketing.Guide.firstSubHeading.FScommonId.CommonIdFs;
 import com.example.MuseumTicketing.Guide.firstSubHeading.FScommonId.FsCommonIdRepo;
 import com.example.MuseumTicketing.Guide.firstSubHeading.english.FirstSubEnglish;
@@ -174,5 +175,23 @@ public class FirstSubUpdateController {
         }
     }
 
-
+    @PutMapping(path = "/updateThumbnail")
+    public ResponseEntity<?>updateThumbNail(@RequestParam String uId,
+                                            @RequestParam Integer id,
+                                            @RequestParam MultipartFile files){
+        try {
+            Optional<CommonIdFs>commonIdFsOptional=fsCommonIdRepo.findByFsCommonId(uId);
+            if (commonIdFsOptional.isPresent()){
+                CommonIdFs commonIdFs = commonIdFsOptional.get();
+                if (commonIdFs.getFsCommonId().equals(uId)){
+                    return firstSubUpdateService.updateThumbnail(files,uId,id);
+                }
+            }else {
+                return new ResponseEntity<>("CommonId : "+uId+ "  is not correct.check CommonId",HttpStatus.BAD_REQUEST);
+            }
+        }catch (Exception e){
+            return errorService.handlerException(e);
+        }
+        return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }

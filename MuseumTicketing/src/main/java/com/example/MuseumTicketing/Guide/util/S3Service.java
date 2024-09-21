@@ -88,6 +88,61 @@ public class S3Service {
         s3Client.completeMultipartUpload(completeMultipartUploadRequest);
     }
 
+    public void uploadLargePdf(String keyName, File file) throws IOException {
+        long partSize = 5 * 1024 * 1024; // Set part size to 5 MB
+
+        // Step 1: Initialize Multipart Upload
+        CreateMultipartUploadRequest createMultipartUploadRequest = CreateMultipartUploadRequest.builder()
+                .bucket(bucketName)
+                .key(keyName)
+                .contentType("application/pdf")
+                .build();
+
+        CreateMultipartUploadResponse response = s3Client.createMultipartUpload(createMultipartUploadRequest);
+        String uploadId = response.uploadId();
+
+        // Step 2: Upload Parts
+        List<CompletedPart> completedParts = new ArrayList<>();
+        byte[] buffer = new byte[(int) partSize];
+
+        try (var fis = Files.newInputStream(file.toPath())) {
+            int bytesRead;
+            int partNumber = 1;
+
+            while ((bytesRead = fis.read(buffer)) != -1) {
+                UploadPartRequest uploadPartRequest = UploadPartRequest.builder()
+                        .bucket(bucketName)
+                        .key(keyName)
+                        .uploadId(uploadId)
+                        .partNumber(partNumber)
+                        .contentLength((long) bytesRead)
+                        .build();
+
+                //UploadPartResponse uploadPartResponse = s3Client.uploadPart(uploadPartRequest, RequestBody.fromBytes(buffer, 0, bytesRead));
+                byte[] exactBytes = Arrays.copyOfRange(buffer, 0, bytesRead);
+                UploadPartResponse uploadPartResponse = s3Client.uploadPart(uploadPartRequest, RequestBody.fromBytes(exactBytes));
+
+                completedParts.add(CompletedPart.builder()
+                        .partNumber(partNumber)
+                        .eTag(uploadPartResponse.eTag())
+                        .build());
+
+                partNumber++;
+            }
+        }
+
+        // Step 3: Complete Multipart Upload
+        CompleteMultipartUploadRequest completeMultipartUploadRequest = CompleteMultipartUploadRequest.builder()
+                .bucket(bucketName)
+                .key(keyName)
+                .uploadId(uploadId)
+                .multipartUpload(CompletedMultipartUpload.builder().parts(completedParts).build())
+                .build();
+
+        s3Client.completeMultipartUpload(completeMultipartUploadRequest);
+    }
+
+
     public String getFileUrl(String keyName) {
         return s3Client.utilities().getUrl(GetUrlRequest.builder()
                 .bucket(bucketName)
