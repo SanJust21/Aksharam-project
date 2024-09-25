@@ -333,24 +333,26 @@ public class TribalService {
         if (tribalMalayalamOptional.isPresent()){
             TribalMalayalam tribalMalayalam = tribalMalayalamOptional.get();
             tribalMalayalamRepo.delete(tribalMalayalam);
-            Optional<TribalEnglish>tribalEnglishOptional=tribalEnglishRepo.findByTribEngUid(engId);
-            if (tribalEnglishOptional.isPresent()){
-                TribalEnglish tribalEnglish = tribalEnglishOptional.get();
-                tribalEnglishRepo.save(tribalEnglish);
-            }
-            Optional<TribalVideo>tribalVideoOptional=tribalVideoRepo.findByCommonId(commonId);
-            if (tribalVideoOptional.isPresent()){
-                TribalVideo tribalVideo=tribalVideoOptional.get();
-                tribalVideoRepo.delete(tribalVideo);
-            }
-            Optional<TribalCommonId>tribalCommonIdOptional=tribalCommonIdRepo.findByCommonId(commonId);
-            if (tribalCommonIdOptional.isPresent()){
-                TribalCommonId tribalCommonId =tribalCommonIdOptional.get();
-                tribalCommonIdRepo.delete(tribalCommonId);
-            }
-            return new ResponseEntity<>("All details are Deleted. ",HttpStatus.OK);
         }
-        return new ResponseEntity<>("Data isn't deleted",HttpStatus.BAD_REQUEST);
+
+        Optional<TribalEnglish>tribalEnglishOptional=tribalEnglishRepo.findByTribEngUid(engId);
+        if (tribalEnglishOptional.isPresent()){
+            TribalEnglish tribalEnglish = tribalEnglishOptional.get();
+            tribalEnglishRepo.delete(tribalEnglish);
+        }
+
+        Optional<TribalVideo>tribalVideoOptional=tribalVideoRepo.findByCommonId(commonId);
+        if (tribalVideoOptional.isPresent()){
+            TribalVideo tribalVideo=tribalVideoOptional.get();
+            tribalVideoRepo.delete(tribalVideo);
+        }
+
+        Optional<TribalCommonId>tribalCommonIdOptional=tribalCommonIdRepo.findByCommonId(commonId);
+        if (tribalCommonIdOptional.isPresent()){
+            TribalCommonId tribalCommonId =tribalCommonIdOptional.get();
+            tribalCommonIdRepo.delete(tribalCommonId);
+        }
+        return new ResponseEntity<>("All details are Deleted. ",HttpStatus.OK);
     }
 
     public ResponseEntity<?> deleteByUniqueId(String uId) {
