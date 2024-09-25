@@ -109,14 +109,57 @@ public class MediaTypeService {
         return convertedFile;
     }
 
-    public ResponseEntity<List<MediaTypeVideoDTO>> uploadMp4(MultipartFile[] files,MultipartFile thumbNailFile, String uId) throws IOException{
+    public ResponseEntity<?> upload_Mp4(MultipartFile[] video, String commonId) throws IOException{
         List<MediaTypeVideoDTO> response = new ArrayList<>();
-        for (MultipartFile file : files){
-            MediaTypeVideoDTO mediaTypeVideoDTO = uploadMp4Main(file,thumbNailFile,uId);
+        for (MultipartFile file : video){
+            MediaTypeVideoDTO mediaTypeVideoDTO = uploadMp4_main(file,commonId);
+            response.add(mediaTypeVideoDTO);
+        }
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
+
+    private MediaTypeVideoDTO uploadMp4_main(MultipartFile file, String commonId)throws IOException {
+        File fileObj = convertMultiPartFileToFile(file);
+        String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
+        //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        // Use the S3Service's uploadLargeFile method to upload the file
+        s3Service.uploadLargeFile(fileName, fileObj);
+        fileObj.delete();
+        //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+        // Retrieve the file URL from S3
+        String fileUrl = s3Service.getFileUrl(fileName);
+        Mp4Data mp4Data= new Mp4Data(fileName,fileUrl,commonId);
+
+        Optional<CommonIdQRCode> commonIdQRCodeOptional = commonIdQRCodeRepo.findByCommonId(commonId);
+        if (commonIdQRCodeOptional.isPresent()){
+            CommonIdQRCode commonIdQRCode = commonIdQRCodeOptional.get();
+            if (commonIdQRCode.getCommonId().equals(commonId)){
+                mp4Data.setDtId(commonId);
+                mp4Data.setEngId(commonIdQRCode.getEngId());
+                mp4Data.setMalId(commonIdQRCode.getMalId());
+                mp4DataRepo.save(mp4Data);
+                return new MediaTypeVideoDTO(fileName,fileUrl,commonId,commonIdQRCode.getEngId(),commonIdQRCode.getMalId());
+            }
+        }else {
+            return new MediaTypeVideoDTO("FileName: NoData",fileUrl+"NoData","CommonId : Nodata","EnglishId:NoData","MalayalamId:NoData");
+        }
+        return new MediaTypeVideoDTO("FileName: NULL",fileUrl+"NULL","CommonId : NULL","EnglishId:NULL","MalayalamId:NULL");
+    }
+
+    public ResponseEntity<List<MediaTypeVideoDTO>> uploadMp4(MultipartFile[] files,MultipartFile[] thumbNailFile, String uId) throws IOException{
+        List<MediaTypeVideoDTO> response = new ArrayList<>();
+//        for (MultipartFile file : files){
+//            MediaTypeVideoDTO mediaTypeVideoDTO = uploadMp4Main(file,thumbNailFile,uId);
+//            response.add(mediaTypeVideoDTO);
+//        }
+        for (int i=0;i<files.length;i++){
+            MediaTypeVideoDTO mediaTypeVideoDTO = uploadMp4Main(files[i],thumbNailFile[i],uId);
             response.add(mediaTypeVideoDTO);
         }
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+
 
     public MediaTypeVideoDTO uploadMp4Main(MultipartFile file,MultipartFile thumbnailFile, String uId) throws IOException{
         try {
@@ -129,6 +172,7 @@ public class MediaTypeService {
             //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
             // Retrieve the file URL from S3
             String fileUrl = s3Service.getFileUrl(fileName);
+
             String thumbnailFileName = System.currentTimeMillis() + "_thumbnail_" + thumbnailFile.getOriginalFilename();
             File thumbnailObj = convertMultiPartFileToFile(thumbnailFile);
             s3Service.uploadLargeFile(thumbnailFileName, thumbnailObj);
@@ -212,12 +256,56 @@ public class MediaTypeService {
                 String id = "No Data";
                 mp3Data1.setMainMalId(id);
             }
-
         }
-
         mp3Data1Repo.save(mp3Data1);
         return new MediaTypeDTO(fileName,fileUrl,uId);
     }
+
+    public ResponseEntity<?> uploadFirst_Mp4(MultipartFile[] video, String commonId) throws IOException{
+        List<MediaTypeVideoDTO> response = new ArrayList<>();
+        for (MultipartFile file : video){
+            MediaTypeVideoDTO mediaTypeVideoDTO = uploadMp4_First(file,commonId);
+            response.add(mediaTypeVideoDTO);
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    private MediaTypeVideoDTO uploadMp4_First(MultipartFile file, String commonId)throws IOException {
+        File fileObj = convertMultiPartFileToFile(file);
+        String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
+        //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        // Use the S3Service's uploadLargeFile method to upload the file
+        s3Service.uploadLargeFile(fileName, fileObj);
+        fileObj.delete();
+        //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+        // Retrieve the file URL from S3
+        String fileUrl = s3Service.getFileUrl(fileName);
+        Mp4Data1 mp4Data1= new Mp4Data1(fileName,fileUrl,commonId);
+
+        Optional<CommonIdFs>commonIdFsOptional = fsCommonIdRepo.findByFsCommonId(commonId);
+        if (commonIdFsOptional.isPresent()){
+            CommonIdFs commonIdFs = commonIdFsOptional.get();
+            if (commonIdFs.getFsCommonId().equals(commonId)){
+                mp4Data1.setEngId(commonIdFs.getFsEngId());
+                mp4Data1.setMalId(commonIdFs.getFsMalId());
+                Optional<FirstSubEnglish>firstSubEnglishOptional = firstSubEnglishRepo.findByfsUid(commonIdFs.getFsEngId());
+                if (firstSubEnglishOptional.isPresent()){
+                    FirstSubEnglish firstSubEnglish = firstSubEnglishOptional.get();
+                    mp4Data1.setMainEngId(firstSubEnglish.getMainUid());
+                }
+                Optional<FirstSubMalayalam>firstSubMalayalamOptional = firstSubMalayalamRepo.findByFsUid(commonIdFs.getFsMalId());
+                if (firstSubMalayalamOptional.isPresent()){
+                    FirstSubMalayalam firstSubMalayalam= firstSubMalayalamOptional.get();
+                    mp4Data1.setMainMalId(firstSubMalayalam.getMainUid());
+                }
+            }else {
+                log.info("CommonId is not matching");
+            }
+        }
+        mp4Data1Repo.save(mp4Data1);
+        return new MediaTypeVideoDTO(fileName,fileUrl,commonId,mp4Data1.getEngId(),mp4Data1.getMalId());
+    }
+
 
     public ResponseEntity<?> uploadMp4fs(MultipartFile[] files,MultipartFile thumbnailFile, String uId) throws IOException {
         List<MediaTypeVideoDTO> response = new ArrayList<>();
@@ -290,6 +378,39 @@ public class MediaTypeService {
         return new MediaTypeDTO(fileName,fileUrl,uId);
     }
 
+    public ResponseEntity<?> uploadSecond_Mp4(MultipartFile[] video, String commonId) throws IOException{
+        List<MediaTypeVideoDTO> response = new ArrayList<>();
+        for (MultipartFile file : video){
+            MediaTypeVideoDTO mediaTypeVideoDTO = uploadMp4_Second(file,commonId);
+            response.add(mediaTypeVideoDTO);
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    private MediaTypeVideoDTO uploadMp4_Second(MultipartFile file, String commonId) throws IOException{
+        File fileObj = convertMultiPartFileToFile(file);
+        String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
+        //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+        // Use the S3Service's uploadLargeFile method to upload the file
+        s3Service.uploadLargeFile(fileName, fileObj);
+        fileObj.delete();
+        //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+        // Retrieve the file URL from S3
+        String fileUrl = s3Service.getFileUrl(fileName);
+
+        Mp4Data2 mp4Data2 = new Mp4Data2(fileName,fileUrl,commonId);
+        Optional<CommonIdSs>commonIdSsOptional = commonIdSsRepo.findBySsCommonId(commonId);
+        if (commonIdSsOptional.isPresent()){
+            CommonIdSs commonIdSs = commonIdSsOptional.get();
+            if (commonIdSs.getSsCommonId().equals(commonId)){
+                mp4Data2.setEngId(commonIdSs.getSsEngId());
+                mp4Data2.setMalId(commonIdSs.getSsMalId());
+            }
+        }
+        mp4Data2Repo.save(mp4Data2);
+        return new MediaTypeVideoDTO(fileName,fileUrl,commonId,mp4Data2.getEngId(),mp4Data2.getMalId());
+    }
+
     public ResponseEntity<?> uploadMp4ss(MultipartFile[] files,MultipartFile thumbnailFile, String uId) throws IOException{
         List<MediaTypeVideoDTO> response = new ArrayList<>();
         for (MultipartFile file : files){
@@ -333,39 +454,4 @@ public class MediaTypeService {
         return new MediaTypeVideoDTO(fileName,fileUrl,uId,mp4Data2.getEngId(),mp4Data2.getMalId(), thumbnailUrl, thumbnailFileName);
     }
 
-
-
-
-
-//    public MediaTypeDTO updateSecondSubUploadMp3(MultipartFile file, String uId) {
-//        try {
-//            File fileObj = convertMultiPartFileToFile(file);
-//            String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
-//            s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
-//            fileObj.delete();
-//            String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
-//            Mp3Data2 mp3Data2= new Mp3Data2(fileName,fileUrl,uId);
-//            mp3Data2Repo.save(mp3Data2);
-//            return new MediaTypeDTO(fileName,fileUrl,uId);
-//        }catch (Exception e){
-//            e.printStackTrace();
-//        }
-//        return new MediaTypeDTO("No Data","No Data","No Data");
-//    }
-//
-//    public MediaTypeDTO updateSecondSubUploadMp4(MultipartFile file, String uId) {
-//        try {
-//            File fileObj = convertMultiPartFileToFile(file);
-//            String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
-//            s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
-//            fileObj.delete();
-//            String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
-//            Mp4Data2 mp4Data2= new Mp4Data2(fileName,fileUrl,uId);
-//            mp4Data2Repo.save(mp4Data2);
-//            return new MediaTypeDTO(fileName,fileUrl,uId);
-//        }catch (Exception e){
-//            e.printStackTrace();
-//        }
-//        return new MediaTypeDTO("No Data","No Data","No Data");
-//    }
 }

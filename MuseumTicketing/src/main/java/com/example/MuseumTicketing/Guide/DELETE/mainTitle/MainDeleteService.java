@@ -717,7 +717,11 @@ public class MainDeleteService {
             Mp4Data mp4Data = mp4DataOptional.get();
             String thumbnailName = mp4Data.getThumbnailName();
             deleteFileFromS3(thumbnailName);
-            mp4DataRepo.delete(mp4Data);
+
+            mp4Data.setThumbnailName(null);
+            mp4Data.setThumbnailUrl(null);
+
+            mp4DataRepo.save(mp4Data);
             return new ResponseEntity<>("Thumbnail is deleted successfully  "+thumbnailName,HttpStatus.OK);
         }
         return new ResponseEntity<>("Something went wrong",HttpStatus.BAD_REQUEST);
@@ -729,7 +733,11 @@ public class MainDeleteService {
             Mp4Data1 mp4Data1 = mp4Data1Optional.get();
             String thumbnailName = mp4Data1.getThumbnailName();
             deleteFileFromS3(thumbnailName);
-            mp4Data1Repo.delete(mp4Data1);
+
+            mp4Data1.setThumbnailName(null);
+            mp4Data1.setThumbnailUrl(null);
+
+            mp4Data1Repo.save(mp4Data1);
             return new ResponseEntity<>("Thumbnail is deleted successfully  "+thumbnailName,HttpStatus.OK);
         }return new ResponseEntity<>("Something went wrong",HttpStatus.BAD_REQUEST);
     }
@@ -740,7 +748,11 @@ public class MainDeleteService {
             Mp4Data2 mp4Data2 = mp4Data2Optional.get();
             String thumbnailName = mp4Data2.getThumbnailName();
             deleteFileFromS3(thumbnailName);
-            mp4Data2Repo.delete(mp4Data2);
+
+            mp4Data2.setThumbnailUrl(null);
+            mp4Data2.setThumbnailName(null);
+
+            mp4Data2Repo.save(mp4Data2);
             return new ResponseEntity<>("Thumbnail is deleted successfully  "+thumbnailName,HttpStatus.OK);
         }return new ResponseEntity<>("Something went wrong",HttpStatus.BAD_REQUEST);
     }
