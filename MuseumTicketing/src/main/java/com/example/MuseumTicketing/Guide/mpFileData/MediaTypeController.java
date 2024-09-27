@@ -169,13 +169,13 @@ public class MediaTypeController {
                 if (thumbnailFile==null){
                     return mediaTypeService.uploadFirst_Mp4(video,commonId);
                 }else {
-                    //return mediaTypeService.uploadMp4fs(video,thumbnailFile,commonId);
+                    return mediaTypeService.uploadMp4fs(video,thumbnailFile,commonId);
                 }
             } else if (commonIdSsOptional.isPresent()) {
                 if (thumbnailFile==null){
                     return mediaTypeService.uploadSecond_Mp4(video,commonId);
                 }else {
-                    //return mediaTypeService.uploadMp4ss(video,thumbnailFile,commonId);
+                    return mediaTypeService.uploadMp4ss(video,thumbnailFile,commonId);
                 }
             }else {
                 return new ResponseEntity<>("CommonId : "+commonId+" isn't present ",HttpStatus.BAD_REQUEST);
@@ -184,6 +184,5 @@ public class MediaTypeController {
         }catch (Exception e){
             return errorService.handlerException(e);
         }
-        return new ResponseEntity<>("null",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

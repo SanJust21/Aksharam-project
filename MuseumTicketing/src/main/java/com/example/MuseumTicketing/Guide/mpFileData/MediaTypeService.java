@@ -305,19 +305,16 @@ public class MediaTypeService {
         mp4Data1Repo.save(mp4Data1);
         return new MediaTypeVideoDTO(fileName,fileUrl,commonId,mp4Data1.getEngId(),mp4Data1.getMalId());
     }
-
-
-    public ResponseEntity<?> uploadMp4fs(MultipartFile[] files,MultipartFile thumbnailFile, String uId) throws IOException {
-        List<MediaTypeVideoDTO> response = new ArrayList<>();
-        for (MultipartFile file : files){
-            MediaTypeVideoDTO mediaTypeVideoDTO = uploadMp4First(file,thumbnailFile,uId);
+    public ResponseEntity<?> uploadMp4fs(MultipartFile[] video, MultipartFile[] thumbnailFile, String commonId) throws IOException{
+        List<MediaTypeVideoDTO>response = new ArrayList<>();
+        for (int i =0;i<video.length;i++){
+            MediaTypeVideoDTO mediaTypeVideoDTO = uploadMp4First(video[i],thumbnailFile[i],commonId);
             response.add(mediaTypeVideoDTO);
         }
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(response,HttpStatus.OK);
     }
 
-
-    public MediaTypeVideoDTO uploadMp4First(MultipartFile file,MultipartFile thumbnailFile, String uId) throws IOException{
+    private MediaTypeVideoDTO uploadMp4First(MultipartFile file, MultipartFile thumbnailFile, String commonId) throws IOException{
         File fileObj = convertMultiPartFileToFile(file);
         String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
         //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
@@ -333,15 +330,15 @@ public class MediaTypeService {
         thumbnailObj.delete();
         String thumbnailUrl = s3Service.getFileUrl(thumbnailFileName);
 
-        Mp4Data1 mp4Data1 = new Mp4Data1(fileName,fileUrl,uId);
+        Mp4Data1 mp4Data1 = new Mp4Data1(fileName,fileUrl,commonId);
         mp4Data1.setThumbnailUrl(thumbnailUrl);
         mp4Data1.setThumbnailName(thumbnailFileName);
 
 
-        Optional<CommonIdFs>commonIdFsOptional = fsCommonIdRepo.findByFsCommonId(uId);
+        Optional<CommonIdFs>commonIdFsOptional = fsCommonIdRepo.findByFsCommonId(commonId);
         if (commonIdFsOptional.isPresent()){
             CommonIdFs commonIdFs = commonIdFsOptional.get();
-            if (commonIdFs.getFsCommonId().equals(uId)){
+            if (commonIdFs.getFsCommonId().equals(commonId)){
                 mp4Data1.setEngId(commonIdFs.getFsEngId());
                 mp4Data1.setMalId(commonIdFs.getFsMalId());
                 Optional<FirstSubEnglish>firstSubEnglishOptional = firstSubEnglishRepo.findByfsUid(commonIdFs.getFsEngId());
@@ -359,7 +356,7 @@ public class MediaTypeService {
             }
         }
         mp4Data1Repo.save(mp4Data1);
-        return new MediaTypeVideoDTO(fileName,fileUrl,uId,mp4Data1.getEngId(),mp4Data1.getMalId(),thumbnailUrl, thumbnailFileName);
+        return new MediaTypeVideoDTO(fileName,fileUrl,commonId,mp4Data1.getEngId(),mp4Data1.getMalId(),thumbnailUrl, thumbnailFileName);
     }
 
 
@@ -411,16 +408,16 @@ public class MediaTypeService {
         return new MediaTypeVideoDTO(fileName,fileUrl,commonId,mp4Data2.getEngId(),mp4Data2.getMalId());
     }
 
-    public ResponseEntity<?> uploadMp4ss(MultipartFile[] files,MultipartFile thumbnailFile, String uId) throws IOException{
-        List<MediaTypeVideoDTO> response = new ArrayList<>();
-        for (MultipartFile file : files){
-            MediaTypeVideoDTO mediaTypeVideoDTO = uploadMp4Second(file,thumbnailFile,uId);
+    public ResponseEntity<?> uploadMp4ss(MultipartFile[] video, MultipartFile[] thumbnailFile, String commonId) throws IOException{
+        List<MediaTypeVideoDTO>response = new ArrayList<>();
+        for (int i =0;i<video.length;i++){
+            MediaTypeVideoDTO mediaTypeVideoDTO = uploadMp4Second(video[i],thumbnailFile[i],commonId);
             response.add(mediaTypeVideoDTO);
         }
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(response,HttpStatus.OK);
     }
 
-    public MediaTypeVideoDTO uploadMp4Second(MultipartFile file,MultipartFile thumbnailFile, String uId) throws IOException{
+    private MediaTypeVideoDTO uploadMp4Second(MultipartFile file, MultipartFile thumbnailFile, String commonId) throws IOException{
         File fileObj = convertMultiPartFileToFile(file);
         String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
         //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
@@ -437,21 +434,21 @@ public class MediaTypeService {
         thumbnailObj.delete();
         String thumbnailUrl = s3Service.getFileUrl(thumbnailFileName);
 
-        Mp4Data2 mp4Data2 = new Mp4Data2(fileName,fileUrl,uId);
+        Mp4Data2 mp4Data2 = new Mp4Data2(fileName,fileUrl,commonId);
         mp4Data2.setThumbnailUrl(thumbnailUrl);
         mp4Data2.setThumbnailName(thumbnailFileName);
 
 
-        Optional<CommonIdSs>commonIdSsOptional = commonIdSsRepo.findBySsCommonId(uId);
+        Optional<CommonIdSs>commonIdSsOptional = commonIdSsRepo.findBySsCommonId(commonId);
         if (commonIdSsOptional.isPresent()){
             CommonIdSs commonIdSs = commonIdSsOptional.get();
-            if (commonIdSs.getSsCommonId().equals(uId)){
+            if (commonIdSs.getSsCommonId().equals(commonId)){
                 mp4Data2.setEngId(commonIdSs.getSsEngId());
                 mp4Data2.setMalId(commonIdSs.getSsMalId());
             }
         }
         mp4Data2Repo.save(mp4Data2);
-        return new MediaTypeVideoDTO(fileName,fileUrl,uId,mp4Data2.getEngId(),mp4Data2.getMalId(), thumbnailUrl, thumbnailFileName);
+        return new MediaTypeVideoDTO(fileName,fileUrl,commonId,mp4Data2.getEngId(),mp4Data2.getMalId(), thumbnailUrl, thumbnailFileName);
     }
 
 }
