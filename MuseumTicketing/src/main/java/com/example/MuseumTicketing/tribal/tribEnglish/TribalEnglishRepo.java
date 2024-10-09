@@ -1,5 +1,7 @@
 package com.example.MuseumTicketing.tribal.tribEnglish;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -10,5 +12,5 @@ public interface TribalEnglishRepo extends JpaRepository<TribalEnglish,Integer> 
 
     Optional<TribalEnglish> findByTitle(String title);
 
-    List<TribalEnglish> findBytribEngUid(String engId);
+    Page<TribalEnglish> findByTribEngUid(String engId, Pageable pageable);
 }

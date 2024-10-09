@@ -93,7 +93,9 @@ public class TribalController {
     }
 
     @GetMapping(path = "/getDetails")
-    public ResponseEntity<List<CombinedTribalData>>getDetailsByCommonId(@RequestParam String commonId,@RequestParam Integer dType){
+    public ResponseEntity<List<CombinedTribalData>>getDetailsByCommonId(@RequestParam String commonId,@RequestParam Integer dType,
+                                                                        @RequestParam(defaultValue = "0") int page,
+                                                                        @RequestParam(defaultValue = "10") int size){
         try{
             Optional<TribalCommonId>tribalCommonIdOptional=tribalCommonIdRepo.findByCommonId(commonId);
             if (tribalCommonIdOptional.isPresent()){
@@ -105,9 +107,9 @@ public class TribalController {
                     DataType dataType = dataTypeOptional.get();
                     String type = dataType.getTalk();
                     if ("Malayalam".equalsIgnoreCase(type)){
-                        return tribalService.getMalayalamDetails(commonId,malId);
+                        return tribalService.getMalayalamDetails(commonId,malId,page,size);
                     } else if ("English".equalsIgnoreCase(type)) {
-                        return tribalService.getEnglishDetails(commonId,engId);
+                        return tribalService.getEnglishDetails(commonId,engId,page,size);
                     }
                 }return new ResponseEntity<>(new ArrayList<>(),HttpStatus.BAD_REQUEST);
             }return new ResponseEntity<>(new ArrayList<>(),HttpStatus.BAD_REQUEST);
@@ -118,10 +120,11 @@ public class TribalController {
     }
 
     @GetMapping(path = "getDetailsByDataType")
-    public ResponseEntity<List<CombinedTribalData>>getAllDetailsByLanguage(@RequestParam Integer dType){
+    public ResponseEntity<List<CombinedTribalData>>getAllDetailsByLanguage(@RequestParam Integer dType,@RequestParam(defaultValue = "0") int page,
+                                                                           @RequestParam(defaultValue = "10") int size){
         Optional<DataType>dataTypeOptional=dataTypeRepo.findById(dType);
         if (dataTypeOptional.isPresent()){
-            return tribalService.getDetailsByLanguage(dType);
+            return tribalService.getDetailsByLanguage(dType,page,size);
         }return new ResponseEntity<>(new ArrayList<>(),HttpStatus.BAD_REQUEST);
     }
 
