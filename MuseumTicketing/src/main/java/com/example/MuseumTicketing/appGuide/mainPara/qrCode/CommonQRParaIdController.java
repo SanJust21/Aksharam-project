@@ -1,8 +1,6 @@
 package com.example.MuseumTicketing.appGuide.mainPara.qrCode;
 
-import com.example.MuseumTicketing.Guide.Language.DataType;
-import com.example.MuseumTicketing.Guide.QR.CommonIdQRCode;
-import com.example.MuseumTicketing.Guide.QR.QRCodeResponse;
+import com.example.MuseumTicketing.localServer.Digital.QR.QRCodeResponse;
 import com.example.MuseumTicketing.Guide.util.ErrorResponse;
 import com.example.MuseumTicketing.Guide.util.ErrorService;
 import com.example.MuseumTicketing.appGuide.mainPara.CombinedPara;
@@ -10,9 +8,7 @@ import com.example.MuseumTicketing.appGuide.mainPara.qrCode.mobileReg.MobileReg;
 import com.example.MuseumTicketing.appGuide.mainPara.qrCode.mobileReg.MobileRegRepo;
 import com.google.zxing.WriterException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

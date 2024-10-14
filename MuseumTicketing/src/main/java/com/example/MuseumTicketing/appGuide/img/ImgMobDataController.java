@@ -1,7 +1,5 @@
 package com.example.MuseumTicketing.appGuide.img;
 
-import com.example.MuseumTicketing.Guide.QR.CommonIdQRCode;
-import com.example.MuseumTicketing.Guide.img.mainHeading.ImgData;
 import com.example.MuseumTicketing.Guide.util.ErrorService;
 import com.example.MuseumTicketing.appGuide.img.first.ImgDataFirstRepo;
 import com.example.MuseumTicketing.appGuide.img.main.ImgDataMainRepo;
@@ -11,10 +9,6 @@ import com.example.MuseumTicketing.appGuide.mainPara.qrCode.first.SubComId;
 import com.example.MuseumTicketing.appGuide.mainPara.qrCode.first.SubComIdRepo;
 import com.example.MuseumTicketing.appGuide.img.first.ImgDataFirst;
 import com.example.MuseumTicketing.appGuide.img.main.ImgDataMain;
-import com.example.MuseumTicketing.appGuide.mainPara.qrCode.CommonQRParaId;
-import com.example.MuseumTicketing.appGuide.mainPara.qrCode.CommonQRParaIdRepo;
-import com.example.MuseumTicketing.appGuide.mainPara.qrCode.first.SubComId;
-import com.example.MuseumTicketing.appGuide.mainPara.qrCode.first.SubComIdRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

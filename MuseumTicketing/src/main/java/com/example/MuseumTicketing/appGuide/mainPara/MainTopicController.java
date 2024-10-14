@@ -2,8 +2,6 @@ package com.example.MuseumTicketing.appGuide.mainPara;
 
 import com.example.MuseumTicketing.Guide.Language.DataType;
 import com.example.MuseumTicketing.Guide.Language.DataTypeRepo;
-import com.example.MuseumTicketing.Guide.firstSubHeading.english.FirstSubEnglish;
-import com.example.MuseumTicketing.Guide.firstSubHeading.english.FirstSubEnglishRepo;
 import com.example.MuseumTicketing.Guide.util.ErrorService;
 import com.example.MuseumTicketing.appGuide.mainPara.first.FirstTopicEng;
 import com.example.MuseumTicketing.appGuide.mainPara.first.FirstTopicEngRepo;

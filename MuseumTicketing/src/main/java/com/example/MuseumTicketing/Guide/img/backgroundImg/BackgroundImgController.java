@@ -1,16 +1,12 @@
 package com.example.MuseumTicketing.Guide.img.backgroundImg;
 
 import com.amazonaws.services.s3.model.AmazonS3Exception;
-import com.example.MuseumTicketing.Guide.SecondSubHeading.commonId.CommonIdSs;
-import com.example.MuseumTicketing.Guide.SecondSubHeading.commonId.CommonIdSsRepo;
-import com.example.MuseumTicketing.Guide.firstSubHeading.FScommonId.CommonIdFs;
-import com.example.MuseumTicketing.Guide.firstSubHeading.FScommonId.FsCommonIdRepo;
-import com.example.MuseumTicketing.Guide.QR.CommonIdQRCode;
-import com.example.MuseumTicketing.Guide.QR.CommonIdQRCodeRepo;
-import com.example.MuseumTicketing.Guide.SecondSubHeading.commonId.CommonIdSs;
-import com.example.MuseumTicketing.Guide.SecondSubHeading.commonId.CommonIdSsRepo;
-import com.example.MuseumTicketing.Guide.firstSubHeading.FScommonId.CommonIdFs;
-import com.example.MuseumTicketing.Guide.firstSubHeading.FScommonId.FsCommonIdRepo;
+import com.example.MuseumTicketing.localServer.Digital.SecondSubHeading.commonId.CommonIdSs;
+import com.example.MuseumTicketing.localServer.Digital.SecondSubHeading.commonId.CommonIdSsRepo;
+import com.example.MuseumTicketing.localServer.Digital.firstSubHeading.FScommonId.CommonIdFs;
+import com.example.MuseumTicketing.localServer.Digital.firstSubHeading.FScommonId.FsCommonIdRepo;
+import com.example.MuseumTicketing.localServer.Digital.QR.CommonIdQRCode;
+import com.example.MuseumTicketing.localServer.Digital.QR.CommonIdQRCodeRepo;
 import com.example.MuseumTicketing.Guide.util.ErrorResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

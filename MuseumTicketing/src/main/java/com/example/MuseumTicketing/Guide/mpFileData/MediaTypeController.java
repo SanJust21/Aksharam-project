@@ -1,16 +1,15 @@
 package com.example.MuseumTicketing.Guide.mpFileData;
 
-import com.example.MuseumTicketing.Guide.QR.CommonIdQRCode;
-import com.example.MuseumTicketing.Guide.QR.CommonIdQRCodeRepo;
-import com.example.MuseumTicketing.Guide.SecondSubHeading.commonId.CommonIdSs;
-import com.example.MuseumTicketing.Guide.SecondSubHeading.commonId.CommonIdSsRepo;
-import com.example.MuseumTicketing.Guide.firstSubHeading.FScommonId.CommonIdFs;
-import com.example.MuseumTicketing.Guide.firstSubHeading.FScommonId.FsCommonIdRepo;
+import com.example.MuseumTicketing.localServer.Digital.QR.CommonIdQRCode;
+import com.example.MuseumTicketing.localServer.Digital.QR.CommonIdQRCodeRepo;
+import com.example.MuseumTicketing.localServer.Digital.SecondSubHeading.commonId.CommonIdSs;
+import com.example.MuseumTicketing.localServer.Digital.SecondSubHeading.commonId.CommonIdSsRepo;
+import com.example.MuseumTicketing.localServer.Digital.firstSubHeading.FScommonId.CommonIdFs;
+import com.example.MuseumTicketing.localServer.Digital.firstSubHeading.FScommonId.FsCommonIdRepo;
 import com.example.MuseumTicketing.Guide.util.ErrorService;
 import com.example.MuseumTicketing.appGuide.audio.AudioService;
 import com.example.MuseumTicketing.Guide.mpType.FileType;
 import com.example.MuseumTicketing.Guide.mpType.FileTypeRepo;
-import com.example.MuseumTicketing.appGuide.audio.AudioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
