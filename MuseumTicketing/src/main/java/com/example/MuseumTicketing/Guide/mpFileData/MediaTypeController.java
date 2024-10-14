@@ -7,7 +7,6 @@ import com.example.MuseumTicketing.localServer.Digital.SecondSubHeading.commonId
 import com.example.MuseumTicketing.localServer.Digital.firstSubHeading.FScommonId.CommonIdFs;
 import com.example.MuseumTicketing.localServer.Digital.firstSubHeading.FScommonId.FsCommonIdRepo;
 import com.example.MuseumTicketing.Guide.util.ErrorService;
-import com.example.MuseumTicketing.appGuide.audio.AudioService;
 import com.example.MuseumTicketing.Guide.mpType.FileType;
 import com.example.MuseumTicketing.Guide.mpType.FileTypeRepo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,8 +23,7 @@ import java.util.Optional;
 @RequestMapping(path = "/api/mediaData")
 @CrossOrigin
 public class MediaTypeController {
-    @Autowired
-    private AudioService audioService;
+
     @Autowired
     private MediaTypeService mediaTypeService;
     @Autowired
