@@ -1,15 +1,12 @@
 package com.example.MuseumTicketing.Controller.AdminScanner;
 
-import com.example.MuseumTicketing.DTO.AdminScanner.*;
 import com.example.MuseumTicketing.DTO.AdminScanner.CustomResponse;
 import com.example.MuseumTicketing.DTO.AdminScanner.SignUpRequest;
 import com.example.MuseumTicketing.DTO.AdminScanner.UpdateRoleRequest;
 import com.example.MuseumTicketing.DTO.AdminScanner.UpdateScannerPasswordRequest;
-import com.example.MuseumTicketing.DTO.PriceRequest;
 import com.example.MuseumTicketing.Model.Role;
 import com.example.MuseumTicketing.Model.Users;
 import com.example.MuseumTicketing.Service.AdminScanner.AuthenticationService;
-import com.example.MuseumTicketing.Service.BasePrice.PriceRequestService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +28,7 @@ public class AdminController {
 
     private final AuthenticationService authenticationService;
 
-    private final PriceRequestService priceRequestService;
+
 
     //@CrossOrigin(origins = AppConfig.BASE_URL)
     @GetMapping
@@ -158,49 +155,49 @@ public class AdminController {
         return ResponseEntity.ok(message);
     }
    // @CrossOrigin(origins = AppConfig.BASE_URL)
-    @PostMapping("/addPrice")
-    public ResponseEntity<?> addPrice(@RequestBody PriceRequest priceRequest) {
-        try {
-            PriceRequest addedPrice = priceRequestService.addPrice(priceRequest);
-            return ResponseEntity.ok(addedPrice);
-        } catch (IllegalArgumentException e) {
-            CustomResponse customResponse = new CustomResponse("Price with the same type and category already exists", HttpStatus.BAD_REQUEST.value());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(customResponse);
-        }
-    }
-
-    //@CrossOrigin(origins = AppConfig.BASE_URL)
-    @DeleteMapping("/deletePrice/{id}")
-    public ResponseEntity<?> deletePrice(@PathVariable Integer id) {
-        try {
-            priceRequestService.deletePriceById(id);
-            return ResponseEntity.ok().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new CustomResponse(e.getMessage(), HttpStatus.NOT_FOUND.value()));
-        }
-    }
-
-    //@CrossOrigin(origins = AppConfig.BASE_URL)
-    @PutMapping("/updatePrice/{id}")
-    public ResponseEntity<?> updatePrice(@PathVariable Integer id, @RequestBody PriceRequest priceRequest) {
-        try {
-            PriceRequest updatedPrice = priceRequestService.updatePrice(id, priceRequest);
-            return ResponseEntity.ok(updatedPrice);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new CustomResponse(e.getMessage(), HttpStatus.NOT_FOUND.value()));
-        }
-    }
-
-    @PostMapping("/deletePrice")
-    public void deletePrice(@RequestParam("type") String type, @RequestParam("category") String category) {
-        priceRequestService.deletePriceByTypeAndCategory(type, category);
-    }
-
-    @PutMapping("/updatePrice")
-    public PriceRequest updatePrice(@RequestParam("type") String type, @RequestParam("category") String category, @RequestBody PriceRequest priceRequest) {
-        return priceRequestService.updatePriceByTypeAndCategory(type, category, priceRequest);
-    }
+//    @PostMapping("/addPrice")
+//    public ResponseEntity<?> addPrice(@RequestBody PriceRequest priceRequest) {
+//        try {
+//            PriceRequest addedPrice = priceRequestService.addPrice(priceRequest);
+//            return ResponseEntity.ok(addedPrice);
+//        } catch (IllegalArgumentException e) {
+//            CustomResponse customResponse = new CustomResponse("Price with the same type and category already exists", HttpStatus.BAD_REQUEST.value());
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(customResponse);
+//        }
+//    }
+//
+//    //@CrossOrigin(origins = AppConfig.BASE_URL)
+//    @DeleteMapping("/deletePrice/{id}")
+//    public ResponseEntity<?> deletePrice(@PathVariable Integer id) {
+//        try {
+//            priceRequestService.deletePriceById(id);
+//            return ResponseEntity.ok().build();
+//        } catch (IllegalArgumentException e) {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+//                    .body(new CustomResponse(e.getMessage(), HttpStatus.NOT_FOUND.value()));
+//        }
+//    }
+//
+//    //@CrossOrigin(origins = AppConfig.BASE_URL)
+//    @PutMapping("/updatePrice/{id}")
+//    public ResponseEntity<?> updatePrice(@PathVariable Integer id, @RequestBody PriceRequest priceRequest) {
+//        try {
+//            PriceRequest updatedPrice = priceRequestService.updatePrice(id, priceRequest);
+//            return ResponseEntity.ok(updatedPrice);
+//        } catch (IllegalArgumentException e) {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+//                    .body(new CustomResponse(e.getMessage(), HttpStatus.NOT_FOUND.value()));
+//        }
+//    }
+//
+//    @PostMapping("/deletePrice")
+//    public void deletePrice(@RequestParam("type") String type, @RequestParam("category") String category) {
+//        priceRequestService.deletePriceByTypeAndCategory(type, category);
+//    }
+//
+//    @PutMapping("/updatePrice")
+//    public PriceRequest updatePrice(@RequestParam("type") String type, @RequestParam("category") String category, @RequestBody PriceRequest priceRequest) {
+//        return priceRequestService.updatePriceByTypeAndCategory(type, category, priceRequest);
+//    }
 
 }

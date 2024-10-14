@@ -7,9 +7,6 @@ import com.example.MuseumTicketing.DTO.AdminScanner.SignInRequest;
 import com.example.MuseumTicketing.DTO.AdminScanner.SignUpRequest;
 import com.example.MuseumTicketing.Model.*;
 import com.example.MuseumTicketing.Repo.UsersRepo;
-import com.example.MuseumTicketing.Service.Details.ForeignerDetailsService;
-import com.example.MuseumTicketing.Service.Details.InstitutionDetailsService;
-import com.example.MuseumTicketing.Service.Details.PublicDetailsService;
 import com.example.MuseumTicketing.Service.Jwt.JwtService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -41,12 +38,6 @@ public class AuthenticationServiceImpl implements AuthenticationService{
     private final AuthenticationManager authenticationManager;
 
     private final JwtService jwtService;
-
-    private final PublicDetailsService publicDetailsService;
-
-    private final InstitutionDetailsService institutionDetailsService;
-
-    private final ForeignerDetailsService foreignerDetailsService;
 
     private final String FOLDER_PATH = "C:/Users/azhym/Desktop/Museum Employees/";
 
@@ -123,24 +114,6 @@ public class AuthenticationServiceImpl implements AuthenticationService{
     private String generateRandomPassword() {
         // Generate a random alphanumeric password with a length of 8 characters
         return RandomStringUtils.randomAlphanumeric(8);
-    }
-
-    public List<Object> getAllTickets() {
-        List<Object> allTickets = new ArrayList<>();
-
-        // Retrieve public details and add to the list
-        List<PublicDetails> publicDetails = publicDetailsService.getAllPublicDetails();
-        allTickets.addAll(publicDetails);
-
-        // Retrieve institution details and add to the list
-        List<InstitutionDetails> institutionDetails = institutionDetailsService.getAllInstitutionDetails();
-        allTickets.addAll(institutionDetails);
-
-        // Retrieve foreigner details and add to the list
-        List<ForeignerDetails> foreignerDetails = foreignerDetailsService.getAllForeignerDetails();
-        allTickets.addAll(foreignerDetails);
-
-        return allTickets;
     }
 
 
@@ -269,6 +242,11 @@ public class AuthenticationServiceImpl implements AuthenticationService{
             return imageBytes;
         }
         return null;
+    }
+
+    @Override
+    public List<Object> getAllTickets() {
+        return List.of();
     }
 
 
