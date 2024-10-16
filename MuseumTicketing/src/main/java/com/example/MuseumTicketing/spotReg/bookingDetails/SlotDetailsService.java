@@ -88,6 +88,8 @@ public class SlotDetailsService {
                             for (SpotSlot slot : spotSlotList){
                                 if (now.isAfter(slot.getSlotStartTime()) && now.isBefore(slot.getSlotEndTime())){
                                     bookingDetails.setSlotId(slot.getId());
+                                    bookingDetails.setSlotStartTime(slot.getSlotStartTime());
+                                    bookingDetails.setSlotEndTime(slot.getSlotEndTime());
                                     bookingDetails.setTotalCapacity(slot.getTotalCapacity());
                                     bookingDetails.setPresentStatus(slot.getStatus());
                                     bookingDetails.setPresentCapacity(slot.getTotalCapacity());
@@ -135,6 +137,8 @@ public class SlotDetailsService {
             for (SpotSlot spotSlot : spotSlotList){
                 if (now.isAfter(spotSlot.getSlotStartTime()) && now.isBefore(spotSlot.getSlotEndTime())){
                     bookingDetails.setSlotId(spotSlot.getId());
+                    bookingDetails.setSlotStartTime(spotSlot.getSlotStartTime());
+                    bookingDetails.setSlotEndTime(spotSlot.getSlotEndTime());
                     bookingDetails.setTotalCapacity(spotSlot.getTotalCapacity());
                     bookingDetails.setPresentCapacity(spotSlot.getTotalCapacity());
                     bookingDetails.setPresentStatus(spotSlot.getStatus());

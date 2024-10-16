@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Data
 @Entity
@@ -19,6 +20,12 @@ public class BookingDetails {
 
     @Column(name = "slotId")
     private Integer slotId;
+
+    @Column(name = "slotStartTime")
+    private LocalTime slotStartTime;
+
+    @Column(name = "slotEndTime")
+    private LocalTime slotEndTime;
 
     @Column(name = "presentCapacity")
     private Integer presentCapacity;
