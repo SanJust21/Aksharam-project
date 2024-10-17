@@ -37,11 +37,11 @@ public class QRCodeGenerateService {
     @Autowired
     private AlphaNumeric alphaNumeric;
 
-    @Autowired
-    private AmazonS3 s3Client;
-
-    @Value("${aws.s3.bucketName}")
-    private String bucketName;
+//    @Autowired
+//    private AmazonS3 s3Client;
+//
+//    @Value("${aws.s3.bucketName}")
+//    private String bucketName;
 
     private File convertBytesToFile(byte[] bytes, String fileName) throws IOException {
         File file = new File(fileName);
@@ -92,43 +92,43 @@ public class QRCodeGenerateService {
 //
 //    }
 
-    public byte[] generateQRCodeAndSave(String mMalUid, String mEngUid) throws WriterException, IOException {
-        MainTitleMal mainTitleMal = mainTitleMalRepo.findBymMalUid(mMalUid).orElse(null);
-        Optional<MainTitleEng> mainTitleEng = Optional.ofNullable(mainTitleEngRepo.findBymEngUid(mEngUid));
-
-        if (mainTitleMal == null || mainTitleEng == null) {
-            throw new IllegalArgumentException("Data not found!");
-        }
-
-        String commonId = alphaNumeric.generateRandomNumber();
-        String qrContent = "CommonId: " + commonId;
-
-        QRCodeWriter qrCodeWriter = new QRCodeWriter();
-        BitMatrix bitMatrix = qrCodeWriter.encode(qrContent, BarcodeFormat.QR_CODE, 250, 250);
-
-        ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
-        MatrixToImageWriter.writeToStream(bitMatrix, "PNG", pngOutputStream);
-        byte[] qrCode = pngOutputStream.toByteArray();
-
-        String fileName = "qr_" + commonId + ".png";
-        File qrCodeFile = convertBytesToFile(qrCode, fileName);
-        s3Client.putObject(new PutObjectRequest(bucketName, fileName, qrCodeFile));
-        qrCodeFile.delete();
-        String fileUrl = s3Client.getUrl(bucketName, fileName).toString();
-
-        CommonIdQRCode commonIdQRCode = new CommonIdQRCode();
-        commonIdQRCode.setCommonId(commonId);
-        commonIdQRCode.setMalId(mMalUid);
-        commonIdQRCode.setEngId(mEngUid);
-        commonIdQRCode.setFName(fileName);
-        commonIdQRCode.setQrCodeUrl(fileUrl);
-        commonIdQRCode.setQrCodeImage(qrCode);
-
-
-        commonIdQRCodeRepo.save(commonIdQRCode);
-
-        return qrCode;
-    }
+//    public byte[] generateQRCodeAndSave(String mMalUid, String mEngUid) throws WriterException, IOException {
+//        MainTitleMal mainTitleMal = mainTitleMalRepo.findBymMalUid(mMalUid).orElse(null);
+//        Optional<MainTitleEng> mainTitleEng = Optional.ofNullable(mainTitleEngRepo.findBymEngUid(mEngUid));
+//
+//        if (mainTitleMal == null || mainTitleEng == null) {
+//            throw new IllegalArgumentException("Data not found!");
+//        }
+//
+//        String commonId = alphaNumeric.generateRandomNumber();
+//        String qrContent = "CommonId: " + commonId;
+//
+//        QRCodeWriter qrCodeWriter = new QRCodeWriter();
+//        BitMatrix bitMatrix = qrCodeWriter.encode(qrContent, BarcodeFormat.QR_CODE, 250, 250);
+//
+//        ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
+//        MatrixToImageWriter.writeToStream(bitMatrix, "PNG", pngOutputStream);
+//        byte[] qrCode = pngOutputStream.toByteArray();
+//
+//        String fileName = "qr_" + commonId + ".png";
+//        File qrCodeFile = convertBytesToFile(qrCode, fileName);
+//        s3Client.putObject(new PutObjectRequest(bucketName, fileName, qrCodeFile));
+//        qrCodeFile.delete();
+//        String fileUrl = s3Client.getUrl(bucketName, fileName).toString();
+//
+//        CommonIdQRCode commonIdQRCode = new CommonIdQRCode();
+//        commonIdQRCode.setCommonId(commonId);
+//        commonIdQRCode.setMalId(mMalUid);
+//        commonIdQRCode.setEngId(mEngUid);
+//        commonIdQRCode.setFName(fileName);
+//        commonIdQRCode.setQrCodeUrl(fileUrl);
+//        commonIdQRCode.setQrCodeImage(qrCode);
+//
+//
+//        commonIdQRCodeRepo.save(commonIdQRCode);
+//
+//        return qrCode;
+//    }
 
 
     public String getCommonId(String mMalUid, String mEngUid) {

@@ -55,10 +55,10 @@ public class TribalService {
     private TribalVideoRepo tribalVideoRepo;
     @Autowired
     private DataTypeRepo dataTypeRepo;
-    @Value("${aws.s3.bucketName}")
-    private String bucketName;
-    @Autowired
-    private AmazonS3 s3Client;
+//    @Value("${aws.s3.bucketName}")
+//    private String bucketName;
+//    @Autowired
+//    private AmazonS3 s3Client;
 
 
     public ResponseEntity<?> addTribalMalayalamData(TribalDto tribalDto) {
@@ -106,37 +106,37 @@ public class TribalService {
         }
     }
 
-    private File convertMultiPartFileToFile(MultipartFile file){
-        File convertedFile = new File(file.getOriginalFilename());
-        try(FileOutputStream fos = new FileOutputStream(convertedFile)) {
-            fos.write(file.getBytes());
-        }catch (Exception e){
-            log.error("Error converting multipartFile to file",e);
-        }
-        return convertedFile;
-    }
-
-    public ResponseEntity<?> uploadVideo(String malId, String engId, String commonId, MultipartFile[] file) throws IOException{
-        List<TribalVideoDto> response = new ArrayList<>();
-        for (MultipartFile files : file){
-            TribalVideoDto tribalVideoDto = uploadTribalVideo(files,commonId,malId,engId);
-            response.add(tribalVideoDto);
-        }
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-
-    private TribalVideoDto uploadTribalVideo(MultipartFile files, String commonId, String malId, String engId) throws IOException{
-        File fileObj = convertMultiPartFileToFile(files);
-        String fileName =System.currentTimeMillis()+"_"+files.getOriginalFilename();
-        s3Service.uploadLargeFile(fileName, fileObj);
-        fileObj.delete();
-        String fileUrl = s3Service.getFileUrl(fileName);
-        TribalVideo tribalVideo = new TribalVideo(fileName,fileUrl,commonId);
-        tribalVideo.setEnglishId(engId);
-        tribalVideo.setMalayalamId(malId);
-        tribalVideoRepo.save(tribalVideo);
-        return new TribalVideoDto(fileName,fileUrl,commonId,malId,engId);
-    }
+//    private File convertMultiPartFileToFile(MultipartFile file){
+//        File convertedFile = new File(file.getOriginalFilename());
+//        try(FileOutputStream fos = new FileOutputStream(convertedFile)) {
+//            fos.write(file.getBytes());
+//        }catch (Exception e){
+//            log.error("Error converting multipartFile to file",e);
+//        }
+//        return convertedFile;
+//    }
+//
+//    public ResponseEntity<?> uploadVideo(String malId, String engId, String commonId, MultipartFile[] file) throws IOException{
+//        List<TribalVideoDto> response = new ArrayList<>();
+//        for (MultipartFile files : file){
+//            TribalVideoDto tribalVideoDto = uploadTribalVideo(files,commonId,malId,engId);
+//            response.add(tribalVideoDto);
+//        }
+//        return new ResponseEntity<>(response, HttpStatus.OK);
+//    }
+//
+//    private TribalVideoDto uploadTribalVideo(MultipartFile files, String commonId, String malId, String engId) throws IOException{
+//        File fileObj = convertMultiPartFileToFile(files);
+//        String fileName =System.currentTimeMillis()+"_"+files.getOriginalFilename();
+//        s3Service.uploadLargeFile(fileName, fileObj);
+//        fileObj.delete();
+//        String fileUrl = s3Service.getFileUrl(fileName);
+//        TribalVideo tribalVideo = new TribalVideo(fileName,fileUrl,commonId);
+//        tribalVideo.setEnglishId(engId);
+//        tribalVideo.setMalayalamId(malId);
+//        tribalVideoRepo.save(tribalVideo);
+//        return new TribalVideoDto(fileName,fileUrl,commonId,malId,engId);
+//    }
 
     public ResponseEntity<List<CombinedTribalData>> getMalayalamDetails(String commonId, String malId,int page,int size) {
         List<CombinedTribalData>combinedTribalDataList=new ArrayList<>();
@@ -317,23 +317,23 @@ public class TribalService {
         return new ResponseEntity<>("UniqueId isn't valid",HttpStatus.NOT_FOUND);
     }
 
-    public TribalVideo updateTribalVideo(String commonId, Integer tId, MultipartFile file) throws IOException{
-        File fileObj = convertMultiPartFileToFile(file);
-        String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
-        s3Service.uploadLargeFile(fileName, fileObj);
-        fileObj.delete();
-        String fileUrl = s3Service.getFileUrl(fileName);
-        Optional<TribalVideo>tribalVideoOptional=tribalVideoRepo.findByCommonIdAndId(commonId,tId);
-        if (tribalVideoOptional.isPresent()){
-            TribalVideo tribalVideo = tribalVideoOptional.get();
-            tribalVideo.setFileUrl(fileUrl);
-            tribalVideo.setFileName(fileName);
-            tribalVideoRepo.save(tribalVideo);
-            return tribalVideo;
-        }else {
-            return null;
-        }
-    }
+//    public TribalVideo updateTribalVideo(String commonId, Integer tId, MultipartFile file) throws IOException{
+//        File fileObj = convertMultiPartFileToFile(file);
+//        String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
+//        s3Service.uploadLargeFile(fileName, fileObj);
+//        fileObj.delete();
+//        String fileUrl = s3Service.getFileUrl(fileName);
+//        Optional<TribalVideo>tribalVideoOptional=tribalVideoRepo.findByCommonIdAndId(commonId,tId);
+//        if (tribalVideoOptional.isPresent()){
+//            TribalVideo tribalVideo = tribalVideoOptional.get();
+//            tribalVideo.setFileUrl(fileUrl);
+//            tribalVideo.setFileName(fileName);
+//            tribalVideoRepo.save(tribalVideo);
+//            return tribalVideo;
+//        }else {
+//            return null;
+//        }
+//    }
 
     @Transactional
     public ResponseEntity<?> deleteDataByCommonId(String commonId, String malId, String engId) {
@@ -378,26 +378,26 @@ public class TribalService {
         return new ResponseEntity<>("Id isn't present",HttpStatus.BAD_REQUEST);
     }
 
-    public void deleteFileFromS3(String fileName) {
-        try {
-            s3Client.deleteObject(new DeleteObjectRequest(bucketName, fileName));
-        } catch (AmazonServiceException e) {
-            // Handle Amazon Service Exception
-            e.printStackTrace();
-        } catch (SdkClientException e) {
-            // Handle SDK Client Exception
-            e.printStackTrace();
-        }
-    }
+//    public void deleteFileFromS3(String fileName) {
+//        try {
+//            s3Client.deleteObject(new DeleteObjectRequest(bucketName, fileName));
+//        } catch (AmazonServiceException e) {
+//            // Handle Amazon Service Exception
+//            e.printStackTrace();
+//        } catch (SdkClientException e) {
+//            // Handle SDK Client Exception
+//            e.printStackTrace();
+//        }
+//    }
 
-    public ResponseEntity<?> deleteVideo(String commonId, Integer tId) {
-        Optional<TribalVideo>tribalVideoOptional=tribalVideoRepo.findByCommonIdAndId(commonId,tId);
-        if (tribalVideoOptional.isPresent()){
-            TribalVideo tribalVideo = tribalVideoOptional.get();
-            String fileName = tribalVideo.getFileName();
-            deleteFileFromS3(fileName);
-            tribalVideoRepo.delete(tribalVideo);
-            return new ResponseEntity<>("Video is deleted successfully",HttpStatus.OK);
-        }return new ResponseEntity<>("Video isn't deleted",HttpStatus.BAD_REQUEST);
-    }
+//    public ResponseEntity<?> deleteVideo(String commonId, Integer tId) {
+//        Optional<TribalVideo>tribalVideoOptional=tribalVideoRepo.findByCommonIdAndId(commonId,tId);
+//        if (tribalVideoOptional.isPresent()){
+//            TribalVideo tribalVideo = tribalVideoOptional.get();
+//            String fileName = tribalVideo.getFileName();
+//            deleteFileFromS3(fileName);
+//            tribalVideoRepo.delete(tribalVideo);
+//            return new ResponseEntity<>("Video is deleted successfully",HttpStatus.OK);
+//        }return new ResponseEntity<>("Video isn't deleted",HttpStatus.BAD_REQUEST);
+//    }
 }

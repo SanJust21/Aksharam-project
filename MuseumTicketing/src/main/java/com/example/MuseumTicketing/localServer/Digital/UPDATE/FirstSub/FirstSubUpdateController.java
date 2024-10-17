@@ -89,97 +89,97 @@ public class FirstSubUpdateController {
         return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @PutMapping(path = "/updateUploadImgSubFirst")
-    public ResponseEntity<?> updateJpgSubFirst(
-            @RequestParam(value = "files") MultipartFile[] files,
-            @RequestParam List<Integer> imgIds,
-            @RequestParam String commonId) {
-
-        try {
-            if (commonId == null || imgIds.isEmpty() || files.length != imgIds.size()||"undefined".equalsIgnoreCase(commonId)) {
-                return new ResponseEntity<>("Common ID, image IDs, and files are required, and the number of files must match the number of image IDs", HttpStatus.BAD_REQUEST);
-            } else {
-                List<ImgSubFirst> existingImgDataList = imgSubFirstRepo.findByCommonId(commonId);
-                if (!existingImgDataList.isEmpty()) {
-                    List<ImgSubFirst> responses = new ArrayList<>();
-                    for (int i = 0; i < files.length; i++) {
-                        responses.add(imgService.updateFirstSubJPG(files[i], imgIds.get(i), commonId));
-                    }
-                    return new ResponseEntity<>(responses, HttpStatus.OK);
-                } else {
-                    return new ResponseEntity<>("No image data found for the provided Common ID", HttpStatus.BAD_REQUEST);
-                }
-            }
-        } catch (Exception e) {
-//            e.printStackTrace();
-//            return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
-            return errorService.handlerException(e);
-        }
-    }
-
-    @PutMapping(path = "/updateMpData1/{uId}")
-    public ResponseEntity<?> addMp3Data(@PathVariable String uId,
-                                        @RequestParam Integer mtId,
-                                        @RequestParam Integer id,
-                                        @RequestParam MultipartFile files) {
-        try {
-            if (uId == null || mtId == null ||uId.isEmpty()||"undefined".equalsIgnoreCase(uId)) {
-                return new ResponseEntity<>("Topic ID, Media Type ID required", HttpStatus.BAD_REQUEST);
-            }
-
-            Optional<FileType> fileTypeOptional = fileTypeRepo.findById(mtId);
-            if (fileTypeOptional.isPresent()) {
-                FileType fileType = fileTypeOptional.get();
-                String fData = fileType.getFileType();
-                if (fData != null && "Audio".equalsIgnoreCase(fData)) {
-//                    List<MediaTypeDTO> responses = new ArrayList<>();
-//                    for (MultipartFile file : files) {
-//                        //responses.add(mediaTypeService.updateFirstSubUploadMp3(file, uId));
+//    @PutMapping(path = "/updateUploadImgSubFirst")
+//    public ResponseEntity<?> updateJpgSubFirst(
+//            @RequestParam(value = "files") MultipartFile[] files,
+//            @RequestParam List<Integer> imgIds,
+//            @RequestParam String commonId) {
+//
+//        try {
+//            if (commonId == null || imgIds.isEmpty() || files.length != imgIds.size()||"undefined".equalsIgnoreCase(commonId)) {
+//                return new ResponseEntity<>("Common ID, image IDs, and files are required, and the number of files must match the number of image IDs", HttpStatus.BAD_REQUEST);
+//            } else {
+//                List<ImgSubFirst> existingImgDataList = imgSubFirstRepo.findByCommonId(commonId);
+//                if (!existingImgDataList.isEmpty()) {
+//                    List<ImgSubFirst> responses = new ArrayList<>();
+//                    for (int i = 0; i < files.length; i++) {
+//                        responses.add(imgService.updateFirstSubJPG(files[i], imgIds.get(i), commonId));
 //                    }
 //                    return new ResponseEntity<>(responses, HttpStatus.OK);
-                    return firstSubUpdateService.updateAudioFirstSub(files,uId,id);
-                } else if (fData != null && "Video".equalsIgnoreCase(fData)) {
-                    Optional<CommonIdFs>commonIdFsOptional=fsCommonIdRepo.findByFsCommonId(uId);
-                    if (commonIdFsOptional.isPresent()){
-                        CommonIdFs commonIdFs = commonIdFsOptional.get();
-                        if (commonIdFs.getFsCommonId().equals(uId)){
-                            return firstSubUpdateService.updateVideoFirstSub(files,uId,id);
-                        }else {
-                            return new ResponseEntity<>("CommonId : "+uId+"  is not correct.",HttpStatus.BAD_REQUEST);
-                        }
-                    }else {
-                        return new ResponseEntity<>("CommonId : "+uId+" is not present",HttpStatus.BAD_REQUEST);
-                    }
-                } else {
-                    return new ResponseEntity<>("File not present. Resend the file.", HttpStatus.BAD_REQUEST);
-                }
-            } else {
-                return new ResponseEntity<>("File not present. Resend the file.", HttpStatus.BAD_REQUEST);
-            }
-        } catch (Exception e) {
-//            e.printStackTrace();
-//            return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
-            return errorService.handlerException(e);
-        }
-    }
+//                } else {
+//                    return new ResponseEntity<>("No image data found for the provided Common ID", HttpStatus.BAD_REQUEST);
+//                }
+//            }
+//        } catch (Exception e) {
+////            e.printStackTrace();
+////            return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+//            return errorService.handlerException(e);
+//        }
+//    }
 
-    @PutMapping(path = "/updateThumbnail")
-    public ResponseEntity<?>updateThumbNail(@RequestParam String uId,
-                                            @RequestParam Integer id,
-                                            @RequestParam MultipartFile files){
-        try {
-            Optional<CommonIdFs>commonIdFsOptional=fsCommonIdRepo.findByFsCommonId(uId);
-            if (commonIdFsOptional.isPresent()){
-                CommonIdFs commonIdFs = commonIdFsOptional.get();
-                if (commonIdFs.getFsCommonId().equals(uId)){
-                    return firstSubUpdateService.updateThumbnail(files,uId,id);
-                }
-            }else {
-                return new ResponseEntity<>("CommonId : "+uId+ "  is not correct.check CommonId",HttpStatus.BAD_REQUEST);
-            }
-        }catch (Exception e){
-            return errorService.handlerException(e);
-        }
-        return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+//    @PutMapping(path = "/updateMpData1/{uId}")
+//    public ResponseEntity<?> addMp3Data(@PathVariable String uId,
+//                                        @RequestParam Integer mtId,
+//                                        @RequestParam Integer id,
+//                                        @RequestParam MultipartFile files) {
+//        try {
+//            if (uId == null || mtId == null ||uId.isEmpty()||"undefined".equalsIgnoreCase(uId)) {
+//                return new ResponseEntity<>("Topic ID, Media Type ID required", HttpStatus.BAD_REQUEST);
+//            }
+//
+//            Optional<FileType> fileTypeOptional = fileTypeRepo.findById(mtId);
+//            if (fileTypeOptional.isPresent()) {
+//                FileType fileType = fileTypeOptional.get();
+//                String fData = fileType.getFileType();
+//                if (fData != null && "Audio".equalsIgnoreCase(fData)) {
+////                    List<MediaTypeDTO> responses = new ArrayList<>();
+////                    for (MultipartFile file : files) {
+////                        //responses.add(mediaTypeService.updateFirstSubUploadMp3(file, uId));
+////                    }
+////                    return new ResponseEntity<>(responses, HttpStatus.OK);
+//                    return firstSubUpdateService.updateAudioFirstSub(files,uId,id);
+//                } else if (fData != null && "Video".equalsIgnoreCase(fData)) {
+//                    Optional<CommonIdFs>commonIdFsOptional=fsCommonIdRepo.findByFsCommonId(uId);
+//                    if (commonIdFsOptional.isPresent()){
+//                        CommonIdFs commonIdFs = commonIdFsOptional.get();
+//                        if (commonIdFs.getFsCommonId().equals(uId)){
+//                            return firstSubUpdateService.updateVideoFirstSub(files,uId,id);
+//                        }else {
+//                            return new ResponseEntity<>("CommonId : "+uId+"  is not correct.",HttpStatus.BAD_REQUEST);
+//                        }
+//                    }else {
+//                        return new ResponseEntity<>("CommonId : "+uId+" is not present",HttpStatus.BAD_REQUEST);
+//                    }
+//                } else {
+//                    return new ResponseEntity<>("File not present. Resend the file.", HttpStatus.BAD_REQUEST);
+//                }
+//            } else {
+//                return new ResponseEntity<>("File not present. Resend the file.", HttpStatus.BAD_REQUEST);
+//            }
+//        } catch (Exception e) {
+////            e.printStackTrace();
+////            return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+//            return errorService.handlerException(e);
+//        }
+//    }
+//
+//    @PutMapping(path = "/updateThumbnail")
+//    public ResponseEntity<?>updateThumbNail(@RequestParam String uId,
+//                                            @RequestParam Integer id,
+//                                            @RequestParam MultipartFile files){
+//        try {
+//            Optional<CommonIdFs>commonIdFsOptional=fsCommonIdRepo.findByFsCommonId(uId);
+//            if (commonIdFsOptional.isPresent()){
+//                CommonIdFs commonIdFs = commonIdFsOptional.get();
+//                if (commonIdFs.getFsCommonId().equals(uId)){
+//                    return firstSubUpdateService.updateThumbnail(files,uId,id);
+//                }
+//            }else {
+//                return new ResponseEntity<>("CommonId : "+uId+ "  is not correct.check CommonId",HttpStatus.BAD_REQUEST);
+//            }
+//        }catch (Exception e){
+//            return errorService.handlerException(e);
+//        }
+//        return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+//    }
 }

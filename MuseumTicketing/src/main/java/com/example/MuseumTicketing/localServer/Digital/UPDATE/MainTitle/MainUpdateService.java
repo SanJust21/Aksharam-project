@@ -111,69 +111,69 @@ public class MainUpdateService {
         return convertedFile;
     }
 
-    public ResponseEntity<?> updateAudioMain(MultipartFile file, String uId, Integer id) throws IOException {
-        File fileObj = convertMultiPartFileToFile(file);
-        String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
-        //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
-        // Use the S3Service's uploadLargeFile method to upload the file
-        s3Service.uploadLargeFile(fileName, fileObj);
-        fileObj.delete();
-        //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
-        // Retrieve the file URL from S3
-        String fileUrl = s3Service.getFileUrl(fileName);
-        Optional<Mp3Data>mp3DataOptional=mp3Repo.findByDtIdAndId(uId,id);
-        if (mp3DataOptional.isPresent()){
-            Mp3Data mp3Data =mp3DataOptional.get();
-            mp3Data.setFName(fileName);
-            mp3Data.setFUrl(fileUrl);
-            mp3Repo.save(mp3Data);
-            return new ResponseEntity<>(mp3Data+" File updated",HttpStatus.OK);
-        }else {
-            return new ResponseEntity<>("Id isn't valid",HttpStatus.BAD_REQUEST);
-        }
-    }
-
-    public ResponseEntity<?> updateVideoMain(MultipartFile file, String uId, Integer id) throws IOException{
-        File fileObj = convertMultiPartFileToFile(file);
-        String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
-        //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
-        // Use the S3Service's uploadLargeFile method to upload the file
-        s3Service.uploadLargeFile(fileName, fileObj);
-        fileObj.delete();
-        //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
-        // Retrieve the file URL from S3
-        String fileUrl = s3Service.getFileUrl(fileName);
-        Optional<Mp4Data>mp4DataOptional=mp4DataRepo.findByDtIdAndId(uId,id);
-        if (mp4DataOptional.isPresent()){
-            Mp4Data mp4Data=mp4DataOptional.get();
-            mp4Data.setFName(fileName);
-            mp4Data.setFUrl(fileUrl);
-            mp4DataRepo.save(mp4Data);
-            return new ResponseEntity<>(mp4Data,HttpStatus.OK);
-        }else {
-            return new ResponseEntity<>("Id isn't valid",HttpStatus.BAD_REQUEST);
-        }
-    }
-
-    public ResponseEntity<?> updateThumbnail(MultipartFile files, String uId, Integer id) throws IOException{
-        File fileObj = convertMultiPartFileToFile(files);
-        String fileName =System.currentTimeMillis()+"_"+files.getOriginalFilename();
-        //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
-        // Use the S3Service's uploadLargeFile method to upload the file
-        s3Service.uploadLargeFile(fileName, fileObj);
-        fileObj.delete();
-        //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
-        // Retrieve the file URL from S3
-        String fileUrl = s3Service.getFileUrl(fileName);
-        Optional<Mp4Data>mp4DataOptional=mp4DataRepo.findByDtIdAndId(uId,id);
-        if (mp4DataOptional.isPresent()){
-            Mp4Data mp4Data=mp4DataOptional.get();
-            mp4Data.setThumbnailName(fileName);
-            mp4Data.setThumbnailUrl(fileUrl);
-            mp4DataRepo.save(mp4Data);
-            return new ResponseEntity<>(mp4Data,HttpStatus.OK);
-        }else {
-            return new ResponseEntity<>("Id isn't valid",HttpStatus.BAD_REQUEST);
-        }
-    }
+//    public ResponseEntity<?> updateAudioMain(MultipartFile file, String uId, Integer id) throws IOException {
+//        File fileObj = convertMultiPartFileToFile(file);
+//        String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
+//        //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+//        // Use the S3Service's uploadLargeFile method to upload the file
+//        s3Service.uploadLargeFile(fileName, fileObj);
+//        fileObj.delete();
+//        //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+//        // Retrieve the file URL from S3
+//        String fileUrl = s3Service.getFileUrl(fileName);
+//        Optional<Mp3Data>mp3DataOptional=mp3Repo.findByDtIdAndId(uId,id);
+//        if (mp3DataOptional.isPresent()){
+//            Mp3Data mp3Data =mp3DataOptional.get();
+//            mp3Data.setFName(fileName);
+//            mp3Data.setFUrl(fileUrl);
+//            mp3Repo.save(mp3Data);
+//            return new ResponseEntity<>(mp3Data+" File updated",HttpStatus.OK);
+//        }else {
+//            return new ResponseEntity<>("Id isn't valid",HttpStatus.BAD_REQUEST);
+//        }
+//    }
+//
+//    public ResponseEntity<?> updateVideoMain(MultipartFile file, String uId, Integer id) throws IOException{
+//        File fileObj = convertMultiPartFileToFile(file);
+//        String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
+//        //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+//        // Use the S3Service's uploadLargeFile method to upload the file
+//        s3Service.uploadLargeFile(fileName, fileObj);
+//        fileObj.delete();
+//        //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+//        // Retrieve the file URL from S3
+//        String fileUrl = s3Service.getFileUrl(fileName);
+//        Optional<Mp4Data>mp4DataOptional=mp4DataRepo.findByDtIdAndId(uId,id);
+//        if (mp4DataOptional.isPresent()){
+//            Mp4Data mp4Data=mp4DataOptional.get();
+//            mp4Data.setFName(fileName);
+//            mp4Data.setFUrl(fileUrl);
+//            mp4DataRepo.save(mp4Data);
+//            return new ResponseEntity<>(mp4Data,HttpStatus.OK);
+//        }else {
+//            return new ResponseEntity<>("Id isn't valid",HttpStatus.BAD_REQUEST);
+//        }
+//    }
+//
+//    public ResponseEntity<?> updateThumbnail(MultipartFile files, String uId, Integer id) throws IOException{
+//        File fileObj = convertMultiPartFileToFile(files);
+//        String fileName =System.currentTimeMillis()+"_"+files.getOriginalFilename();
+//        //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
+//        // Use the S3Service's uploadLargeFile method to upload the file
+//        s3Service.uploadLargeFile(fileName, fileObj);
+//        fileObj.delete();
+//        //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
+//        // Retrieve the file URL from S3
+//        String fileUrl = s3Service.getFileUrl(fileName);
+//        Optional<Mp4Data>mp4DataOptional=mp4DataRepo.findByDtIdAndId(uId,id);
+//        if (mp4DataOptional.isPresent()){
+//            Mp4Data mp4Data=mp4DataOptional.get();
+//            mp4Data.setThumbnailName(fileName);
+//            mp4Data.setThumbnailUrl(fileUrl);
+//            mp4DataRepo.save(mp4Data);
+//            return new ResponseEntity<>(mp4Data,HttpStatus.OK);
+//        }else {
+//            return new ResponseEntity<>("Id isn't valid",HttpStatus.BAD_REQUEST);
+//        }
+//    }
 }

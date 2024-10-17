@@ -76,20 +76,20 @@ public class TribalController {
         }
     }
 
-    @PostMapping(path = "/uploadVideo")
-    public ResponseEntity<?>uploadVideo(@RequestParam String commonId, @RequestParam MultipartFile[] file){
-        try {
-            Optional<TribalCommonId>tribalCommonIdOptional=tribalCommonIdRepo.findByCommonId(commonId);
-            if (tribalCommonIdOptional.isPresent()){
-                TribalCommonId tribalCommonId =tribalCommonIdOptional.get();
-                String malId = tribalCommonId.getMalayalamId();
-                String engId = tribalCommonId.getEnglishId();
-                return tribalService.uploadVideo(malId,engId,commonId,file);
-            }return new ResponseEntity<>("CommonId : "+commonId+" isn't valid",HttpStatus.BAD_REQUEST);
-        }catch (Exception e){
-            return errorService.handlerException(e);
-        }
-    }
+//    @PostMapping(path = "/uploadVideo")
+//    public ResponseEntity<?>uploadVideo(@RequestParam String commonId, @RequestParam MultipartFile[] file){
+//        try {
+//            Optional<TribalCommonId>tribalCommonIdOptional=tribalCommonIdRepo.findByCommonId(commonId);
+//            if (tribalCommonIdOptional.isPresent()){
+//                TribalCommonId tribalCommonId =tribalCommonIdOptional.get();
+//                String malId = tribalCommonId.getMalayalamId();
+//                String engId = tribalCommonId.getEnglishId();
+//                return tribalService.uploadVideo(malId,engId,commonId,file);
+//            }return new ResponseEntity<>("CommonId : "+commonId+" isn't valid",HttpStatus.BAD_REQUEST);
+//        }catch (Exception e){
+//            return errorService.handlerException(e);
+//        }
+//    }
 
     @GetMapping(path = "/getDetails")
     public ResponseEntity<List<CombinedTribalData>>getDetailsByCommonId(@RequestParam String commonId,@RequestParam Integer dType,
@@ -153,19 +153,19 @@ public class TribalController {
         }
     }
 
-    @PutMapping(path = "/updateVideo")
-    public ResponseEntity<?>updateVideo(@RequestParam String commonId,@RequestParam Integer tId,
-                                        @RequestParam MultipartFile file){
-        try {
-            Optional<TribalVideo>tribalVideoOptional=tribalVideoRepo.findByCommonIdAndId(commonId,tId);
-            if (tribalVideoOptional.isPresent()){
-                TribalVideo tribalVideo = tribalService.updateTribalVideo(commonId,tId,file);
-                return new ResponseEntity<>(tribalVideo,HttpStatus.OK);
-            }return new ResponseEntity<>("Enter a valid commonId and id",HttpStatus.BAD_REQUEST);
-        }catch (Exception e){
-            return errorService.handlerException(e);
-        }
-    }
+//    @PutMapping(path = "/updateVideo")
+//    public ResponseEntity<?>updateVideo(@RequestParam String commonId,@RequestParam Integer tId,
+//                                        @RequestParam MultipartFile file){
+//        try {
+//            Optional<TribalVideo>tribalVideoOptional=tribalVideoRepo.findByCommonIdAndId(commonId,tId);
+//            if (tribalVideoOptional.isPresent()){
+//                TribalVideo tribalVideo = tribalService.updateTribalVideo(commonId,tId,file);
+//                return new ResponseEntity<>(tribalVideo,HttpStatus.OK);
+//            }return new ResponseEntity<>("Enter a valid commonId and id",HttpStatus.BAD_REQUEST);
+//        }catch (Exception e){
+//            return errorService.handlerException(e);
+//        }
+//    }
 
     @DeleteMapping(path = "/deleteByCommonId")
     public ResponseEntity<?>deleteDataByCommonId(@RequestParam String commonId){
@@ -198,15 +198,15 @@ public class TribalController {
         }
     }
 
-    @DeleteMapping(path = "/deleteVideo")
-    public ResponseEntity<?>deleteVideo(@RequestParam String commonId,@RequestParam Integer tId){
-        try {
-            Optional<TribalVideo>tribalVideoOptional=tribalVideoRepo.findByCommonIdAndId(commonId,tId);
-            if (tribalVideoOptional.isPresent()){
-                return tribalService.deleteVideo(commonId,tId);
-            }return new ResponseEntity<>("Id is not present",HttpStatus.BAD_REQUEST);
-        }catch (Exception e){
-            return errorService.handlerException(e);
-        }
-    }
+//    @DeleteMapping(path = "/deleteVideo")
+//    public ResponseEntity<?>deleteVideo(@RequestParam String commonId,@RequestParam Integer tId){
+//        try {
+//            Optional<TribalVideo>tribalVideoOptional=tribalVideoRepo.findByCommonIdAndId(commonId,tId);
+//            if (tribalVideoOptional.isPresent()){
+//                return tribalService.deleteVideo(commonId,tId);
+//            }return new ResponseEntity<>("Id is not present",HttpStatus.BAD_REQUEST);
+//        }catch (Exception e){
+//            return errorService.handlerException(e);
+//        }
+//    }
 }

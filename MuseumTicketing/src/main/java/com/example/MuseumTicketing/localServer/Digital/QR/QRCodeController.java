@@ -26,33 +26,33 @@ public class QRCodeController {
     private MainTitleService mainTitleService;
 
 
-    @GetMapping("/generate")
-    public ResponseEntity<QRCodeResponse> generateQRCode(@RequestParam String mMalUid, @RequestParam String mEngUid) {
-        try {
-            if (commonIdQRCodeRepo.existsByMalIdAndEngId(mMalUid, mEngUid)){
-                CommonIdQRCode existingQRCode = commonIdQRCodeRepo.findByMalIdAndEngId(mMalUid, mEngUid).orElse(null);
-                if (existingQRCode != null) {
-
-                    String commonId = existingQRCode.getCommonId();
-                    QRCodeResponse response = new QRCodeResponse(commonId, " QRCode already exists");
-                    return ResponseEntity.ok(response);
-                }
-            }
-            byte[] qrCodeImg = qrCodeGenerateService.generateQRCodeAndSave(mMalUid,mEngUid);
-            String commonId = qrCodeGenerateService.getCommonId(mMalUid,mEngUid);
-
-            QRCodeResponse response = new QRCodeResponse(commonId,"QrCode generated successfully");
-            return ResponseEntity.ok(response);
-
-        }catch (IllegalArgumentException e){
-            QRCodeResponse response = new QRCodeResponse(null,e.getMessage());
-            return ResponseEntity.badRequest().body(response);
-        }catch (WriterException | IOException exception){
-            exception.printStackTrace();
-            QRCodeResponse qrCodeResponse = new QRCodeResponse(null,"An error occurred while generating or saving the QrCode .Please try again later");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(qrCodeResponse);
-        }
-    }
+//    @GetMapping("/generate")
+//    public ResponseEntity<QRCodeResponse> generateQRCode(@RequestParam String mMalUid, @RequestParam String mEngUid) {
+//        try {
+//            if (commonIdQRCodeRepo.existsByMalIdAndEngId(mMalUid, mEngUid)){
+//                CommonIdQRCode existingQRCode = commonIdQRCodeRepo.findByMalIdAndEngId(mMalUid, mEngUid).orElse(null);
+//                if (existingQRCode != null) {
+//
+//                    String commonId = existingQRCode.getCommonId();
+//                    QRCodeResponse response = new QRCodeResponse(commonId, " QRCode already exists");
+//                    return ResponseEntity.ok(response);
+//                }
+//            }
+//            byte[] qrCodeImg = qrCodeGenerateService.generateQRCodeAndSave(mMalUid,mEngUid);
+//            String commonId = qrCodeGenerateService.getCommonId(mMalUid,mEngUid);
+//
+//            QRCodeResponse response = new QRCodeResponse(commonId,"QrCode generated successfully");
+//            return ResponseEntity.ok(response);
+//
+//        }catch (IllegalArgumentException e){
+//            QRCodeResponse response = new QRCodeResponse(null,e.getMessage());
+//            return ResponseEntity.badRequest().body(response);
+//        }catch (WriterException | IOException exception){
+//            exception.printStackTrace();
+//            QRCodeResponse qrCodeResponse = new QRCodeResponse(null,"An error occurred while generating or saving the QrCode .Please try again later");
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(qrCodeResponse);
+//        }
+//    }
 
     @GetMapping(path = "/getScanDetails")
     public ResponseEntity<List<CombinedData>> getAllMainTitleData(@RequestParam Integer dtId, @RequestParam String commonId) {
