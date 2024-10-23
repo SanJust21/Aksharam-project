@@ -28,6 +28,7 @@ public class AmountCalculation {
     @Autowired
     private BookingSpotRepo bookingSpotRepo;
 
+    //Calculate total ticket charge based on category(public,Institution,foreigner) and type(adult,child,teacher,student,foreignAdult,foreignChild)
     public Double calculateTotalUserCharge(Integer category, Integer typeId, Integer userCount) {
         Double totalUserCharge;
         if (category==1 && typeId==1){
@@ -50,7 +51,7 @@ public class AmountCalculation {
                 return totalUserCharge;
             }
         } else if (category==1 && typeId==3) {
-            //seniorCitizen
+            //public seniorCitizen
             Optional<PriceData>priceDataOptional=priceDataRepo.findByCategoryIdAndTypeId(category,typeId);
             if (priceDataOptional.isPresent()){
                 PriceData priceData = priceDataOptional.get();
@@ -59,7 +60,7 @@ public class AmountCalculation {
                 return totalUserCharge;
             }
         } else if (category==2 && typeId==4) {
-            //teacher
+            //institution teacher
             Optional<PriceData>priceDataOptional=priceDataRepo.findByCategoryIdAndTypeId(category,typeId);
             if (priceDataOptional.isPresent()){
                 PriceData priceData = priceDataOptional.get();
@@ -68,7 +69,7 @@ public class AmountCalculation {
                 return totalUserCharge;
             }
         } else if (category==2 && typeId==5) {
-            //student
+            //institution student
             Optional<PriceData>priceDataOptional=priceDataRepo.findByCategoryIdAndTypeId(category,typeId);
             if (priceDataOptional.isPresent()){
                 PriceData priceData = priceDataOptional.get();
@@ -98,6 +99,7 @@ public class AmountCalculation {
         return -1.0;
     }
 
+    //calculate total GST components
     public Double CalculateGST() {
         List<GSTData> gstDataList =gstRepo.findAll();
         Double totalGstRate = 0.0;
@@ -112,6 +114,7 @@ public class AmountCalculation {
         return totalGstRate;
     }
 
+    //calculate total additional charges
     public Integer calculateAdditionalCharges() {
         Integer extraCharge =0;
         List<AdditionCharge>additionChargeList=additionChargeRepo.findAll();
@@ -126,12 +129,14 @@ public class AmountCalculation {
         return extraCharge;
     }
 
+    //grandTotal calculation
     public Double calculateGrandTotal(Double totalUserGst, Integer extraCharge, Double totalCharges) {
         Double grandTotal = totalCharges+totalUserGst+extraCharge;
         log.info("Grand total : "+grandTotal);
         return grandTotal;
     }
 
+    //decline slot by no.of userCount
     public BookingDetails generateBookingDate(LocalDate visitDate, Integer slotId, Integer totalUserCount) {
         Optional<BookingDetails> bookingDetailsOptional = bookingSpotRepo.findByBookDateAndSlotId(visitDate,slotId);
         if (bookingDetailsOptional.isPresent()){

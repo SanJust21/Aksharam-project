@@ -1,6 +1,5 @@
-package com.example.MuseumTicketing.spotReg;
+package com.example.MuseumTicketing.spotReg.userData;
 
-import jakarta.persistence.Column;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -16,7 +15,6 @@ public class SpotUserDto {
     private String district;
 
     private Integer paymentMode;
-    private String paymentModeName;
 
 
     private Integer adult;
@@ -34,16 +32,7 @@ public class SpotUserDto {
     private Integer teacher;
     private Integer teacherTypeId;
 
-    private LocalDate visitDate;
 
-    private Double grandTotal;
-    private Integer paymentStatusId;
-    private String paymentStatus;
 
-    private Integer slotId;
-    private LocalTime slotTime;
 
-    private String createdBy;
-    private LocalTime generatedTime;
-    private Double totalRevenue;
 }

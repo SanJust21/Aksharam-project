@@ -1,6 +1,7 @@
 package com.example.MuseumTicketing.spotReg.bookingDetails;
 
 import com.example.MuseumTicketing.spotReg.bookingDetails.booking.BookingDetails;
+import com.example.MuseumTicketing.spotReg.bookingDetails.booking.BookingDetailsDto;
 import com.example.MuseumTicketing.spotReg.bookingDetails.booking.BookingSpotRepo;
 import com.example.MuseumTicketing.spotReg.bookingDetails.slotData.SlotSpotDto;
 import com.example.MuseumTicketing.spotReg.bookingDetails.slotData.SpotSlot;
@@ -102,33 +103,6 @@ public class SlotDetailsService {
                 }
             }
         }
-//        Optional<BookingDetails> bookingDetailsOptional = bookingSpotRepo.findByBookDate(bDate);
-//        if (bookingDetailsOptional.isPresent()){
-//            BookingDetails bookingDetails = bookingDetailsOptional.get();
-//            LocalTime now = LocalTime.now();
-//            Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(bookingDetails.getSlotId());
-//            if (spotSlotOptional.isPresent()){
-//                SpotSlot spotSlot = spotSlotOptional.get();
-//                if (bookingDetails.getBookDate().isEqual(bDate)&&now.isAfter(spotSlot.getSlotStartTime())&&now.isBefore(spotSlot.getSlotEndTime())){
-//                    return new ResponseEntity<>(bookingDetails,HttpStatus.OK);
-//                }else {
-//                    List<SpotSlot> spotSlotList = spotSlotRepo.findAll();
-//                    if (!spotSlotList.isEmpty()){
-//                        for (SpotSlot spotSlots:spotSlotList){
-//                            if (now.isAfter(spotSlots.getSlotStartTime()) && now.isBefore(spotSlots.getSlotStartTime())){
-//                                bookingDetails.setSlotId(spotSlots.getId());
-//                                bookingDetails.setTotalCapacity(spotSlots.getTotalCapacity());
-//                                bookingDetails.setPresentCapacity(spotSlots.getTotalCapacity());
-//                                bookingDetails.setPresentStatus(spotSlots.getStatus());
-//                                bookingSpotRepo.save(bookingDetails);
-//                                return new ResponseEntity<>(bookingDetails,HttpStatus.OK);
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//
-//        }
         BookingDetails bookingDetails = new BookingDetails();
         bookingDetails.setBookDate(bDate);
         LocalTime now = LocalTime.now();
@@ -148,5 +122,19 @@ public class SlotDetailsService {
             }
         }
         return new ResponseEntity<>("No slots are available at "+now,HttpStatus.NO_CONTENT);
+    }
+
+    public ResponseEntity<?> updateCapacityByDateAndSlotId(LocalDate bookDate, Integer slotId, BookingDetailsDto bookingDetailsDto) {
+        Optional<BookingDetails> bookingDetailsOptional = bookingSpotRepo.findByBookDateAndSlotId(bookDate,slotId);
+        if (bookingDetailsOptional.isPresent()){
+            BookingDetails bookingDetails = bookingDetailsOptional.get();
+            bookingDetails.setSlotStartTime(bookingDetailsDto.getSlotStartTime());
+            bookingDetails.setSlotEndTime(bookingDetailsDto.getSlotEndTime());
+            bookingDetails.setPresentCapacity(bookingDetailsDto.getPresentCapacity());
+            bookingDetails.setPresentStatus(bookingDetailsDto.getPresentStatus());
+            bookingSpotRepo.save(bookingDetails);
+            return new ResponseEntity<>(bookingDetails,HttpStatus.OK);
+        }
+        return new ResponseEntity<>("Date : "+bookDate+" and slotId : "+slotId+" are not matching",HttpStatus.BAD_REQUEST);
     }
 }

@@ -2,6 +2,7 @@ package com.example.MuseumTicketing.spotReg.bookingDetails;
 
 import com.example.MuseumTicketing.Guide.util.ErrorService;
 import com.example.MuseumTicketing.spotReg.bookingDetails.booking.BookingDetails;
+import com.example.MuseumTicketing.spotReg.bookingDetails.booking.BookingDetailsDto;
 import com.example.MuseumTicketing.spotReg.bookingDetails.booking.BookingSpotRepo;
 import com.example.MuseumTicketing.spotReg.bookingDetails.slotData.SlotSpotDto;
 import com.example.MuseumTicketing.spotReg.bookingDetails.slotData.SpotSlot;
@@ -79,6 +80,16 @@ public class SlotDetailsController {
     public ResponseEntity<?>getDateAndSlot(@RequestParam LocalDate bDate){
         try {
             return slotDetailsService.generateDateAndSlot(bDate);
+        }catch (Exception e){
+            return errorService.handlerException(e);
+        }
+    }
+
+    @PutMapping(path = "/updateCapacityByDateAndSlotId")
+    public ResponseEntity<?>updateCapacityByDateAndSlotId(@RequestParam LocalDate bookDate,
+                                                          @RequestParam Integer slotId, @RequestBody BookingDetailsDto bookingDetailsDto){
+        try {
+            return slotDetailsService.updateCapacityByDateAndSlotId(bookDate,slotId,bookingDetailsDto);
         }catch (Exception e){
             return errorService.handlerException(e);
         }

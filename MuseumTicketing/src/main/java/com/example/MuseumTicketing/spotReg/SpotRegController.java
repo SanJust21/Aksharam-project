@@ -1,16 +1,20 @@
 package com.example.MuseumTicketing.spotReg;
 
-import com.example.MuseumTicketing.DTO.PriceRequest;
 import com.example.MuseumTicketing.Guide.util.ErrorService;
-import com.example.MuseumTicketing.Service.BasePrice.PriceRequestService;
 import com.example.MuseumTicketing.spotReg.category.category.CategoryData;
 import com.example.MuseumTicketing.spotReg.category.category.CategoryRepo;
-import com.fasterxml.jackson.annotation.OptBoolean;
+import com.example.MuseumTicketing.spotReg.userData.SpotPaymentDto;
+import com.example.MuseumTicketing.spotReg.userData.SpotUpdateDto;
+import com.example.MuseumTicketing.spotReg.userData.SpotUserDto;
+import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.GetUserData_;
+import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.SlotIdDto;
+import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.count.VisitsCountDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -47,9 +51,29 @@ public class SpotRegController {
             return errorService.handlerException(e);
         }
     }
+
+    @PutMapping(path = "/userRegModify")
+    public ResponseEntity<?>userModification(@RequestParam Integer categoryId, @RequestBody SpotUpdateDto spotUpdateDto,
+                                             @RequestParam String orderId){
+        try {
+            return spotRegService.UserDetailsUpdate(categoryId,spotUpdateDto,orderId);
+        }catch (Exception e){
+            return errorService.handlerException(e);
+        }
+    }
+
+    @PostMapping(path = "/confirmPayment")
+    public ResponseEntity<?> confirmPayment(@RequestParam String orderId, @RequestBody SpotPaymentDto spotPaymentDto,
+                                            @RequestParam Integer totalUserCount){
+        try {
+            return spotRegService.confirmPaymentDetails(orderId,spotPaymentDto,totalUserCount);
+        }catch (Exception e){
+            return errorService.handlerException(e);
+        }
+    }
     
     @GetMapping(path = "/getAllUser")
-    public ResponseEntity<List<SpotUserDto>>getAllUser(@RequestParam(required = false) Integer categoryId){
+    public ResponseEntity<?>getAllUser(@RequestParam(required = false) Integer categoryId){
         try {
             Optional<CategoryData>categoryDataOptional=categoryRepo.findById(categoryId);
             if (categoryDataOptional.isPresent()){
@@ -60,13 +84,64 @@ public class SpotRegController {
                 } else if ("Institution".equalsIgnoreCase(name)) {
                     return spotRegService.getAllInstitution();
                 } else if ("Foreigner".equalsIgnoreCase(name)) {
-                    return spotRegService.getAllForeigner();                }
+                }return spotRegService.getAllForeigner();
             }else {
-                return spotRegService.getAllUserDetails();
+                //return spotRegService.getAllUserDetails();
             }
         }catch (Exception e){
             e.printStackTrace();
         }
         return new ResponseEntity<>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @GetMapping(path = "/getUserDetailsByDate")
+    public ResponseEntity<List<GetUserData_>> getUserDetailsByDate(@RequestParam LocalDate visitDate, @RequestParam Integer categoryId){
+        try {
+            return spotRegService.getUserDetailsByDate(visitDate,categoryId);
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @GetMapping(path = "/totalRevenueByDate")
+    public ResponseEntity<?>CategoryBasedTotalRevenueByDate(@RequestParam LocalDate visitDate){
+        try {
+            return spotRegService.CategoryBasedTotalRevenueByDate(visitDate);
+        }catch (Exception e){
+            return errorService.handlerException(e);
+        }
+    }
+
+    @GetMapping(path = "/visitorsCountByDate")
+    public ResponseEntity<?> totalVisitorsCountByDate(@RequestParam LocalDate vDate,@RequestParam(required =false) Integer categoryId){
+        try {
+            Optional<CategoryData> categoryDataOptional = categoryRepo.findById(categoryId);
+            if (categoryDataOptional.isPresent()){
+                CategoryData categoryData = categoryDataOptional.get();
+                String name = categoryData.getCategory();
+                if ("Public".equalsIgnoreCase(name)){
+                    return spotRegService.totalPublicVisitorsCountByDate(vDate);
+                } else if ("Institution".equalsIgnoreCase(name)) {
+                    //return spotRegService.totalInstitutionVisitorsCountByDate(vDate);
+                } else if ("Foreigner".equalsIgnoreCase(name)) {
+                    //return spotRegService.totalForeignerVisitorsCountByDate(vDate);
+                }
+            }
+            return spotRegService.totalVisitorSCountByDate(vDate);
+        }catch (Exception e){
+            return errorService.handlerException(e);
+        }
+    }
+
+    @GetMapping(path = "/visitorsCountByRangeOfDate")
+    public ResponseEntity<List<VisitsCountDto>> visitorsCountByDateRange(@RequestParam LocalDate startDate, @RequestParam LocalDate endDate){
+        try {
+            return spotRegService.visitorsCountByDateRange(startDate,endDate);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>(new ArrayList<>(),HttpStatus.NOT_FOUND);
     }
 }

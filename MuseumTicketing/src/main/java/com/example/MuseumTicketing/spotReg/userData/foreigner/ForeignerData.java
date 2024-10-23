@@ -42,6 +42,12 @@ public class ForeignerData {
     @Column(name = "grandTotal")
     private Double grandTotal;
 
+    @Column(name = "orderId")
+    private String orderId;
+
+    @Column(name = "paymentId")
+    private String paymentId;
+
     @Column(name = "paymentMode")
     private Integer paymentMode;
 
