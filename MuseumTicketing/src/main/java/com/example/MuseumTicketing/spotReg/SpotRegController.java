@@ -9,6 +9,7 @@ import com.example.MuseumTicketing.spotReg.userData.SpotUserDto;
 import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.GetUserData_;
 import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.SlotIdDto;
 import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.count.VisitsCountDto;
+import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.usesrDetails.AllUserDataDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -86,7 +87,7 @@ public class SpotRegController {
                 } else if ("Foreigner".equalsIgnoreCase(name)) {
                 }return spotRegService.getAllForeigner();
             }else {
-                //return spotRegService.getAllUserDetails();
+                return spotRegService.getAllUserDetails();
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -103,6 +104,17 @@ public class SpotRegController {
             e.printStackTrace();
         }
         return new ResponseEntity<>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @GetMapping(path = "/getUserDetailsByRangeOfDate")
+    public ResponseEntity<List<AllUserDataDto>> getUserDetailsByRangeOfDate(@RequestParam LocalDate startDate, @RequestParam LocalDate endDate,
+                                                                            @RequestParam Integer categoryId){
+        try {
+            return spotRegService.getUserDetailsByRangeOfDate(startDate,endDate,categoryId);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>(new ArrayList<>(),HttpStatus.NOT_FOUND);
     }
 
     @GetMapping(path = "/totalRevenueByDate")
@@ -124,9 +136,9 @@ public class SpotRegController {
                 if ("Public".equalsIgnoreCase(name)){
                     return spotRegService.totalPublicVisitorsCountByDate(vDate);
                 } else if ("Institution".equalsIgnoreCase(name)) {
-                    //return spotRegService.totalInstitutionVisitorsCountByDate(vDate);
+                    return spotRegService.totalInstitutionVisitorsCountByDate(vDate);
                 } else if ("Foreigner".equalsIgnoreCase(name)) {
-                    //return spotRegService.totalForeignerVisitorsCountByDate(vDate);
+                    return spotRegService.totalForeignerVisitorsCountByDate(vDate);
                 }
             }
             return spotRegService.totalVisitorSCountByDate(vDate);
