@@ -708,7 +708,7 @@ public class MainTitleService {
             StreamingResponseBody responseBody = outputStream -> {
                 try (InputStream inputStream = resource.getInputStream()) {
                     inputStream.skip(finalStart);
-                    byte[] buffer = new byte[8192]; //8kb
+                    byte[] buffer = new byte[10240]; //8kb
                     long bytesRead;
                     long totalBytesRead = 0;
 
