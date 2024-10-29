@@ -15,6 +15,7 @@ import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,7 +31,9 @@ public class SlotDetailsService {
     }
 
     public ResponseEntity<List<SpotSlot>> getAllSlotDetails() {
-        return new ResponseEntity<>(spotSlotRepo.findAll(),HttpStatus.OK);
+        List<SpotSlot> spotSlotList = spotSlotRepo.findAll();
+        spotSlotList.sort(Comparator.comparing(SpotSlot::getId));
+        return new ResponseEntity<>(spotSlotList,HttpStatus.OK);
     }
 
     public ResponseEntity<?> updateSlotDetails(SlotSpotDto spotSlotDto, Integer id) {
