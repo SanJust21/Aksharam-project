@@ -49,7 +49,7 @@ public class SlotDetailsController {
         return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @PostMapping(path = "/updateSlot")
+    @PutMapping(path = "/updateSlot")
     public ResponseEntity<?>updateSlotDetails(@RequestBody SlotSpotDto spotSlotDto, @RequestParam Integer id){
         try {
            return slotDetailsService.updateSlotDetails(spotSlotDto,id);
