@@ -12,6 +12,7 @@ import com.example.MuseumTicketing.spotReg.category.paymentStatus.PaymentStatus;
 import com.example.MuseumTicketing.spotReg.category.paymentStatus.PaymentStatusRepo;
 import com.example.MuseumTicketing.spotReg.category.price.PriceData;
 import com.example.MuseumTicketing.spotReg.category.price.PriceDataRepo;
+import com.example.MuseumTicketing.spotReg.category.price.PriceDto;
 import com.example.MuseumTicketing.spotReg.category.type.TypeData;
 import com.example.MuseumTicketing.spotReg.category.type.TypeRepo;
 import lombok.extern.slf4j.Slf4j;
@@ -207,8 +208,25 @@ public class CategoryService {
         return new ResponseEntity<>(priceData1,HttpStatus.OK);
     }
 
-    public ResponseEntity<List<PriceData>> getPriceAll() {
-        return new ResponseEntity<>(priceDataRepo.findAll(),HttpStatus.OK);
+    public ResponseEntity<List<PriceDto>> getPriceAll() {
+        List<PriceDto> priceDtoList = new ArrayList<>();
+        List<PriceData> priceDataList = priceDataRepo.findAll();
+        if (!priceDataList.isEmpty()){
+            for (PriceData priceData : priceDataList){
+                PriceDto priceDto = new PriceDto();
+                Optional<CategoryData> categoryDataOptional = categoryRepo.findById(priceData.getCategoryId());
+                if (categoryDataOptional.isPresent()){
+                    priceDto.setCategoryName(categoryDataOptional.get().getCategory());
+                }
+                Optional<TypeData> typeDataOptional = typeRepo.findById(priceData.getTypeId());
+                if (typeDataOptional.isPresent()){
+                    priceDto.setTypeName(typeDataOptional.get().getType());
+                }
+                priceDto.setPrice(priceData.getPrice());
+                priceDtoList.add(priceDto);
+            }
+        }
+        return new ResponseEntity<>(priceDtoList,HttpStatus.OK);
     }
 
     public ResponseEntity<List<PriceData>> getPriceBytCategoryId(Integer categoryId) {

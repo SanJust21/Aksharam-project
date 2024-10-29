@@ -7,6 +7,7 @@ import com.example.MuseumTicketing.spotReg.category.gst.GSTData;
 import com.example.MuseumTicketing.spotReg.category.paymentMode.PaymentMode;
 import com.example.MuseumTicketing.spotReg.category.paymentStatus.PaymentStatus;
 import com.example.MuseumTicketing.spotReg.category.price.PriceData;
+import com.example.MuseumTicketing.spotReg.category.price.PriceDto;
 import com.example.MuseumTicketing.spotReg.category.type.TypeData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -193,7 +194,7 @@ public class CategoryController {
     }
 
     @GetMapping(path = "/getPrice")
-    public ResponseEntity<List<PriceData>>getAllPrice(){
+    public ResponseEntity<List<PriceDto>>getAllPrice(){
         try {
             return categoryService.getPriceAll();
         }catch (Exception e){
