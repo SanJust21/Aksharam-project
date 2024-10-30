@@ -40,6 +40,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Optional;
 
 @Service
@@ -93,12 +94,15 @@ public class ImgService {
         return convertedFile;
     }
     public ImgData uploadJPG(MultipartFile file, String englishUId, String malUid, String commonId) throws IOException {
-        File fileObj = convertMultiPartFileToFile(file);
+//        File fileObj = convertMultiPartFileToFile(file);
         String fileName = System.currentTimeMillis()+"_"+file.getOriginalFilename();
         //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
         // Use the S3Service's uploadLargeFile method to upload the file
-        s3Service.uploadLargeFile(fileName, fileObj);
-        fileObj.delete();
+//        s3Service.uploadLargeFile(fileName, fileObj);
+//        fileObj.delete();
+        try (InputStream inputStream = file.getInputStream()){
+            s3Service.uploadLargeFile(fileName,inputStream);
+        }
         //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
         //Retrieve the file URL from S3
         String fileUrl = s3Service.getFileUrl(fileName);
@@ -110,12 +114,15 @@ public class ImgService {
 
 
     public ImgSubFirst uploadData1(MultipartFile file, String englishUId, String malUid, String commonId) throws IOException{
-        File fileObj = convertMultiPartFileToFile(file);
+//        File fileObj = convertMultiPartFileToFile(file);
         String fileName = System.currentTimeMillis()+"_"+file.getOriginalFilename();
         //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
         // Use the S3Service's uploadLargeFile method to upload the file
-        s3Service.uploadLargeFile(fileName, fileObj);
-        fileObj.delete();
+//        s3Service.uploadLargeFile(fileName, fileObj);
+//        fileObj.delete();
+        try (InputStream inputStream = file.getInputStream()){
+            s3Service.uploadLargeFile(fileName,inputStream);
+        }
         //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
         // Retrieve the file URL from S3
         String fileUrl = s3Service.getFileUrl(fileName);
@@ -137,12 +144,15 @@ public class ImgService {
     }
 
     public ImgSubSecond uploadData2(MultipartFile file, String englishUId, String malUid, String commonId) throws IOException {
-        File fileObj = convertMultiPartFileToFile(file);
+//        File fileObj = convertMultiPartFileToFile(file);
         String fileName =  System.currentTimeMillis()+"_"+file.getOriginalFilename();
         //s3Client.putObject(new PutObjectRequest(bucketName,fileName,fileObj));
         // Use the S3Service's uploadLargeFile method to upload the file
-        s3Service.uploadLargeFile(fileName, fileObj);
-        fileObj.delete();
+//        s3Service.uploadLargeFile(fileName, fileObj);
+//        fileObj.delete();
+        try (InputStream inputStream = file.getInputStream()){
+            s3Service.uploadLargeFile(fileName,inputStream);
+        }
         //String fileUrl = s3Client.getUrl(bucketName,fileName).toString();
         // Retrieve the file URL from S3
         String fileUrl = s3Service.getFileUrl(fileName);
@@ -173,12 +183,15 @@ public class ImgService {
                 ImgData imgData = existingImgDataOptional.get();
 
                 // Convert file and upload to S3
-                File fileObj = convertMultiPartFileToFile(file);
+//                File fileObj = convertMultiPartFileToFile(file);
                 String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
                 //s3Client.putObject(new PutObjectRequest(bucketName, fileName, fileObj));
                 // Use the S3Service's uploadLargeFile method to upload the file
-                s3Service.uploadLargeFile(fileName, fileObj);
-                fileObj.delete();
+//                s3Service.uploadLargeFile(fileName, fileObj);
+//                fileObj.delete();
+                try (InputStream inputStream = file.getInputStream()){
+                    s3Service.uploadLargeFile(fileName,inputStream);
+                }
                 //String fileUrl = s3Client.getUrl(bucketName, fileName).toString();
                 // Retrieve the file URL from S3
                 String fileUrl = s3Service.getFileUrl(fileName);
@@ -205,12 +218,15 @@ public class ImgService {
                 ImgSubFirst imgSubFirst = existingImgDataOptional.get();
 
                 // Convert file and upload to S3
-                File fileObj = convertMultiPartFileToFile(file);
+//                File fileObj = convertMultiPartFileToFile(file);
                 String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
                 //s3Client.putObject(new PutObjectRequest(bucketName, fileName, fileObj));
                 // Use the S3Service's uploadLargeFile method to upload the file
-                s3Service.uploadLargeFile(fileName, fileObj);
-                fileObj.delete();
+//                s3Service.uploadLargeFile(fileName, fileObj);
+//                fileObj.delete();
+                try (InputStream inputStream = file.getInputStream()){
+                    s3Service.uploadLargeFile(fileName,inputStream);
+                }
                 //String fileUrl = s3Client.getUrl(bucketName, fileName).toString();
                 // Retrieve the file URL from S3
                 String fileUrl = s3Service.getFileUrl(fileName);
@@ -235,12 +251,15 @@ public class ImgService {
                 ImgSubSecond imgSubSecond = existingImgDataOptional.get();
 
                 // Convert file and upload to S3
-                File fileObj = convertMultiPartFileToFile(file);
+//                File fileObj = convertMultiPartFileToFile(file);
                 String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
                 //s3Client.putObject(new PutObjectRequest(bucketName, fileName, fileObj));
                 // Use the S3Service's uploadLargeFile method to upload the file
-                s3Service.uploadLargeFile(fileName, fileObj);
-                fileObj.delete();
+//                s3Service.uploadLargeFile(fileName, fileObj);
+//                fileObj.delete();
+                try (InputStream inputStream = file.getInputStream()){
+                    s3Service.uploadLargeFile(fileName,inputStream);
+                }
                 //String fileUrl = s3Client.getUrl(bucketName, fileName).toString();
                 // Retrieve the file URL from S3
                 String fileUrl = s3Service.getFileUrl(fileName);

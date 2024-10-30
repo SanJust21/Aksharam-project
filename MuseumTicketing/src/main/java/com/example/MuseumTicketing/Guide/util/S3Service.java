@@ -1,5 +1,7 @@
 package com.example.MuseumTicketing.Guide.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -11,6 +13,7 @@ import software.amazon.awssdk.services.s3.model.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,6 +21,7 @@ import java.util.List;
 
 @Service
 public class S3Service {
+    private static final Logger log = LoggerFactory.getLogger(S3Service.class);
     private final S3Client s3Client;
     private final String bucketName;
 
@@ -35,7 +39,7 @@ public class S3Service {
                 .build();
     }
 
-    public void uploadLargeFile(String keyName, File file) throws IOException {
+    public void uploadLargeFile(String keyName, InputStream inputStream) throws IOException {
         long partSize = 5 * 1024 * 1024; // Set part size to 5 MB
 
         // Step 1: Initialize Multipart Upload
@@ -51,11 +55,11 @@ public class S3Service {
         List<CompletedPart> completedParts = new ArrayList<>();
         byte[] buffer = new byte[(int) partSize];
 
-        try (var fis = Files.newInputStream(file.toPath())) {
+        try  {
             int bytesRead;
             int partNumber = 1;
 
-            while ((bytesRead = fis.read(buffer)) != -1) {
+            while ((bytesRead = inputStream.read(buffer))!=-1 ){
                 UploadPartRequest uploadPartRequest = UploadPartRequest.builder()
                         .bucket(bucketName)
                         .key(keyName)
@@ -75,6 +79,12 @@ public class S3Service {
 
                 partNumber++;
             }
+        }catch (IOException e){
+            log.error("Error uploading parts",e);
+            abortMultipartUpload(uploadId,keyName);
+            throw e;
+        }finally {
+            inputStream.close();
         }
 
         // Step 3: Complete Multipart Upload
@@ -86,6 +96,15 @@ public class S3Service {
                 .build();
 
         s3Client.completeMultipartUpload(completeMultipartUploadRequest);
+    }
+
+    private void abortMultipartUpload(String uploadId,String keyName) {
+        AbortMultipartUploadRequest abortRequest = AbortMultipartUploadRequest.builder()
+                .bucket(bucketName)
+                .key(keyName)
+                .uploadId(uploadId)
+                .build();
+        s3Client.abortMultipartUpload(abortRequest);
     }
 
     public void uploadLargePdf(String keyName, File file) throws IOException {

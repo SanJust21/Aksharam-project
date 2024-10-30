@@ -33,6 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -126,10 +127,13 @@ public class TribalService {
     }
 
     private TribalVideoDto uploadTribalVideo(MultipartFile files, String commonId, String malId, String engId) throws IOException{
-        File fileObj = convertMultiPartFileToFile(files);
+//        File fileObj = convertMultiPartFileToFile(files);
         String fileName =System.currentTimeMillis()+"_"+files.getOriginalFilename();
-        s3Service.uploadLargeFile(fileName, fileObj);
-        fileObj.delete();
+//        s3Service.uploadLargeFile(fileName, fileObj);
+//        fileObj.delete();
+        try (InputStream inputStream = files.getInputStream()){
+            s3Service.uploadLargeFile(fileName,inputStream);
+        }
         String fileUrl = s3Service.getFileUrl(fileName);
         TribalVideo tribalVideo = new TribalVideo(fileName,fileUrl,commonId);
         tribalVideo.setEnglishId(engId);
@@ -318,10 +322,13 @@ public class TribalService {
     }
 
     public TribalVideo updateTribalVideo(String commonId, Integer tId, MultipartFile file) throws IOException{
-        File fileObj = convertMultiPartFileToFile(file);
+//        File fileObj = convertMultiPartFileToFile(file);
         String fileName =System.currentTimeMillis()+"_"+file.getOriginalFilename();
-        s3Service.uploadLargeFile(fileName, fileObj);
-        fileObj.delete();
+//        s3Service.uploadLargeFile(fileName, fileObj);
+//        fileObj.delete();
+        try (InputStream inputStream = file.getInputStream()){
+            s3Service.uploadLargeFile(fileName,inputStream);
+        }
         String fileUrl = s3Service.getFileUrl(fileName);
         Optional<TribalVideo>tribalVideoOptional=tribalVideoRepo.findByCommonIdAndId(commonId,tId);
         if (tribalVideoOptional.isPresent()){
