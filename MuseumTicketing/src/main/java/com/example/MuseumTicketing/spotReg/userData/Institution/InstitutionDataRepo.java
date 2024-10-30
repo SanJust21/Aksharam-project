@@ -12,4 +12,6 @@ public interface InstitutionDataRepo extends JpaRepository<InstitutionData,Long>
     List<InstitutionData> findByVisitDateBetween(LocalDate startDate, LocalDate endDate);
 
     Optional<InstitutionData> findByOrderId(String orderId);
+
+    Optional<InstitutionData> findByTicketId(String ticketId);
 }

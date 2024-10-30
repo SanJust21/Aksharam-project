@@ -14,4 +14,6 @@ public interface PublicRepo extends JpaRepository<PublicData,Long> {
     Optional<PublicData> findByOrderId(String orderId);
 
     List<Object[]> countSlotIdByVisitDate(LocalDate dateData);
+
+    Optional<PublicData> findByTicketId(String ticketId);
 }

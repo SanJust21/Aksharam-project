@@ -69,4 +69,7 @@ public class PublicData {
     @Column(name = "createdBy")
     private String createdBy;
 
+    @Column(name = "visit_status", nullable = false, columnDefinition = "boolean default false")
+    private boolean visitStatus;
+
 }

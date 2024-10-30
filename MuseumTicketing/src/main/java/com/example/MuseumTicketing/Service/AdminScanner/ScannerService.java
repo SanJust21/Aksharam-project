@@ -10,6 +10,12 @@ import com.example.MuseumTicketing.Repo.ForeignerDetailsRepo;
 import com.example.MuseumTicketing.Repo.InstitutionDetailsRepo;
 import com.example.MuseumTicketing.Repo.PublicDetailsRepo;
 import com.example.MuseumTicketing.Repo.ScannedDetailsRepo;
+import com.example.MuseumTicketing.spotReg.userData.Institution.InstitutionData;
+import com.example.MuseumTicketing.spotReg.userData.Institution.InstitutionDataRepo;
+import com.example.MuseumTicketing.spotReg.userData.foreigner.ForeignerData;
+import com.example.MuseumTicketing.spotReg.userData.foreigner.ForeignerDataRepo;
+import com.example.MuseumTicketing.spotReg.userData.publicUser.PublicData;
+import com.example.MuseumTicketing.spotReg.userData.publicUser.PublicRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +43,12 @@ public class ScannerService {
         this.publicDetailsRepo = publicDetailsRepo;
         this.scannedDetailsRepo = scannedDetailsRepo;
     }
+    @Autowired
+    private PublicRepo publicRepo;
+    @Autowired
+    private InstitutionDataRepo institutionDataRepo;
+    @Autowired
+    private ForeignerDataRepo foreignerDataRepo;
 
     public ResponseEntity<?> identifyUserAndGetDetails(String ticketId, LocalDateTime scannedTime) {
         // Check if ticket is already scanned
@@ -62,9 +74,12 @@ public class ScannerService {
         Optional<ForeignerDetails> foreignerDetails = foreignerDetailsRepo.findByticketId(ticketId);
         Optional<InstitutionDetails> institutionDetails = institutionDetailsRepo.findByticketId(ticketId);
         Optional<PublicDetails> publicDetails = publicDetailsRepo.findByticketId(ticketId);
+        Optional<PublicData> publicDataOptional = publicRepo.findByTicketId(ticketId);
+        Optional<InstitutionData> institutionDataOptional = institutionDataRepo.findByTicketId(ticketId);
+        Optional<ForeignerData> foreignerDataOptional = foreignerDataRepo.findByTicketId(ticketId);
 
 
-        if (foreignerDetails.isEmpty() && institutionDetails.isEmpty() && publicDetails.isEmpty()) {
+        if (foreignerDetails.isEmpty() && institutionDetails.isEmpty() && publicDetails.isEmpty() && publicDataOptional.isEmpty() && institutionDataOptional.isEmpty() && foreignerDataOptional.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new CustomResponse("No details found for the provided ticket ID.", HttpStatus.NOT_FOUND.value()));
         }
 
@@ -78,6 +93,12 @@ public class ScannerService {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new CustomResponse("Visit date is different." + institutionDetails.get().getVisitDate(), HttpStatus.BAD_REQUEST.value()));
         } else if (publicDetails.isPresent() && !publicDetails.get().getVisitDate().isEqual(LocalDate.now())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new CustomResponse("Visit date is different." + publicDetails.get().getVisitDate(), HttpStatus.BAD_REQUEST.value()));
+        } else if (publicDataOptional.isPresent() && publicDataOptional.get().getVisitDate().isEqual(LocalDate.now())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new CustomResponse("Visit Date is different."+publicDataOptional.get().getVisitDate(),HttpStatus.BAD_REQUEST.value()));
+        } else if (institutionDataOptional.isPresent() && institutionDataOptional.get().getVisitDate().isEqual(LocalDate.now())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new CustomResponse("Visit date is different. "+institutionDataOptional.get().getVisitDate(),HttpStatus.BAD_REQUEST.value()));
+        } else if (foreignerDataOptional.isPresent() && foreignerDataOptional.get().getVisitDate().isEqual(LocalDate.now())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new CustomResponse("Visit Date is different."+foreignerDataOptional.get().getVisitDate(),HttpStatus.BAD_REQUEST.value()));
         }
 
         if (foreignerDetails.isPresent()) {
@@ -101,8 +122,26 @@ public class ScannerService {
             scannedDetails.setType(detailsRequest.getType());
             publicDetail.setVisitStatus(true);
             publicDetailsRepo.save(publicDetail);
+        } else if (publicDataOptional.isPresent()) {
+            PublicData publicData = publicDataOptional.get();
+            scannedDetails.setName(publicData.getName());
+            scannedDetails.setType("public");
+            publicData.setVisitStatus(true);
+            publicRepo.save(publicData);
+        } else if (institutionDataOptional.isPresent()) {
+            InstitutionData institutionData = institutionDataOptional.get();
+            scannedDetails.setName(institutionData.getName());
+            scannedDetails.setType("Institution");
+            institutionData.setVisitStatus(true);
+            institutionDataRepo.save(institutionData);
+        } else if (foreignerDataOptional.isPresent()) {
+            ForeignerData foreignerData = foreignerDataOptional.get();
+            scannedDetails.setName(foreignerData.getName());
+            scannedDetails.setType("Foreigner");
+            foreignerData.setVisitStatus(true);
+            foreignerDataRepo.save(foreignerData);
         }
-
+//spotBookingDetails are present only in the above area
         scannedDetailsRepo.save(scannedDetails);
 
         // Return appropriate details request based on ticketId
