@@ -217,10 +217,12 @@ public class CategoryService {
                 Optional<CategoryData> categoryDataOptional = categoryRepo.findById(priceData.getCategoryId());
                 if (categoryDataOptional.isPresent()){
                     priceDto.setCategoryName(categoryDataOptional.get().getCategory());
+                    priceDto.setCategoryId(categoryDataOptional.get().getId());
                 }
                 Optional<TypeData> typeDataOptional = typeRepo.findById(priceData.getTypeId());
                 if (typeDataOptional.isPresent()){
                     priceDto.setTypeName(typeDataOptional.get().getType());
+                    priceDto.setTypeId(typeDataOptional.get().getId());
                 }
                 priceDto.setPrice(priceData.getPrice());
                 priceDtoList.add(priceDto);

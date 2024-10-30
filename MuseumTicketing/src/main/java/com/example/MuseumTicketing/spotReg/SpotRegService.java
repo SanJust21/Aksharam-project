@@ -33,6 +33,7 @@ import com.example.MuseumTicketing.spotReg.userData.foreigner.ForeignerData;
 import com.example.MuseumTicketing.spotReg.userData.foreigner.ForeignerDataRepo;
 import com.example.MuseumTicketing.spotReg.userData.publicUser.PublicData;
 import com.example.MuseumTicketing.spotReg.userData.publicUser.PublicRepo;
+import com.google.zxing.WriterException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -78,6 +80,8 @@ SpotRegService {
     private SpotSlotRepo spotSlotRepo;
     @Autowired
     private CategoryRepo categoryRepo;
+    @Autowired
+    private SpotQRcodeService spotQRcodeService;
 
 
     public ResponseEntity<?> publicUserReg(SpotUserDto spotUserDto, Integer category) {
@@ -333,7 +337,8 @@ SpotRegService {
         return new ResponseEntity<>("OrderId : "+orderId+" isn't valid",HttpStatus.BAD_REQUEST);
     }
 
-    public ResponseEntity<?> confirmPaymentDetails(String orderId, SpotPaymentDto spotPaymentDto,Integer totalUserCount) {
+    public ResponseEntity<SpotBookingDto> confirmPaymentDetails(String orderId, SpotPaymentDto spotPaymentDto,Integer totalUserCount)throws WriterException, IOException {
+        SpotBookingDto spotBookingDto = new SpotBookingDto();
         Optional<PublicData> publicDataOptional = publicRepo.findByOrderId(orderId);
         Optional<InstitutionData> institutionDataOptional = institutionDataRepo.findByOrderId(orderId);
         Optional<ForeignerData> foreignerDataOptional = foreignerDataRepo.findByOrderId(orderId);
@@ -341,6 +346,7 @@ SpotRegService {
         if (publicDataOptional.isPresent()){
             PublicData publicData = publicDataOptional.get();
             publicData.setPaymentStatusId(spotPaymentDto.getPaymentStatusId());
+
 
             //check if payment mode is cash and payment status is received
             Optional<PaymentStatus>paymentStatusOptional=paymentStatusRepo.findById(spotPaymentDto.getPaymentStatusId());
@@ -365,7 +371,22 @@ SpotRegService {
             }
             publicData.setCreatedBy(spotPaymentDto.getCreatedBy());
             publicRepo.save(publicData);
-            return new ResponseEntity<>(publicData,HttpStatus.OK);
+            spotBookingDto.setName(publicData.getName());
+            spotBookingDto.setPhNumber(publicData.getPhNumber());
+            spotBookingDto.setAdultCount(publicData.getAdult());
+            spotBookingDto.setChildCount(publicData.getChild());
+            spotBookingDto.setSeniorCitizenCount(publicData.getSeniorCitizen());
+            spotBookingDto.setVisitDate(publicData.getVisitDate());
+            spotBookingDto.setTotalAmount(publicData.getTotalAmount());
+            spotBookingDto.setTotalGstCharge(publicData.getTotalGstCharge());
+            spotBookingDto.setTotalAdditionalCharges(publicData.getTotalAdditionalCharges());
+            spotBookingDto.setGrandTotal(publicData.getGrandTotal());
+            spotBookingDto.setOrderId(publicData.getOrderId());
+            spotBookingDto.setPaymentId(publicData.getPaymentId());
+            spotBookingDto.setTicketId(publicData.getTicketId());
+            spotBookingDto.setCreatedTime(publicData.getCreatedTime());
+            spotBookingDto.setQrCodeImage(spotQRcodeService.generateQRCode(publicData.getTicketId()));
+            return new ResponseEntity<>(spotBookingDto,HttpStatus.OK);
 
         } else if (institutionDataOptional.isPresent()) {
             InstitutionData institutionData = institutionDataOptional.get();
@@ -395,7 +416,22 @@ SpotRegService {
             institutionData.setSlotId(bookingDetails.getSlotId());
             institutionData.setCreatedBy(spotPaymentDto.getCreatedBy());
             institutionDataRepo.save(institutionData);
-            return new ResponseEntity<>(institutionData,HttpStatus.OK);
+            spotBookingDto.setName(institutionData.getName());
+            spotBookingDto.setPhNumber(institutionData.getPhNumber());
+            spotBookingDto.setDistrict(institutionData.getDistrict());
+            spotBookingDto.setTeacherCount(institutionData.getTeacher());
+            spotBookingDto.setStudentCount(institutionData.getStudent());
+            spotBookingDto.setVisitDate(institutionData.getVisitDate());
+            spotBookingDto.setTotalAmount(institutionData.getTotalAmount());
+            spotBookingDto.setTotalGstCharge(institutionData.getTotalGstCharge());
+            spotBookingDto.setTotalAdditionalCharges(institutionData.getTotalAdditionalCharges());
+            spotBookingDto.setGrandTotal(institutionData.getGrandTotal());
+            spotBookingDto.setOrderId(institutionData.getOrderId());
+            spotBookingDto.setPaymentId(institutionData.getPaymentId());
+            spotBookingDto.setTicketId(institutionData.getTicketId());
+            spotBookingDto.setCreatedTime(institutionData.getCreatedTime());
+            spotBookingDto.setQrCodeImage(spotQRcodeService.generateQRCode(institutionData.getTicketId()));
+            return new ResponseEntity<>(spotBookingDto,HttpStatus.OK);
 
         } else if (foreignerDataOptional.isPresent()) {
             ForeignerData foreignerData = foreignerDataOptional.get();
@@ -424,9 +460,23 @@ SpotRegService {
             foreignerData.setSlotId(bookingDetails.getSlotId());
             foreignerData.setCreatedBy(spotPaymentDto.getCreatedBy());
             foreignerDataRepo.save(foreignerData);
-            return new ResponseEntity<>(foreignerData,HttpStatus.OK);
+            spotBookingDto.setName(foreignerData.getName());
+            spotBookingDto.setPhNumber(foreignerData.getPhNumber());
+            spotBookingDto.setAdultCount(foreignerData.getAdult());
+            spotBookingDto.setChildCount(foreignerData.getChild());
+            spotBookingDto.setVisitDate(foreignerData.getVisitDate());
+            spotBookingDto.setTotalAmount(foreignerData.getTotalAmount());
+            spotBookingDto.setTotalGstCharge(foreignerData.getTotalGstCharge());
+            spotBookingDto.setTotalAdditionalCharges(foreignerData.getTotalAdditionalCharges());
+            spotBookingDto.setGrandTotal(foreignerData.getGrandTotal());
+            spotBookingDto.setOrderId(foreignerData.getOrderId());
+            spotBookingDto.setPaymentId(foreignerData.getPaymentId());
+            spotBookingDto.setTicketId(foreignerData.getTicketId());
+            spotBookingDto.setCreatedTime(foreignerData.getCreatedTime());
+            spotBookingDto.setQrCodeImage(spotQRcodeService.generateQRCode(foreignerData.getTicketId()));
+            return new ResponseEntity<>(spotBookingDto,HttpStatus.OK);
         }
-        return new ResponseEntity<>("OrderId :"+orderId+" isn't valid",HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(null,HttpStatus.NOT_FOUND);
     }
 
     public ResponseEntity<?> getAllUserDetails() {

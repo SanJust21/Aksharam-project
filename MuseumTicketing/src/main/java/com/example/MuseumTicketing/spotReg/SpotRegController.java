@@ -64,13 +64,14 @@ public class SpotRegController {
     }
 
     @PostMapping(path = "/confirmPayment")
-    public ResponseEntity<?> confirmPayment(@RequestParam String orderId, @RequestBody SpotPaymentDto spotPaymentDto,
+    public ResponseEntity<SpotBookingDto> confirmPayment(@RequestParam String orderId, @RequestBody SpotPaymentDto spotPaymentDto,
                                             @RequestParam Integer totalUserCount){
         try {
             return spotRegService.confirmPaymentDetails(orderId,spotPaymentDto,totalUserCount);
         }catch (Exception e){
-            return errorService.handlerException(e);
+            e.printStackTrace();
         }
+        return new ResponseEntity<>(null,HttpStatus.INTERNAL_SERVER_ERROR);
     }
     
     @GetMapping(path = "/getAllUser")
