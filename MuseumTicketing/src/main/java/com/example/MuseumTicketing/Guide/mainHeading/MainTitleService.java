@@ -145,8 +145,8 @@ public class MainTitleService {
     private BackgroundImgRepo backgroundImgRepo;
     @Autowired
     private ErrorService errorService;
-    @Value("${app.file.upload-dir}")
-    private String uploadDir;
+//    @Value("${app.file.upload-dir}")
+//    private String uploadDir;
 
 
     public ResponseEntity<?> addMainTitleEng(MainDTO mainDTO) {
@@ -672,77 +672,77 @@ public class MainTitleService {
         return new ResponseEntity<>(getDtoSubList,HttpStatus.OK);
     }
 
-    public ResponseEntity<?> uploadVideoFileData(MultipartFile file) {
-        if (file.isEmpty()){
-            return new ResponseEntity<>("Please select a file to upload", HttpStatus.NOT_FOUND);
-        }
-        try {
-            File dir = new File(uploadDir);
-            if (!dir.exists()){
-                dir.mkdirs();
-            }
-            File videoFile = new File(dir,file.getOriginalFilename());
-            file.transferTo(videoFile);
+//    public ResponseEntity<?> uploadVideoFileData(MultipartFile file) {
+//        if (file.isEmpty()){
+//            return new ResponseEntity<>("Please select a file to upload", HttpStatus.NOT_FOUND);
+//        }
+//        try {
+//            File dir = new File(uploadDir);
+//            if (!dir.exists()){
+//                dir.mkdirs();
+//            }
+//            File videoFile = new File(dir,file.getOriginalFilename());
+//            file.transferTo(videoFile);
+//
+//            return new ResponseEntity<>(file.getOriginalFilename()+"  uploaded successfully : "+videoFile.getAbsolutePath(),HttpStatus.OK);
+//        }catch (IOException e){
+//            return new ResponseEntity<>("Failed to upload file"+e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//    }
 
-            return new ResponseEntity<>(file.getOriginalFilename()+"  uploaded successfully : "+videoFile.getAbsolutePath(),HttpStatus.OK);
-        }catch (IOException e){
-            return new ResponseEntity<>("Failed to upload file"+e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    public ResponseEntity<StreamingResponseBody> getMultipartFile(String fileName, String rangeHeader) {
-        try {
-            Path filePath = Paths.get(getUploadDir()).resolve(fileName).normalize();
-            org.springframework.core.io.Resource resource = new UrlResource(filePath.toUri());
-            if (!resource.exists()){
-                return ResponseEntity.notFound().build();
-            }
-            long fileLength = resource.contentLength();
-            long start =0;
-            long end = fileLength-1;
-            if (rangeHeader !=null){
-                String[] ranges = rangeHeader.replace("bytes=","").split("-");
-                start = Long.parseLong(ranges[0]);
-                if (ranges.length > 1 && !ranges[1].isEmpty()){
-                    end = Long.parseLong(ranges[1]);
-                }
-            }
-            final  long finalStart = start;
-            final long finalEnd = end;
-            long contentLength = finalEnd-finalStart+1;
-            String mimeType = Files.probeContentType(filePath);
-            if (mimeType == null) {
-                mimeType = MediaType.APPLICATION_OCTET_STREAM_VALUE; // Fallback to binary if unknown
-            }
-
-            HttpHeaders headers = new HttpHeaders();//
-            headers.add(HttpHeaders.CONTENT_TYPE, mimeType);
-            headers.add(HttpHeaders.CONTENT_LENGTH, String.valueOf(contentLength));
-            headers.add(HttpHeaders.CONTENT_RANGE, "bytes " + start + "-" + end + "/" + fileLength);
-            headers.add(HttpHeaders.ACCEPT_RANGES, "bytes");
-            StreamingResponseBody responseBody = outputStream -> {
-                try (InputStream inputStream = resource.getInputStream()) {
-                    inputStream.skip(finalStart);
-                    byte[] buffer = new byte[1024];
-                    long bytesRead;
-                    long totalBytesRead = 0;
-
-                    while ((bytesRead = inputStream.read(buffer)) != -1 && totalBytesRead < contentLength) {
-                        outputStream.write(buffer, 0, (int) Math.min(bytesRead, contentLength - totalBytesRead));
-                        totalBytesRead += bytesRead;
-                    }
-                } catch (IOException e) {
-                    throw new RuntimeException("Error reading file", e);
-                }
-            };
-
-            return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT).headers(headers).body(responseBody);
-
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
-    private String getUploadDir() {
-        return uploadDir;
-    }
+//    public ResponseEntity<StreamingResponseBody> getMultipartFile(String fileName, String rangeHeader) {
+//        try {
+//            Path filePath = Paths.get(getUploadDir()).resolve(fileName).normalize();
+//            org.springframework.core.io.Resource resource = new UrlResource(filePath.toUri());
+//            if (!resource.exists()){
+//                return ResponseEntity.notFound().build();
+//            }
+//            long fileLength = resource.contentLength();
+//            long start =0;
+//            long end = fileLength-1;
+//            if (rangeHeader !=null){
+//                String[] ranges = rangeHeader.replace("bytes=","").split("-");
+//                start = Long.parseLong(ranges[0]);
+//                if (ranges.length > 1 && !ranges[1].isEmpty()){
+//                    end = Long.parseLong(ranges[1]);
+//                }
+//            }
+//            final  long finalStart = start;
+//            final long finalEnd = end;
+//            long contentLength = finalEnd-finalStart+1;
+//            String mimeType = Files.probeContentType(filePath);
+//            if (mimeType == null) {
+//                mimeType = MediaType.APPLICATION_OCTET_STREAM_VALUE; // Fallback to binary if unknown
+//            }
+//
+//            HttpHeaders headers = new HttpHeaders();//
+//            headers.add(HttpHeaders.CONTENT_TYPE, mimeType);
+//            headers.add(HttpHeaders.CONTENT_LENGTH, String.valueOf(contentLength));
+//            headers.add(HttpHeaders.CONTENT_RANGE, "bytes " + start + "-" + end + "/" + fileLength);
+//            headers.add(HttpHeaders.ACCEPT_RANGES, "bytes");
+//            StreamingResponseBody responseBody = outputStream -> {
+//                try (InputStream inputStream = resource.getInputStream()) {
+//                    inputStream.skip(finalStart);
+//                    byte[] buffer = new byte[1024];
+//                    long bytesRead;
+//                    long totalBytesRead = 0;
+//
+//                    while ((bytesRead = inputStream.read(buffer)) != -1 && totalBytesRead < contentLength) {
+//                        outputStream.write(buffer, 0, (int) Math.min(bytesRead, contentLength - totalBytesRead));
+//                        totalBytesRead += bytesRead;
+//                    }
+//                } catch (IOException e) {
+//                    throw new RuntimeException("Error reading file", e);
+//                }
+//            };
+//
+//            return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT).headers(headers).body(responseBody);
+//
+//        } catch (IOException e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+//        }
+//    }
+//    private String getUploadDir() {
+//        return uploadDir;
+//    }
 }
