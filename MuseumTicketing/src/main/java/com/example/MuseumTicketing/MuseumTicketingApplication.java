@@ -12,7 +12,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @SpringBootApplication
-@EnableScheduling
+//@EnableScheduling
 public class MuseumTicketingApplication implements CommandLineRunner {
 
 	@Autowired
