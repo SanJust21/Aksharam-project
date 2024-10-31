@@ -151,10 +151,20 @@ public class ScannerService {
             return ResponseEntity.ok(convertToDetailsRequest(institutionDetails.get()));
         } else if (publicDetails.isPresent()) {
             return ResponseEntity.ok(convertToDetailsRequest(publicDetails.get()));
+        }else if (publicDataOptional.isPresent()) {
+            return ResponseEntity.ok(convertToDetailsRequest(publicDataOptional.get()));
+        } else if (institutionDataOptional.isPresent()) {
+            return ResponseEntity.ok(convertToDetailsRequest(institutionDataOptional.get()));
+        } else if (foreignerDataOptional.isPresent()) {
+            return ResponseEntity.ok(convertToDetailsRequest(foreignerDataOptional.get()));
         }
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No details found for the provided ticket ID.");
     }
+
+
+
+
 //    public ResponseEntity<?> identifyUserAndGetDetails(String ticketId, LocalDateTime scannedTime) {
 //
 //        Optional<ScannedDetails> existingScan = scannedDetailsRepo.findByTicketId(ticketId);
@@ -186,12 +196,30 @@ public class ScannerService {
 //        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No details found for the provided ticket ID.");
 //    }
 
-    public DetailsRequest convertToDetailsRequest(ForeignerDetails foreignerDetails) {
-
+    private DetailsRequest convertToDetailsRequest(ForeignerData foreignerData) {
         DetailsRequest detailsRequest = new DetailsRequest();
-
         ScannedDetails scannedDetails = new ScannedDetails();
+        detailsRequest.setSessionId("n/a");
+        detailsRequest.setType("Foreigner");
+        detailsRequest.setMobileNumber(foreignerData.getPhNumber());
+        detailsRequest.setEmail("n/a");
+        detailsRequest.setInstitutionName("n/a");
+        detailsRequest.setDistrict("n/a");
+        detailsRequest.setName(foreignerData.getName());
+        detailsRequest.setNumberOfAdults(foreignerData.getAdult());
+        detailsRequest.setNumberOfChildren(foreignerData.getChild());
+        detailsRequest.setTotalPrice(foreignerData.getGrandTotal());
+        detailsRequest.setVisitDate(foreignerData.getVisitDate());
+        detailsRequest.setBookDate(foreignerData.getVisitDate());
+        detailsRequest.setPaymentid(foreignerData.getPaymentId());
+        detailsRequest.setTotalTickets(foreignerData.getAdult()+foreignerData.getChild());
+        return detailsRequest;
+    }
 
+
+    public DetailsRequest convertToDetailsRequest(ForeignerDetails foreignerDetails) {
+        DetailsRequest detailsRequest = new DetailsRequest();
+        ScannedDetails scannedDetails = new ScannedDetails();
         detailsRequest.setSessionId(foreignerDetails.getSessionId());
         detailsRequest.setType(foreignerDetails.getType());
         detailsRequest.setMobileNumber(foreignerDetails.getMobileNumber());
@@ -210,6 +238,27 @@ public class ScannerService {
         detailsRequest.setPaymentStatus(foreignerDetails.isPaymentStatus());
         detailsRequest.setTotalTickets(foreignerDetails.getNumberOfAdults()+foreignerDetails.getNumberOfChildren());
 
+        return detailsRequest;
+    }
+
+    private DetailsRequest convertToDetailsRequest(InstitutionData institutionData) {
+        DetailsRequest detailsRequest = new DetailsRequest();
+
+        ScannedDetails scannedDetails = new ScannedDetails();
+        detailsRequest.setSessionId("n/a");
+        detailsRequest.setType("Institution");
+        detailsRequest.setMobileNumber(institutionData.getPhNumber());
+        detailsRequest.setEmail("n/a");
+        detailsRequest.setInstitutionName(institutionData.getName());
+        detailsRequest.setDistrict(institutionData.getDistrict());
+        detailsRequest.setName("n/a");
+        detailsRequest.setNumberOfTeachers(institutionData.getTeacher());
+        detailsRequest.setNumberOfStudents(institutionData.getStudent());
+        detailsRequest.setTotalPrice(institutionData.getGrandTotal());
+        detailsRequest.setVisitDate(institutionData.getVisitDate());
+        detailsRequest.setBookDate(institutionData.getVisitDate());
+        detailsRequest.setPaymentid(institutionData.getPaymentId());
+        detailsRequest.setTotalTickets(institutionData.getStudent()+institutionData.getTeacher());
         return detailsRequest;
     }
     public DetailsRequest convertToDetailsRequest(InstitutionDetails institutionDetails) {
@@ -236,6 +285,26 @@ public class ScannerService {
         detailsRequest.setPaymentStatus(institutionDetails.isPaymentStatus());
         detailsRequest.setTotalTickets(institutionDetails.getNumberOfStudents()+ detailsRequest.getNumberOfTeachers());
 
+        return detailsRequest;
+    }
+    private DetailsRequest convertToDetailsRequest(PublicData publicData) {
+        DetailsRequest detailsRequest = new DetailsRequest();
+        ScannedDetails scannedDetails = new ScannedDetails();
+        detailsRequest.setSessionId("n/a");
+        detailsRequest.setType("Public");
+        detailsRequest.setMobileNumber(publicData.getPhNumber());
+        detailsRequest.setEmail("n/a");
+        detailsRequest.setName(publicData.getName());
+        detailsRequest.setInstitutionName("n/a");
+        detailsRequest.setDistrict("n/a");
+        detailsRequest.setNumberOfAdults(publicData.getAdult());
+        detailsRequest.setNumberOfChildren(publicData.getChild());
+        detailsRequest.setNumberOfSeniors(publicData.getSeniorCitizen());
+        detailsRequest.setTotalPrice(publicData.getGrandTotal());
+        detailsRequest.setVisitDate(publicData.getVisitDate());
+        detailsRequest.setBookDate(publicData.getVisitDate());
+        detailsRequest.setPaymentid(publicData.getPaymentId());
+        detailsRequest.setTotalTickets(publicData.getAdult()+publicData.getChild()+publicData.getSeniorCitizen());
         return detailsRequest;
     }
     public DetailsRequest convertToDetailsRequest(PublicDetails publicDetails) {
