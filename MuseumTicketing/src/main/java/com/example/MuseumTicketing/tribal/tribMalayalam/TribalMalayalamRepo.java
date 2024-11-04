@@ -12,6 +12,6 @@ public interface TribalMalayalamRepo extends JpaRepository<TribalMalayalam,Integ
     Optional<TribalMalayalam> findByTribMalUid(String malId);
 
     Optional<TribalMalayalam> findByTitle(String title);
-    Page<TribalMalayalam> findByTribMalUid(String tribMalUid, Pageable pageable);
+
     List<TribalMalayalam> findBytribMalUid(String malId);
 }

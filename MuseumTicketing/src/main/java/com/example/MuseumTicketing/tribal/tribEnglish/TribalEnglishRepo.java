@@ -12,5 +12,6 @@ public interface TribalEnglishRepo extends JpaRepository<TribalEnglish,Integer> 
 
     Optional<TribalEnglish> findByTitle(String title);
 
-    Page<TribalEnglish> findByTribEngUid(String engId, Pageable pageable);
+
+    List<TribalEnglish> findBytribEngUid(String engId);
 }
