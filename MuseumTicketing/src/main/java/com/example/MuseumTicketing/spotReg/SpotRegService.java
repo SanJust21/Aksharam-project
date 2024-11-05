@@ -520,10 +520,11 @@ SpotRegService {
                 publicDtoDataList.add(publicDtoData);
             }
             allUserDataDto.setPublicDtoDataList(publicDtoDataList);
-            allUserDataDtoList.add(allUserDataDto);
+            //allUserDataDtoList.add(allUserDataDto);
         }
         List<InstitutionData> institutionDataList = institutionDataRepo.findAll();
         if (!institutionDataList.isEmpty()){
+
             List<InstitutionDtoData> institutionDtoDataList = new ArrayList<>();
             for (InstitutionData institutionData : institutionDataList){
                 InstitutionDtoData institutionDtoData = new InstitutionDtoData();
@@ -557,7 +558,7 @@ SpotRegService {
                 institutionDtoDataList.add(institutionDtoData);
             }
             allUserDataDto.setInstitutionDtoDataList(institutionDtoDataList);
-            allUserDataDtoList.add(allUserDataDto);
+            //allUserDataDtoList.add(allUserDataDto);
         }
         List<ForeignerData> foreignerDataList = foreignerDataRepo.findAll();
         List<ForeignerDtoData> foreignerDtoDataList = new ArrayList<>();
