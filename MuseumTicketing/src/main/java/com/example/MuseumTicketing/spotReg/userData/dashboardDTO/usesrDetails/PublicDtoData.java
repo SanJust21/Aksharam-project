@@ -22,4 +22,6 @@ public class PublicDtoData {
     private String paymentId;
     private String createdBy;
     private LocalTime generatedTime;
+    private boolean visitStatus;
+    private String categoryName;
 }

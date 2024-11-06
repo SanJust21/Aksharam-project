@@ -23,4 +23,6 @@ public class InstitutionDtoData {
     private String paymentId;
     private String createdBy;
     private LocalTime generatedTime;
+    private boolean visitorsStatus;
+    private String categoryName;
 }
