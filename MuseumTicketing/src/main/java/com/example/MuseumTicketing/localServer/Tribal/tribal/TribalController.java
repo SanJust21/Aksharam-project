@@ -119,11 +119,10 @@ public class TribalController {
     }
 
     @GetMapping(path = "getDetailsByDataType")
-    public ResponseEntity<List<CombinedTribalData>>getAllDetailsByLanguage(@RequestParam Integer dType,@RequestParam(defaultValue = "0") int page,
-                                                                           @RequestParam(defaultValue = "10") int size){
+    public ResponseEntity<List<CombinedTribalData>>getAllDetailsByLanguage(@RequestParam Integer dType){
         Optional<DataType>dataTypeOptional=dataTypeRepo.findById(dType);
         if (dataTypeOptional.isPresent()){
-            return tribalService.getDetailsByLanguage(dType,page,size);
+            return tribalService.getDetailsByLanguage(dType);
         }return new ResponseEntity<>(new ArrayList<>(),HttpStatus.BAD_REQUEST);
     }
 

@@ -199,18 +199,18 @@ public class TribalService {
     }
 
 
-    public ResponseEntity<List<CombinedTribalData>> getDetailsByLanguage(Integer dType,int page,int size) {
+    public ResponseEntity<List<CombinedTribalData>> getDetailsByLanguage(Integer dType) {
         Optional<DataType>dataTypeOptional=dataTypeRepo.findById(dType);
         if (dataTypeOptional.isPresent()){
             DataType dataType = dataTypeOptional.get();
             String type= dataType.getTalk();
             if ("Malayalam".equalsIgnoreCase(type)){
                 List<CombinedTribalData>combinedTribalDataList=new ArrayList<>();
-                Pageable pageable = PageRequest.of(page,size);
-                Page<TribalMalayalam> tribalMalayalamPage = tribalMalayalamRepo.findAll(pageable);
-                //List<TribalMalayalam>tribalMalayalamList=tribalMalayalamRepo.findAll();
-                if (!tribalMalayalamPage.isEmpty()){
-                    for (TribalMalayalam tribalMalayalam:tribalMalayalamPage){
+
+//                Page<TribalMalayalam> tribalMalayalamPage = tribalMalayalamRepo.findAll(pageable);
+                List<TribalMalayalam>tribalMalayalamList=tribalMalayalamRepo.findAll();
+                if (!tribalMalayalamList.isEmpty()){
+                    for (TribalMalayalam tribalMalayalam:tribalMalayalamList){
                         CombinedTribalData combinedTribalData =new CombinedTribalData();
                         combinedTribalData.setTitle(tribalMalayalam.getTitle());
                         combinedTribalData.setDescription(tribalMalayalam.getDescription());
@@ -237,11 +237,11 @@ public class TribalService {
 
             } else if ("English".equalsIgnoreCase(type)) {
                 List<CombinedTribalData>combinedTribalDataList=new ArrayList<>();
-                //List<TribalEnglish> tribalEnglishOptional=tribalEnglishRepo.findAll();
-                Pageable pageable = PageRequest.of(page,size);
-                Page<TribalEnglish> tribalEnglishPage = tribalEnglishRepo.findAll(pageable);
-                if (!tribalEnglishPage.isEmpty()){
-                    for (TribalEnglish tribalEnglish : tribalEnglishPage){
+                List<TribalEnglish> tribalEnglishList=tribalEnglishRepo.findAll();
+//                Pageable pageable = PageRequest.of(page,size);
+//                Page<TribalEnglish> tribalEnglishPage = tribalEnglishRepo.findAll(pageable);
+                if (!tribalEnglishList.isEmpty()){
+                    for (TribalEnglish tribalEnglish : tribalEnglishList){
                         CombinedTribalData combinedTribalData =new CombinedTribalData();
                         combinedTribalData.setTitle(tribalEnglish.getTitle());
                         combinedTribalData.setDescription(tribalEnglish.getDescription());
