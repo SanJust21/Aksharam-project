@@ -482,126 +482,126 @@ SpotRegService {
     public ResponseEntity<?> getAllUserDetails() {
         List<AllUserDataDto> allUserDataDtoList = new ArrayList<>();
         List<PublicData> publicDataList = publicRepo.findAll();
-        AllUserDataDto allUserDataDto = new AllUserDataDto();
+
         if (!publicDataList.isEmpty()){
-            List<PublicDtoData> publicDtoDataList = new ArrayList<>();
+//            List<PublicDtoData> publicDtoDataList = new ArrayList<>();
             for (PublicData publicData : publicDataList){
-                PublicDtoData publicDtoData = new PublicDtoData();
-                publicDtoData.setName(publicData.getName());
-                publicDtoData.setPhNumber(publicData.getPhNumber());
-                publicDtoData.setAdultCount(publicData.getAdult());
-                publicDtoData.setChildCount(publicData.getChild());
-                publicDtoData.setSeniorCitizenCount(publicData.getSeniorCitizen());
-                publicDtoData.setOrderId(publicData.getOrderId());
-                publicDtoData.setPaymentId(publicData.getPaymentId());
-                publicDtoData.setTicketId(publicData.getTicketId());
+                AllUserDataDto allUserDataDto = new AllUserDataDto();
+                allUserDataDto.setName(publicData.getName());
+                allUserDataDto.setPhNumber(publicData.getPhNumber());
+                allUserDataDto.setAdultCount(publicData.getAdult());
+                allUserDataDto.setChildCount(publicData.getChild());
+                allUserDataDto.setSeniorCitizenCount(publicData.getSeniorCitizen());
+                allUserDataDto.setOrderId(publicData.getOrderId());
+                allUserDataDto.setPaymentId(publicData.getPaymentId());
+                allUserDataDto.setTicketId(publicData.getTicketId());
 
                 Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(publicData.getSlotId());
                 if (spotSlotOptional.isPresent()){
                     SpotSlot spotSlot = spotSlotOptional.get();
-                    publicDtoData.setSlotTime(spotSlot.getSlotStartTime());
+                    allUserDataDto.setSlotTime(spotSlot.getSlotStartTime());
                 }
-                publicDtoData.setGrandTotal(publicData.getGrandTotal());
+                allUserDataDto.setGrandTotal(publicData.getGrandTotal());
                 Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(publicData.getPaymentMode());
                 if (paymentModeOptional.isPresent()){
                     PaymentMode paymentMode = paymentModeOptional.get();
-                    publicDtoData.setPaymentModeName(paymentMode.getPaymentType());
+                    allUserDataDto.setPaymentModeName(paymentMode.getPaymentType());
                 }
                 Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(publicData.getPaymentStatusId());
                 if (paymentStatusOptional.isPresent()){
                     PaymentStatus paymentStatus = paymentStatusOptional.get();
-                    publicDtoData.setPaymentStatusName(paymentStatus.getStatusName());
+                    allUserDataDto.setPaymentStatusName(paymentStatus.getStatusName());
                 }
-                publicDtoData.setTicketId(publicData.getTicketId());
-                publicDtoData.setOrderId(publicData.getOrderId());
-                publicDtoData.setPaymentId(publicData.getPaymentId());
-                publicDtoData.setGeneratedTime(publicData.getCreatedTime());
-                publicDtoData.setCreatedBy(publicData.getCreatedBy());
-                publicDtoData.setVisitStatus(publicData.isVisitStatus());
-                publicDtoData.setCategoryName("Public");
-                publicDtoDataList.add(publicDtoData);
+                allUserDataDto.setTicketId(publicData.getTicketId());
+                allUserDataDto.setOrderId(publicData.getOrderId());
+                allUserDataDto.setPaymentId(publicData.getPaymentId());
+                allUserDataDto.setGeneratedTime(publicData.getCreatedTime());
+                allUserDataDto.setCreatedBy(publicData.getCreatedBy());
+                allUserDataDto.setVisitStatus(publicData.isVisitStatus());
+                allUserDataDto.setCategoryName("Public");
+                allUserDataDtoList.add(allUserDataDto);
             }
-            allUserDataDto.setPublicDtoDataList(publicDtoDataList);
+//            allUserDataDto.setPublicDtoDataList(publicDtoDataList);
             //allUserDataDtoList.add(allUserDataDto);
         }
         List<InstitutionData> institutionDataList = institutionDataRepo.findAll();
         if (!institutionDataList.isEmpty()){
 
-            List<InstitutionDtoData> institutionDtoDataList = new ArrayList<>();
+//            List<InstitutionDtoData> institutionDtoDataList = new ArrayList<>();
             for (InstitutionData institutionData : institutionDataList){
-                InstitutionDtoData institutionDtoData = new InstitutionDtoData();
-                institutionDtoData.setName(institutionData.getName());
-                institutionDtoData.setPhNumber(institutionData.getPhNumber());
-                institutionDtoData.setDistrict(institutionData.getDistrict());
-                institutionDtoData.setTeacherCount(institutionData.getTeacher());
-                institutionDtoData.setStudentCount(institutionData.getStudent());
-                institutionDtoData.setGrandTotal(institutionData.getGrandTotal());
+                AllUserDataDto allUserDataDto = new AllUserDataDto();
+                allUserDataDto.setName(institutionData.getName());
+                allUserDataDto.setPhNumber(institutionData.getPhNumber());
+                allUserDataDto.setDistrict(institutionData.getDistrict());
+                allUserDataDto.setTeacherCount(institutionData.getTeacher());
+                allUserDataDto.setStudentCount(institutionData.getStudent());
+                allUserDataDto.setGrandTotal(institutionData.getGrandTotal());
                 Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(institutionData.getPaymentMode());
                 if (paymentModeOptional.isPresent()){
                     PaymentMode paymentMode = paymentModeOptional.get();
-                    institutionDtoData.setPaymentModeName(paymentMode.getPaymentType());
+                    allUserDataDto.setPaymentModeName(paymentMode.getPaymentType());
                 }
                 Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(institutionData.getPaymentStatusId());
                 if (paymentStatusOptional.isPresent()){
                     PaymentStatus paymentStatus = paymentStatusOptional.get();
-                    institutionDtoData.setPaymentStatusName(paymentStatus.getStatusName());
+                    allUserDataDto.setPaymentStatusName(paymentStatus.getStatusName());
                 }
-                institutionDtoData.setVisitDate(institutionData.getVisitDate());
+                allUserDataDto.setVisitDate(institutionData.getVisitDate());
                 Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(institutionData.getSlotId());
                 if (spotSlotOptional.isPresent()){
                     SpotSlot spotSlot = spotSlotOptional.get();
-                    institutionDtoData.setSlotTime(spotSlot.getSlotStartTime());
+                    allUserDataDto.setSlotTime(spotSlot.getSlotStartTime());
                 }
-                institutionDtoData.setTicketId(institutionData.getTicketId());
-                institutionDtoData.setOrderId(institutionData.getOrderId());
-                institutionDtoData.setPaymentId(institutionData.getPaymentId());
-                institutionDtoData.setCreatedBy(institutionData.getCreatedBy());
-                institutionDtoData.setGeneratedTime(institutionData.getCreatedTime());
-                institutionDtoData.setVisitorsStatus(institutionDtoData.isVisitorsStatus());
-                institutionDtoData.setCategoryName("Institution");
-                institutionDtoDataList.add(institutionDtoData);
+                allUserDataDto.setTicketId(institutionData.getTicketId());
+                allUserDataDto.setOrderId(institutionData.getOrderId());
+                allUserDataDto.setPaymentId(institutionData.getPaymentId());
+                allUserDataDto.setCreatedBy(institutionData.getCreatedBy());
+                allUserDataDto.setGeneratedTime(institutionData.getCreatedTime());
+                allUserDataDto.setVisitStatus(institutionData.isVisitStatus());
+                allUserDataDto.setCategoryName("Institution");
+                allUserDataDtoList.add(allUserDataDto);
             }
-            allUserDataDto.setInstitutionDtoDataList(institutionDtoDataList);
+            //allUserDataDto.setInstitutionDtoDataList(institutionDtoDataList);
             //allUserDataDtoList.add(allUserDataDto);
         }
         List<ForeignerData> foreignerDataList = foreignerDataRepo.findAll();
-        List<ForeignerDtoData> foreignerDtoDataList = new ArrayList<>();
+//        List<ForeignerDtoData> foreignerDtoDataList = new ArrayList<>();
         if (!foreignerDataList.isEmpty()){
             for (ForeignerData foreignerData : foreignerDataList){
-                ForeignerDtoData foreignerDtoData = new ForeignerDtoData();
-                foreignerDtoData.setName(foreignerData.getName());
-                foreignerDtoData.setPhNumber(foreignerData.getPhNumber());
-                foreignerDtoData.setAdultCount(foreignerData.getAdult());
-                foreignerDtoData.setChildCount(foreignerData.getChild());
+                AllUserDataDto allUserDataDto = new AllUserDataDto();
+                allUserDataDto.setName(foreignerData.getName());
+                allUserDataDto.setPhNumber(foreignerData.getPhNumber());
+                allUserDataDto.setAdultCount(foreignerData.getAdult());
+                allUserDataDto.setChildCount(foreignerData.getChild());
 
-                foreignerDtoData.setVisitDate(foreignerData.getVisitDate());
+                allUserDataDto.setVisitDate(foreignerData.getVisitDate());
                 Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(foreignerData.getSlotId());
                 if (spotSlotOptional.isPresent()){
                     SpotSlot spotSlot = spotSlotOptional.get();
-                    foreignerDtoData.setSlotTime(spotSlot.getSlotStartTime());
+                    allUserDataDto.setSlotTime(spotSlot.getSlotStartTime());
                 }
-                foreignerDtoData.setGrandTotal(foreignerData.getGrandTotal());
+                allUserDataDto.setGrandTotal(foreignerData.getGrandTotal());
                 Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(foreignerData.getPaymentMode());
                 if (paymentModeOptional.isPresent()){
                     PaymentMode paymentMode = paymentModeOptional.get();
-                    foreignerDtoData.setPaymentModeName(paymentMode.getPaymentType());
+                    allUserDataDto.setPaymentModeName(paymentMode.getPaymentType());
                 }
                 Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(foreignerData.getPaymentStatusId());
                 if (paymentStatusOptional.isPresent()){
                     PaymentStatus paymentStatus = paymentStatusOptional.get();
-                    foreignerDtoData.setPaymentStatusName(paymentStatus.getStatusName());
+                    allUserDataDto.setPaymentStatusName(paymentStatus.getStatusName());
                 }
-                foreignerDtoData.setTicketId(foreignerData.getTicketId());
-                foreignerDtoData.setOrderId(foreignerData.getOrderId());
-                foreignerDtoData.setPaymentId(foreignerDtoData.getPaymentId());
-                foreignerDtoData.setGeneratedTime(foreignerData.getCreatedTime());
-                foreignerDtoData.setCreatedBy(foreignerData.getCreatedBy());
-                foreignerDtoData.setVisitorsStatus(foreignerData.isVisitStatus());
-                foreignerDtoData.setCategoryName("Foreigner");
-                foreignerDtoDataList.add(foreignerDtoData);
+                allUserDataDto.setTicketId(foreignerData.getTicketId());
+                allUserDataDto.setOrderId(foreignerData.getOrderId());
+                allUserDataDto.setPaymentId(foreignerData.getPaymentId());
+                allUserDataDto.setGeneratedTime(foreignerData.getCreatedTime());
+                allUserDataDto.setCreatedBy(foreignerData.getCreatedBy());
+                allUserDataDto.setVisitStatus(foreignerData.isVisitStatus());
+                allUserDataDto.setCategoryName("Foreigner");
+                allUserDataDtoList.add(allUserDataDto);
             }
-            allUserDataDto.setForeignerDtoDataList(foreignerDtoDataList);
-            allUserDataDtoList.add(allUserDataDto);
+//            allUserDataDto.setForeignerDtoDataList(foreignerDtoDataList);
+//            allUserDataDtoList.add(allUserDataDto);
             return new ResponseEntity<>(allUserDataDtoList,HttpStatus.OK);
         }
         return new ResponseEntity<>(null,HttpStatus.BAD_REQUEST);
@@ -851,135 +851,136 @@ SpotRegService {
 
     public ResponseEntity<List<AllUserDataDto>> getUserDetailsByRangeOfDate(LocalDate startDate, LocalDate endDate, Integer categoryId) {
         List<AllUserDataDto> allUserDataDtoList = new ArrayList<>();
-        AllUserDataDto allUserDataDto = new AllUserDataDto();
+
         Optional<CategoryData> categoryDataOptional = categoryRepo.findById(categoryId);
         if (categoryDataOptional.isPresent()){
             CategoryData categoryData = categoryDataOptional.get();
             String name = categoryData.getCategory();
             if ("Public".equalsIgnoreCase(name)){
                 List<PublicData> publicDataList = publicRepo.findByVisitDateBetween(startDate,endDate);
-                List<PublicDtoData> publicDtoDataList = new ArrayList<>();
+//                List<PublicDtoData> publicDtoDataList = new ArrayList<>();
                 if (!publicDataList.isEmpty()){
                     for (PublicData publicData : publicDataList){
-                        PublicDtoData publicDtoData = new PublicDtoData();
-                        publicDtoData.setName(publicData.getName());
-                        publicDtoData.setPhNumber(publicData.getPhNumber());
-                        publicDtoData.setAdultCount(publicData.getAdult());
-                        publicDtoData.setChildCount(publicData.getChild());
-                        publicDtoData.setSeniorCitizenCount(publicData.getSeniorCitizen());
-                        publicDtoData.setOrderId(publicData.getOrderId());
+                        AllUserDataDto allUserDataDto = new AllUserDataDto();
+                        allUserDataDto.setName(publicData.getName());
+                        allUserDataDto.setPhNumber(publicData.getPhNumber());
+                        allUserDataDto.setAdultCount(publicData.getAdult());
+                        allUserDataDto.setChildCount(publicData.getChild());
+                        allUserDataDto.setSeniorCitizenCount(publicData.getSeniorCitizen());
+                        allUserDataDto.setOrderId(publicData.getOrderId());
 
                         Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(publicData.getPaymentMode());
                         if (paymentModeOptional.isPresent()){
                             PaymentMode paymentMode = paymentModeOptional.get();
-                            publicDtoData.setPaymentModeName(paymentMode.getPaymentType());
+                            allUserDataDto.setPaymentModeName(paymentMode.getPaymentType());
                         }
 
                         Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(publicData.getPaymentStatusId());
                         if (paymentStatusOptional.isPresent()){
                             PaymentStatus paymentStatus = paymentStatusOptional.get();
-                            publicDtoData.setPaymentStatusName(paymentStatus.getStatusName());
+                            allUserDataDto.setPaymentStatusName(paymentStatus.getStatusName());
                         }
 
-                        publicDtoData.setVisitDate(publicData.getVisitDate());
+                        allUserDataDto.setVisitDate(publicData.getVisitDate());
 
                         Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(publicData.getSlotId());
                         if (spotSlotOptional.isPresent()){
                             SpotSlot spotSlot = spotSlotOptional.get();
-                            publicDtoData.setSlotTime(spotSlot.getSlotStartTime());
+                            allUserDataDto.setSlotTime(spotSlot.getSlotStartTime());
                         }
 
-                        publicDtoData.setGrandTotal(publicData.getGrandTotal());
-                        publicDtoData.setTicketId(publicData.getTicketId());
-                        publicDtoData.setPaymentId(publicData.getPaymentId());
-                        publicDtoData.setGeneratedTime(publicData.getCreatedTime());
-                        publicDtoData.setCreatedBy(publicData.getCreatedBy());
+                        allUserDataDto.setGrandTotal(publicData.getGrandTotal());
+                        allUserDataDto.setTicketId(publicData.getTicketId());
+                        allUserDataDto.setPaymentId(publicData.getPaymentId());
+                        allUserDataDto.setGeneratedTime(publicData.getCreatedTime());
+                        allUserDataDto.setCreatedBy(publicData.getCreatedBy());
 
-                        publicDtoDataList.add(publicDtoData);
+                        allUserDataDtoList.add(allUserDataDto);
                     }
-                    allUserDataDto.setPublicDtoDataList(publicDtoDataList);
-                    allUserDataDtoList.add(allUserDataDto);
+//                    allUserDataDto.setPublicDtoDataList(publicDtoDataList);
+//                    allUserDataDtoList.add(allUserDataDto);
                     return new ResponseEntity<>(allUserDataDtoList,HttpStatus.OK);
                 }
 
             } else if ("Institution".equalsIgnoreCase(name)) {
-                List<InstitutionDtoData> institutionDtoDataList = new ArrayList<>();
+//                List<InstitutionDtoData> institutionDtoDataList = new ArrayList<>();
                 List<InstitutionData> institutionDataList = institutionDataRepo.findByVisitDateBetween(startDate,endDate);
                 if (!institutionDataList.isEmpty()){
                     for (InstitutionData institutionData : institutionDataList){
-                        InstitutionDtoData institutionDtoData = new InstitutionDtoData();
-                        institutionDtoData.setName(institutionData.getName());
-                        institutionDtoData.setPhNumber(institutionData.getPhNumber());
-                        institutionDtoData.setDistrict(institutionData.getDistrict());
-                        institutionDtoData.setTeacherCount(institutionData.getTeacher());
-                        institutionDtoData.setStudentCount(institutionData.getStudent());
-                        institutionDtoData.setOrderId(institutionData.getOrderId());
-                        institutionDtoData.setGrandTotal(institutionData.getGrandTotal());
+                        AllUserDataDto allUserDataDto = new AllUserDataDto();
+                        allUserDataDto.setName(institutionData.getName());
+                        allUserDataDto.setPhNumber(institutionData.getPhNumber());
+                        allUserDataDto.setDistrict(institutionData.getDistrict());
+                        allUserDataDto.setTeacherCount(institutionData.getTeacher());
+                        allUserDataDto.setStudentCount(institutionData.getStudent());
+                        allUserDataDto.setOrderId(institutionData.getOrderId());
+                        allUserDataDto.setGrandTotal(institutionData.getGrandTotal());
                         Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(institutionData.getPaymentMode());
                         if (paymentModeOptional.isPresent()){
                             PaymentMode paymentMode = paymentModeOptional.get();
-                            institutionDtoData.setPaymentModeName(paymentMode.getPaymentType());
+                            allUserDataDto.setPaymentModeName(paymentMode.getPaymentType());
                         }
                         Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(institutionData.getPaymentStatusId());
                         if (paymentStatusOptional.isPresent()){
                             PaymentStatus paymentStatus = paymentStatusOptional.get();
-                            institutionDtoData.setPaymentStatusName(paymentStatus.getStatusName());
+                            allUserDataDto.setPaymentStatusName(paymentStatus.getStatusName());
                         }
-                        institutionDtoData.setVisitDate(institutionData.getVisitDate());
+                        allUserDataDto.setVisitDate(institutionData.getVisitDate());
                         Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(institutionData.getSlotId());
                         if (spotSlotOptional.isPresent()){
                             SpotSlot spotSlot = spotSlotOptional.get();
-                            institutionDtoData.setSlotTime(spotSlot.getSlotStartTime());
+                            allUserDataDto.setSlotTime(spotSlot.getSlotStartTime());
                         }
-                        institutionDtoData.setTicketId(institutionData.getTicketId());
-                        institutionDtoData.setOrderId(institutionData.getOrderId());
-                        institutionDtoData.setPaymentId(institutionData.getPaymentId());
-                        institutionDtoData.setCreatedBy(institutionData.getCreatedBy());
-                        institutionDtoData.setGeneratedTime(institutionData.getCreatedTime());
-                        institutionDtoDataList.add(institutionDtoData);
+                        allUserDataDto.setTicketId(institutionData.getTicketId());
+                        allUserDataDto.setOrderId(institutionData.getOrderId());
+                        allUserDataDto.setPaymentId(institutionData.getPaymentId());
+                        allUserDataDto.setCreatedBy(institutionData.getCreatedBy());
+                        allUserDataDto.setGeneratedTime(institutionData.getCreatedTime());
+//                        institutionDtoDataList.add(institutionDtoData);
+                        allUserDataDtoList.add(allUserDataDto);
                     }
-                    allUserDataDto.setInstitutionDtoDataList(institutionDtoDataList);
-                    allUserDataDtoList.add(allUserDataDto);
+//                    allUserDataDto.setInstitutionDtoDataList(institutionDtoDataList);
+//                    allUserDataDtoList.add(allUserDataDto);
                     return new ResponseEntity<>(allUserDataDtoList,HttpStatus.OK);
                 }
 
             } else if ("Foreigner".equalsIgnoreCase(name)) {
-                List<ForeignerDtoData> foreignerDtoDataList = new ArrayList<>();
+//                List<ForeignerDtoData> foreignerDtoDataList = new ArrayList<>();
                 List<ForeignerData> foreignerDataList = foreignerDataRepo.findByVisitDateBetween(startDate,endDate);
                 if (!foreignerDataList.isEmpty()){
                     for (ForeignerData foreignerData : foreignerDataList){
-                        ForeignerDtoData foreignerDtoData = new ForeignerDtoData();
-                        foreignerDtoData.setName(foreignerData.getName());
-                        foreignerDtoData.setPhNumber(foreignerData.getPhNumber());
-                        foreignerDtoData.setAdultCount(foreignerData.getAdult());
-                        foreignerDtoData.setChildCount(foreignerData.getChild());
+                        AllUserDataDto allUserDataDto = new AllUserDataDto();
+                        allUserDataDto.setName(foreignerData.getName());
+                        allUserDataDto.setPhNumber(foreignerData.getPhNumber());
+                        allUserDataDto.setAdultCount(foreignerData.getAdult());
+                        allUserDataDto.setChildCount(foreignerData.getChild());
 
-                        foreignerDtoData.setVisitDate(foreignerData.getVisitDate());
+                        allUserDataDto.setVisitDate(foreignerData.getVisitDate());
                         Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(foreignerData.getSlotId());
                         if (spotSlotOptional.isPresent()){
                             SpotSlot spotSlot = spotSlotOptional.get();
-                            foreignerDtoData.setSlotTime(spotSlot.getSlotStartTime());
+                            allUserDataDto.setSlotTime(spotSlot.getSlotStartTime());
                         }
-                        foreignerDtoData.setGrandTotal(foreignerData.getGrandTotal());
+                        allUserDataDto.setGrandTotal(foreignerData.getGrandTotal());
                         Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(foreignerData.getPaymentMode());
                         if (paymentModeOptional.isPresent()){
                             PaymentMode paymentMode = paymentModeOptional.get();
-                            foreignerDtoData.setPaymentModeName(paymentMode.getPaymentType());
+                            allUserDataDto.setPaymentModeName(paymentMode.getPaymentType());
                         }
                         Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(foreignerData.getPaymentStatusId());
                         if (paymentStatusOptional.isPresent()){
                             PaymentStatus paymentStatus = paymentStatusOptional.get();
-                            foreignerDtoData.setPaymentStatusName(paymentStatus.getStatusName());
+                            allUserDataDto.setPaymentStatusName(paymentStatus.getStatusName());
                         }
-                        foreignerDtoData.setTicketId(foreignerData.getTicketId());
-                        foreignerDtoData.setOrderId(foreignerData.getOrderId());
-                        foreignerDtoData.setPaymentId(foreignerDtoData.getPaymentId());
-                        foreignerDtoData.setGeneratedTime(foreignerData.getCreatedTime());
-                        foreignerDtoData.setCreatedBy(foreignerData.getCreatedBy());
-                        foreignerDtoDataList.add(foreignerDtoData);
+                        allUserDataDto.setTicketId(foreignerData.getTicketId());
+                        allUserDataDto.setOrderId(foreignerData.getOrderId());
+                        allUserDataDto.setPaymentId(foreignerData.getPaymentId());
+                        allUserDataDto.setGeneratedTime(foreignerData.getCreatedTime());
+                        allUserDataDto.setCreatedBy(foreignerData.getCreatedBy());
+                        allUserDataDtoList.add(allUserDataDto);
                     }
-                    allUserDataDto.setForeignerDtoDataList(foreignerDtoDataList);
-                    allUserDataDtoList.add(allUserDataDto);
+//                    allUserDataDto.setForeignerDtoDataList(foreignerDtoDataList);
+//                    allUserDataDtoList.add(allUserDataDto);
                     return new ResponseEntity<>(allUserDataDtoList,HttpStatus.OK);
                 }
             }
@@ -987,117 +988,115 @@ SpotRegService {
 
             List<PublicData> publicDataList = publicRepo.findAll();
             if (!publicDataList.isEmpty()){
-                List<PublicDtoData> publicDtoDataList = new ArrayList<>();
+//                List<PublicDtoData> publicDtoDataList = new ArrayList<>();
                 for (PublicData publicData : publicDataList){
-                    PublicDtoData publicDtoData = new PublicDtoData();
-                    publicDtoData.setName(publicData.getName());
-                    publicDtoData.setPhNumber(publicData.getPhNumber());
-                    publicDtoData.setAdultCount(publicData.getAdult());
-                    publicDtoData.setChildCount(publicData.getChild());
-                    publicDtoData.setSeniorCitizenCount(publicData.getSeniorCitizen());
-                    publicDtoData.setOrderId(publicData.getOrderId());
-                    publicDtoData.setPaymentId(publicData.getPaymentId());
-                    publicDtoData.setTicketId(publicData.getTicketId());
+                    AllUserDataDto allUserDataDto = new AllUserDataDto();
+                    allUserDataDto.setName(publicData.getName());
+                    allUserDataDto.setPhNumber(publicData.getPhNumber());
+                    allUserDataDto.setAdultCount(publicData.getAdult());
+                    allUserDataDto.setChildCount(publicData.getChild());
+                    allUserDataDto.setSeniorCitizenCount(publicData.getSeniorCitizen());
+                    allUserDataDto.setOrderId(publicData.getOrderId());
+                    allUserDataDto.setPaymentId(publicData.getPaymentId());
+                    allUserDataDto.setTicketId(publicData.getTicketId());
 
                     Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(publicData.getSlotId());
                     if (spotSlotOptional.isPresent()){
                         SpotSlot spotSlot = spotSlotOptional.get();
-                        publicDtoData.setSlotTime(spotSlot.getSlotStartTime());
+                        allUserDataDto.setSlotTime(spotSlot.getSlotStartTime());
                     }
-                    publicDtoData.setGrandTotal(publicData.getGrandTotal());
+                    allUserDataDto.setGrandTotal(publicData.getGrandTotal());
                     Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(publicData.getPaymentMode());
                     if (paymentModeOptional.isPresent()){
                         PaymentMode paymentMode = paymentModeOptional.get();
-                        publicDtoData.setPaymentModeName(paymentMode.getPaymentType());
+                        allUserDataDto.setPaymentModeName(paymentMode.getPaymentType());
                     }
                     Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(publicData.getPaymentStatusId());
                     if (paymentStatusOptional.isPresent()){
                         PaymentStatus paymentStatus = paymentStatusOptional.get();
-                        publicDtoData.setPaymentStatusName(paymentStatus.getStatusName());
+                        allUserDataDto.setPaymentStatusName(paymentStatus.getStatusName());
                     }
-                    publicDtoData.setTicketId(publicData.getTicketId());
-                    publicDtoData.setOrderId(publicData.getOrderId());
-                    publicDtoData.setPaymentId(publicData.getPaymentId());
-                    publicDtoData.setGeneratedTime(publicData.getCreatedTime());
-                    publicDtoData.setCreatedBy(publicData.getCreatedBy());
-                    publicDtoDataList.add(publicDtoData);
+                    allUserDataDto.setTicketId(publicData.getTicketId());
+                    allUserDataDto.setOrderId(publicData.getOrderId());
+                    allUserDataDto.setPaymentId(publicData.getPaymentId());
+                    allUserDataDto.setGeneratedTime(publicData.getCreatedTime());
+                    allUserDataDto.setCreatedBy(publicData.getCreatedBy());
+                    allUserDataDtoList.add(allUserDataDto);
                 }
-                allUserDataDto.setPublicDtoDataList(publicDtoDataList);
+//                allUserDataDto.setPublicDtoDataList(publicDtoDataList);
 
             }
             List<InstitutionData> institutionDataList = institutionDataRepo.findAll();
             if (!institutionDataList.isEmpty()){
-                List<InstitutionDtoData> institutionDtoDataList = new ArrayList<>();
+//                List<InstitutionDtoData> institutionDtoDataList = new ArrayList<>();
                 for (InstitutionData institutionData : institutionDataList){
-                    InstitutionDtoData institutionDtoData = new InstitutionDtoData();
-                    institutionDtoData.setName(institutionData.getName());
-                    institutionDtoData.setPhNumber(institutionData.getPhNumber());
-                    institutionDtoData.setDistrict(institutionData.getDistrict());
-                    institutionDtoData.setTeacherCount(institutionData.getTeacher());
-                    institutionDtoData.setStudentCount(institutionData.getStudent());
-                    institutionDtoData.setGrandTotal(institutionData.getGrandTotal());
+                    AllUserDataDto allUserDataDto = new AllUserDataDto();
+                    allUserDataDto.setName(institutionData.getName());
+                    allUserDataDto.setPhNumber(institutionData.getPhNumber());
+                    allUserDataDto.setDistrict(institutionData.getDistrict());
+                    allUserDataDto.setTeacherCount(institutionData.getTeacher());
+                    allUserDataDto.setStudentCount(institutionData.getStudent());
+                    allUserDataDto.setGrandTotal(institutionData.getGrandTotal());
                     Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(institutionData.getPaymentMode());
                     if (paymentModeOptional.isPresent()){
                         PaymentMode paymentMode = paymentModeOptional.get();
-                        institutionDtoData.setPaymentModeName(paymentMode.getPaymentType());
+                        allUserDataDto.setPaymentModeName(paymentMode.getPaymentType());
                     }
                     Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(institutionData.getPaymentStatusId());
                     if (paymentStatusOptional.isPresent()){
                         PaymentStatus paymentStatus = paymentStatusOptional.get();
-                        institutionDtoData.setPaymentStatusName(paymentStatus.getStatusName());
+                        allUserDataDto.setPaymentStatusName(paymentStatus.getStatusName());
                     }
-                    institutionDtoData.setVisitDate(institutionData.getVisitDate());
+                    allUserDataDto.setVisitDate(institutionData.getVisitDate());
                     Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(institutionData.getSlotId());
                     if (spotSlotOptional.isPresent()){
                         SpotSlot spotSlot = spotSlotOptional.get();
-                        institutionDtoData.setSlotTime(spotSlot.getSlotStartTime());
+                        allUserDataDto.setSlotTime(spotSlot.getSlotStartTime());
                     }
-                    institutionDtoData.setTicketId(institutionData.getTicketId());
-                    institutionDtoData.setOrderId(institutionData.getOrderId());
-                    institutionDtoData.setPaymentId(institutionData.getPaymentId());
-                    institutionDtoData.setCreatedBy(institutionData.getCreatedBy());
-                    institutionDtoData.setGeneratedTime(institutionData.getCreatedTime());
-                    institutionDtoDataList.add(institutionDtoData);
+                    allUserDataDto.setTicketId(institutionData.getTicketId());
+                    allUserDataDto.setOrderId(institutionData.getOrderId());
+                    allUserDataDto.setPaymentId(institutionData.getPaymentId());
+                    allUserDataDto.setCreatedBy(institutionData.getCreatedBy());
+                    allUserDataDto.setGeneratedTime(institutionData.getCreatedTime());
+                    allUserDataDtoList.add(allUserDataDto);
                 }
-                allUserDataDto.setInstitutionDtoDataList(institutionDtoDataList);
-
             }
             List<ForeignerData> foreignerDataList = foreignerDataRepo.findAll();
-            List<ForeignerDtoData> foreignerDtoDataList = new ArrayList<>();
+//            List<ForeignerDtoData> foreignerDtoDataList = new ArrayList<>();
             if (!foreignerDataList.isEmpty()){
                 for (ForeignerData foreignerData : foreignerDataList){
-                    ForeignerDtoData foreignerDtoData = new ForeignerDtoData();
-                    foreignerDtoData.setName(foreignerData.getName());
-                    foreignerDtoData.setPhNumber(foreignerData.getPhNumber());
-                    foreignerDtoData.setAdultCount(foreignerData.getAdult());
-                    foreignerDtoData.setChildCount(foreignerData.getChild());
+                    AllUserDataDto allUserDataDto = new AllUserDataDto();
+                    allUserDataDto.setName(foreignerData.getName());
+                    allUserDataDto.setPhNumber(foreignerData.getPhNumber());
+                    allUserDataDto.setAdultCount(foreignerData.getAdult());
+                    allUserDataDto.setChildCount(foreignerData.getChild());
 
-                    foreignerDtoData.setVisitDate(foreignerData.getVisitDate());
+                    allUserDataDto.setVisitDate(foreignerData.getVisitDate());
                     Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(foreignerData.getSlotId());
                     if (spotSlotOptional.isPresent()){
                         SpotSlot spotSlot = spotSlotOptional.get();
-                        foreignerDtoData.setSlotTime(spotSlot.getSlotStartTime());
+                        allUserDataDto.setSlotTime(spotSlot.getSlotStartTime());
                     }
-                    foreignerDtoData.setGrandTotal(foreignerData.getGrandTotal());
+                    allUserDataDto.setGrandTotal(foreignerData.getGrandTotal());
                     Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(foreignerData.getPaymentMode());
                     if (paymentModeOptional.isPresent()){
                         PaymentMode paymentMode = paymentModeOptional.get();
-                        foreignerDtoData.setPaymentModeName(paymentMode.getPaymentType());
+                        allUserDataDto.setPaymentModeName(paymentMode.getPaymentType());
                     }
                     Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(foreignerData.getPaymentStatusId());
                     if (paymentStatusOptional.isPresent()){
                         PaymentStatus paymentStatus = paymentStatusOptional.get();
-                        foreignerDtoData.setPaymentStatusName(paymentStatus.getStatusName());
+                        allUserDataDto.setPaymentStatusName(paymentStatus.getStatusName());
                     }
-                    foreignerDtoData.setTicketId(foreignerData.getTicketId());
-                    foreignerDtoData.setOrderId(foreignerData.getOrderId());
-                    foreignerDtoData.setPaymentId(foreignerDtoData.getPaymentId());
-                    foreignerDtoData.setGeneratedTime(foreignerData.getCreatedTime());
-                    foreignerDtoData.setCreatedBy(foreignerData.getCreatedBy());
-                    foreignerDtoDataList.add(foreignerDtoData);
+                    allUserDataDto.setTicketId(foreignerData.getTicketId());
+                    allUserDataDto.setOrderId(foreignerData.getOrderId());
+                    allUserDataDto.setPaymentId(allUserDataDto.getPaymentId());
+                    allUserDataDto.setGeneratedTime(foreignerData.getCreatedTime());
+                    allUserDataDto.setCreatedBy(foreignerData.getCreatedBy());
+                    allUserDataDtoList.add(allUserDataDto);
                 }
-                allUserDataDto.setForeignerDtoDataList(foreignerDtoDataList);
-                allUserDataDtoList.add(allUserDataDto);
+//                allUserDataDto.setForeignerDtoDataList(foreignerDtoDataList);
+//                allUserDataDtoList.add(allUserDataDto);
                 return new ResponseEntity<>(allUserDataDtoList,HttpStatus.OK);
             }
         }
@@ -1151,7 +1150,7 @@ SpotRegService {
             publicVisitorsDto.setAdultCount(adultCount);
             publicVisitorsDto.setChildCount(childCount);
             publicVisitorsDto.setSeniorCitizen(seniorCitizenCount);
-            publicVisitorsDto.setPublicCount(count);
+            publicVisitorsDto.setPublicTicketCount(count);
             publicVisitorsDtoList.add(publicVisitorsDto);
         }
         return new ResponseEntity<>(publicVisitorsDtoList,HttpStatus.OK);
@@ -1168,7 +1167,7 @@ SpotRegService {
                 studentCount+=institutionData.getStudent();
                 count++;
             }
-            institutionVisitorsDto.setInstitutionCount(count);
+            institutionVisitorsDto.setInstitutionTicketCount(count);
             institutionVisitorsDto.setTeacherCount(teacherCount);
             institutionVisitorsDto.setStudnetCount(studentCount);
             institutionVisitorsDtoList.add(institutionVisitorsDto);
@@ -1187,7 +1186,7 @@ SpotRegService {
                 childCount+=foreignerData.getChild();
                 count++;
             }
-            foreignerVisitorsDto.setForeignerCount(count);
+            foreignerVisitorsDto.setForeignerTicketCount(count);
             foreignerVisitorsDto.setForeignAdult(adultCount);
             foreignerVisitorsDto.setForeignChild(childCount);
             foreignerVisitorsDtoList.add(foreignerVisitorsDto);
@@ -1202,55 +1201,58 @@ SpotRegService {
         List<ForeignerData> foreignerDataList = foreignerDataRepo.findByVisitDate(vDate);
 
         List<VisitsCountDto> visitsCountDtoList = new ArrayList<>();
-        VisitsCountDto visitsCountDto = new VisitsCountDto();
+
         Integer adultCount =0,childCount=0,seniorCitizenCount=0,count=0;
 
         if (!publicDataList.isEmpty()){
-            List<PublicVisitorsDto> publicVisitorsDtoList = new ArrayList<>();
-            PublicVisitorsDto publicVisitorsDto = new PublicVisitorsDto();
+//            List<PublicVisitorsDto> publicVisitorsDtoList = new ArrayList<>();
+//            PublicVisitorsDto publicVisitorsDto = new PublicVisitorsDto();
+            VisitsCountDto visitsCountDto = new VisitsCountDto();
             for (PublicData publicData : publicDataList){
                 adultCount+=publicData.getAdult();
                 childCount+=publicData.getChild();
                 seniorCitizenCount+=publicData.getSeniorCitizen();
                 count++;
             }
-            publicVisitorsDto.setAdultCount(adultCount);
-            publicVisitorsDto.setChildCount(childCount);
-            publicVisitorsDto.setSeniorCitizen(seniorCitizenCount);
-            publicVisitorsDto.setPublicCount(count);
-            publicVisitorsDtoList.add(publicVisitorsDto);
-            visitsCountDto.setPublicVisitorsDtoList(publicVisitorsDtoList);
+            visitsCountDto.setAdultCount(adultCount);
+            visitsCountDto.setChildCount(childCount);
+            visitsCountDto.setSeniorCitizen(seniorCitizenCount);
+            visitsCountDto.setPublicTicketCount(count);
+            visitsCountDtoList.add(visitsCountDto);
+//            visitsCountDto.setPublicVisitorsDtoList(publicVisitorsDtoList);
             count=0;adultCount=0;childCount=0;
         }
         if (!institutionDataList.isEmpty()){
             List<InstitutionVisitorsDto> institutionVisitorsDtoList = new ArrayList<>();
-            InstitutionVisitorsDto institutionVisitorsDto = new InstitutionVisitorsDto();
+//            InstitutionVisitorsDto institutionVisitorsDto = new InstitutionVisitorsDto();
+            VisitsCountDto visitsCountDto = new VisitsCountDto();
             for (InstitutionData institutionData:institutionDataList){
                 adultCount+=institutionData.getTeacher();
                 childCount+=institutionData.getStudent();
                 count++;
             }
-            institutionVisitorsDto.setTeacherCount(adultCount);
-            institutionVisitorsDto.setStudnetCount(childCount);
-            institutionVisitorsDto.setInstitutionCount(count);
-            institutionVisitorsDtoList.add(institutionVisitorsDto);
-            visitsCountDto.setInstitutionVisitorsDtoList(institutionVisitorsDtoList);
+            visitsCountDto.setTeacherCount(adultCount);
+            visitsCountDto.setStudentCount(childCount);
+            visitsCountDto.setInstitutionTicketCount(count);
+            visitsCountDtoList.add(visitsCountDto);
+//            visitsCountDto.setInstitutionVisitorsDtoList(institutionVisitorsDtoList);
             count=0;adultCount=0;childCount=0;
         }
         if (!foreignerDataList.isEmpty()){
             List<ForeignerVisitorsDto> foreignerVisitorsDtoList = new ArrayList<>();
-            ForeignerVisitorsDto foreignerVisitorsDto = new ForeignerVisitorsDto();
+//            ForeignerVisitorsDto foreignerVisitorsDto = new ForeignerVisitorsDto();
+            VisitsCountDto visitsCountDto = new VisitsCountDto();
             for (ForeignerData foreignerData:foreignerDataList){
                 adultCount+=foreignerData.getAdult();
                 childCount+=foreignerData.getChild();
                 count++;
             }
-            foreignerVisitorsDto.setForeignAdult(adultCount);
-            foreignerVisitorsDto.setForeignChild(childCount);
-            foreignerVisitorsDto.setForeignerCount(count);
-            foreignerVisitorsDtoList.add(foreignerVisitorsDto);
-            visitsCountDto.setForeignerVisitorsDtoList(foreignerVisitorsDtoList);
+            visitsCountDto.setForeignAdult(adultCount);
+            visitsCountDto.setForeignChild(childCount);
+            visitsCountDto.setForeignerTicketCount(count);
             visitsCountDtoList.add(visitsCountDto);
+//            visitsCountDto.setForeignerVisitorsDtoList(foreignerVisitorsDtoList);
+//            visitsCountDtoList.add(visitsCountDto);
         }
         return new ResponseEntity<>(visitsCountDtoList,HttpStatus.OK);
     }
@@ -1265,50 +1267,48 @@ SpotRegService {
         Integer adultCount =0,childCount=0,seniorCitizenCount=0,count=0;
         //VisitsCountDto visitsCountDto = new VisitsCountDto();
         if (!publicDataList.isEmpty()){
-            List<PublicVisitorsDto> publicVisitorsDtoList = new ArrayList<>();
-            PublicVisitorsDto publicVisitorsDto = new PublicVisitorsDto();
+//            List<PublicVisitorsDto> publicVisitorsDtoList = new ArrayList<>();
+
+//            PublicVisitorsDto publicVisitorsDto = new PublicVisitorsDto();
             for (PublicData publicData : publicDataList){
                 adultCount+=publicData.getAdult();
                 childCount+=publicData.getChild();
                 seniorCitizenCount+=publicData.getSeniorCitizen();
                 count++;
             }
-            publicVisitorsDto.setPublicCount(count);
-            publicVisitorsDto.setAdultCount(adultCount);
-            publicVisitorsDto.setChildCount(childCount);
-            publicVisitorsDto.setSeniorCitizen(seniorCitizenCount);
-            publicVisitorsDtoList.add(publicVisitorsDto);
-            visitsCountDto.setPublicVisitorsDtoList(publicVisitorsDtoList);
+            visitsCountDto.setPublicTicketCount(count);
+            visitsCountDto.setAdultCount(adultCount);
+            visitsCountDto.setChildCount(childCount);
+            visitsCountDto.setSeniorCitizen(seniorCitizenCount);
+            visitsCountDtoList.add(visitsCountDto);
+//            visitsCountDto.setPublicVisitorsDtoList(publicVisitorsDtoList);
             adultCount=0;childCount=0;count=0;
         }
         if (!institutionDataList.isEmpty()){
             List<InstitutionVisitorsDto> institutionVisitorsDtoList = new ArrayList<>();
-            InstitutionVisitorsDto institutionVisitorsDto = new InstitutionVisitorsDto();
+//            InstitutionVisitorsDto institutionVisitorsDto = new InstitutionVisitorsDto();
             for (InstitutionData institutionData : institutionDataList){
                 adultCount+=institutionData.getTeacher();
                 childCount+=institutionData.getStudent();
                 count++;
             }
-            institutionVisitorsDto.setTeacherCount(adultCount);
-            institutionVisitorsDto.setStudnetCount(childCount);
-            institutionVisitorsDto.setInstitutionCount(count);
-            institutionVisitorsDtoList.add(institutionVisitorsDto);
-            visitsCountDto.setInstitutionVisitorsDtoList(institutionVisitorsDtoList);
+            visitsCountDto.setTeacherCount(adultCount);
+            visitsCountDto.setStudentCount(childCount);
+            visitsCountDto.setInstitutionTicketCount(count);
+            visitsCountDtoList.add(visitsCountDto);
             adultCount=0;childCount=0;count=0;
         }
         if (!foreignerDataList.isEmpty()){
-            List<ForeignerVisitorsDto> foreignerVisitorsDtoList = new ArrayList<>();
-            ForeignerVisitorsDto foreignerVisitorsDto = new ForeignerVisitorsDto();
+
+//            ForeignerVisitorsDto foreignerVisitorsDto = new ForeignerVisitorsDto();
             for (ForeignerData foreignerData : foreignerDataList){
                 adultCount+= foreignerData.getAdult();
                 childCount+= foreignerData.getChild();
                 count++;
             }
-            foreignerVisitorsDto.setForeignerCount(count);
-            foreignerVisitorsDto.setForeignAdult(adultCount);
-            foreignerVisitorsDto.setForeignChild(childCount);
-            foreignerVisitorsDtoList.add(foreignerVisitorsDto);
-            visitsCountDto.setForeignerVisitorsDtoList(foreignerVisitorsDtoList);
+            visitsCountDto.setForeignerTicketCount(count);
+            visitsCountDto.setForeignAdult(adultCount);
+            visitsCountDto.setForeignChild(childCount);
             visitsCountDtoList.add(visitsCountDto);
         }
         return new ResponseEntity<>(visitsCountDtoList,HttpStatus.OK);

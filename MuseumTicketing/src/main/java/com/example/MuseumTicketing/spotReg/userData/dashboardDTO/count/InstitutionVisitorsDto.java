@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class InstitutionVisitorsDto {
-    private Integer institutionCount;
+    private Integer institutionTicketCount;
     private Integer teacherCount;
     private Integer studnetCount;
 

@@ -214,6 +214,7 @@ public class CategoryService {
         if (!priceDataList.isEmpty()){
             for (PriceData priceData : priceDataList){
                 PriceDto priceDto = new PriceDto();
+                priceDto.setId(priceData.getId());
                 Optional<CategoryData> categoryDataOptional = categoryRepo.findById(priceData.getCategoryId());
                 if (categoryDataOptional.isPresent()){
                     priceDto.setCategoryName(categoryDataOptional.get().getCategory());
