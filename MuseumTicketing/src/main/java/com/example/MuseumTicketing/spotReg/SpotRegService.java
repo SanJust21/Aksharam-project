@@ -337,6 +337,52 @@ SpotRegService {
         return new ResponseEntity<>("OrderId : "+orderId+" isn't valid",HttpStatus.BAD_REQUEST);
     }
 
+    public ResponseEntity<?> getAllRegistrationDetails(Integer categoryId) {
+        Optional<CategoryData> categoryDataOptional = categoryRepo.findById(categoryId);
+        if (categoryDataOptional.isPresent()){
+            CategoryData categoryData = categoryDataOptional.get();
+            if ("Public".equalsIgnoreCase(categoryData.getCategory())){
+                return new ResponseEntity<>(publicRepo.findAll(),HttpStatus.OK);
+            } else if ("Institution".equalsIgnoreCase(categoryData.getCategory())) {
+                return new ResponseEntity<>(institutionDataRepo.findAll(),HttpStatus.OK);
+            } else if ("Foreigner".equalsIgnoreCase(categoryData.getCategory())) {
+                return new ResponseEntity<>(foreignerDataRepo.findAll(),HttpStatus.OK);
+            }
+        }return new ResponseEntity<>("CategoryId isn't valid.",HttpStatus.BAD_REQUEST);
+    }
+
+    public ResponseEntity<?> deletePartialRegistration(Integer categoryId, Long deleteId) {
+        Optional<CategoryData> categoryDataOptional = categoryRepo.findById(categoryId);
+        if (categoryDataOptional.isPresent()){
+            CategoryData categoryData = categoryDataOptional.get();
+            if ("Public".equalsIgnoreCase(categoryData.getCategory())){
+                Optional<PublicData> publicDataOptional = publicRepo.findById(deleteId);
+                if (publicDataOptional.isPresent()){
+                    PublicData publicData = publicDataOptional.get();
+                    String name = publicData.getName();
+                    publicRepo.delete(publicData);
+                    return new ResponseEntity<>(name+"'s details are deleted",HttpStatus.OK);
+                }return new ResponseEntity<>("id : "+deleteId+" isn't present",HttpStatus.NOT_FOUND);
+            } else if ("Institution".equalsIgnoreCase(categoryData.getCategory())) {
+                Optional<InstitutionData> institutionDataOptional = institutionDataRepo.findById(deleteId);
+                if (institutionDataOptional.isPresent()){
+                    InstitutionData institutionData = institutionDataOptional.get();
+                    String name = institutionData.getName();
+                    institutionDataRepo.delete(institutionData);
+                    return new ResponseEntity<>(name+"'s details are deleted",HttpStatus.OK);
+                }return new ResponseEntity<>("id : "+deleteId+" isn't present",HttpStatus.NOT_FOUND);
+            } else if ("Foreigner".equalsIgnoreCase(categoryData.getCategory())) {
+                Optional<ForeignerData> foreignerDataOptional = foreignerDataRepo.findById(deleteId);
+                if (foreignerDataOptional.isPresent()){
+                    ForeignerData foreignerData = foreignerDataOptional.get();
+                    String name = foreignerData.getName();
+                    foreignerDataRepo.delete(foreignerData);
+                    return new ResponseEntity<>(name+"'s details are deleted",HttpStatus.OK);
+                }return new ResponseEntity<>("id : "+deleteId+" isn't present",HttpStatus.NOT_FOUND);
+            }
+        }return new ResponseEntity<>("CategoryId isn't valid.",HttpStatus.BAD_REQUEST);
+    }
+
     public ResponseEntity<SpotBookingDto> confirmPaymentDetails(String orderId, SpotPaymentDto spotPaymentDto,Integer totalUserCount)throws WriterException, IOException {
         SpotBookingDto spotBookingDto = new SpotBookingDto();
         Optional<PublicData> publicDataOptional = publicRepo.findByOrderId(orderId);

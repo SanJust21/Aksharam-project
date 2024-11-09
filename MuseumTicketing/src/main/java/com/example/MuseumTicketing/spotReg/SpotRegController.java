@@ -63,6 +63,25 @@ public class SpotRegController {
         }
     }
 
+    @GetMapping(path = "/getAllRegistrationDetails")
+    public ResponseEntity<?>getAllRegistrationDetails(@RequestParam Integer categoryId){
+        try {
+            return spotRegService.getAllRegistrationDetails(categoryId);
+        }catch (Exception e){
+            return errorService.handlerException(e);
+        }
+    }
+
+    @DeleteMapping(path = "/deletePartialRegistration")
+    public ResponseEntity<?>deletePartialRegistration(@RequestParam Integer categoryId,
+                                                      @RequestParam Long deleteId){
+        try {
+            return spotRegService.deletePartialRegistration(categoryId,deleteId);
+        }catch (Exception e){
+            return errorService.handlerException(e);
+        }
+    }
+
     @PostMapping(path = "/confirmPayment")
     public ResponseEntity<SpotBookingDto> confirmPayment(@RequestParam String orderId, @RequestBody SpotPaymentDto spotPaymentDto,
                                             @RequestParam Integer totalUserCount){
