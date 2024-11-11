@@ -21,4 +21,5 @@ public class VisitsCountDto {
     private Integer foreignerTicketCount;
     private Integer foreignAdult;
     private Integer foreignChild;
+    private Integer totalVisitsCount;
 }

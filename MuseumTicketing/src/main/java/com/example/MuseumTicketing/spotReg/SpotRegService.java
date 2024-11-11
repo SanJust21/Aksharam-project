@@ -21,10 +21,7 @@ import com.example.MuseumTicketing.spotReg.userData.SpotUserDto;
 import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.*;
 import com.example.MuseumTicketing.spotReg.userData.Institution.InstitutionData;
 import com.example.MuseumTicketing.spotReg.userData.Institution.InstitutionDataRepo;
-import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.count.ForeignerVisitorsDto;
-import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.count.InstitutionVisitorsDto;
-import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.count.PublicVisitorsDto;
-import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.count.VisitsCountDto;
+import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.count.*;
 import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.usesrDetails.AllUserDataDto;
 import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.usesrDetails.ForeignerDtoData;
 import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.usesrDetails.InstitutionDtoData;
@@ -1247,60 +1244,66 @@ SpotRegService {
         List<ForeignerData> foreignerDataList = foreignerDataRepo.findByVisitDate(vDate);
 
         List<VisitsCountDto> visitsCountDtoList = new ArrayList<>();
+        VisitsCountDto visitsCountDto = new VisitsCountDto();
 
-        Integer adultCount =0,childCount=0,seniorCitizenCount=0,count=0;
+        Integer adultCount =0,childCount=0,seniorCitizenCount=0,count=0,totalCount=0;
 
         if (!publicDataList.isEmpty()){
 //            List<PublicVisitorsDto> publicVisitorsDtoList = new ArrayList<>();
 //            PublicVisitorsDto publicVisitorsDto = new PublicVisitorsDto();
-            VisitsCountDto visitsCountDto = new VisitsCountDto();
+
             for (PublicData publicData : publicDataList){
                 adultCount+=publicData.getAdult();
                 childCount+=publicData.getChild();
                 seniorCitizenCount+=publicData.getSeniorCitizen();
                 count++;
             }
+            totalCount+=count;
             visitsCountDto.setAdultCount(adultCount);
             visitsCountDto.setChildCount(childCount);
             visitsCountDto.setSeniorCitizen(seniorCitizenCount);
             visitsCountDto.setPublicTicketCount(count);
-            visitsCountDtoList.add(visitsCountDto);
+            //visitsCountDtoList.add(visitsCountDto);
 //            visitsCountDto.setPublicVisitorsDtoList(publicVisitorsDtoList);
             count=0;adultCount=0;childCount=0;
         }
         if (!institutionDataList.isEmpty()){
             List<InstitutionVisitorsDto> institutionVisitorsDtoList = new ArrayList<>();
 //            InstitutionVisitorsDto institutionVisitorsDto = new InstitutionVisitorsDto();
-            VisitsCountDto visitsCountDto = new VisitsCountDto();
+//            VisitsCountDto visitsCountDto = new VisitsCountDto();
             for (InstitutionData institutionData:institutionDataList){
                 adultCount+=institutionData.getTeacher();
                 childCount+=institutionData.getStudent();
                 count++;
             }
+            totalCount+=count;
             visitsCountDto.setTeacherCount(adultCount);
             visitsCountDto.setStudentCount(childCount);
             visitsCountDto.setInstitutionTicketCount(count);
-            visitsCountDtoList.add(visitsCountDto);
+            //visitsCountDtoList.add(visitsCountDto);
 //            visitsCountDto.setInstitutionVisitorsDtoList(institutionVisitorsDtoList);
             count=0;adultCount=0;childCount=0;
         }
         if (!foreignerDataList.isEmpty()){
             List<ForeignerVisitorsDto> foreignerVisitorsDtoList = new ArrayList<>();
 //            ForeignerVisitorsDto foreignerVisitorsDto = new ForeignerVisitorsDto();
-            VisitsCountDto visitsCountDto = new VisitsCountDto();
+//            VisitsCountDto visitsCountDto = new VisitsCountDto();
             for (ForeignerData foreignerData:foreignerDataList){
                 adultCount+=foreignerData.getAdult();
                 childCount+=foreignerData.getChild();
                 count++;
             }
+            totalCount+=count;
             visitsCountDto.setForeignAdult(adultCount);
             visitsCountDto.setForeignChild(childCount);
             visitsCountDto.setForeignerTicketCount(count);
+            visitsCountDto.setTotalVisitsCount(totalCount);
             visitsCountDtoList.add(visitsCountDto);
+            return new ResponseEntity<>(visitsCountDtoList,HttpStatus.OK);
 //            visitsCountDto.setForeignerVisitorsDtoList(foreignerVisitorsDtoList);
 //            visitsCountDtoList.add(visitsCountDto);
         }
-        return new ResponseEntity<>(visitsCountDtoList,HttpStatus.OK);
+        return new ResponseEntity<>(null,HttpStatus.BAD_REQUEST);
     }
 
     public ResponseEntity<List<VisitsCountDto>> visitorsCountByDateRange(LocalDate startDate, LocalDate endDate) {
@@ -1310,7 +1313,7 @@ SpotRegService {
 
         List<VisitsCountDto> visitsCountDtoList = new ArrayList<>();
         VisitsCountDto visitsCountDto = new VisitsCountDto();
-        Integer adultCount =0,childCount=0,seniorCitizenCount=0,count=0;
+        Integer adultCount =0,childCount=0,seniorCitizenCount=0,count=0,totalCount=0;
         //VisitsCountDto visitsCountDto = new VisitsCountDto();
         if (!publicDataList.isEmpty()){
 //            List<PublicVisitorsDto> publicVisitorsDtoList = new ArrayList<>();
@@ -1322,11 +1325,12 @@ SpotRegService {
                 seniorCitizenCount+=publicData.getSeniorCitizen();
                 count++;
             }
+            totalCount+=count;
             visitsCountDto.setPublicTicketCount(count);
             visitsCountDto.setAdultCount(adultCount);
             visitsCountDto.setChildCount(childCount);
             visitsCountDto.setSeniorCitizen(seniorCitizenCount);
-            visitsCountDtoList.add(visitsCountDto);
+            //visitsCountDtoList.add(visitsCountDto);
 //            visitsCountDto.setPublicVisitorsDtoList(publicVisitorsDtoList);
             adultCount=0;childCount=0;count=0;
         }
@@ -1338,10 +1342,11 @@ SpotRegService {
                 childCount+=institutionData.getStudent();
                 count++;
             }
+            totalCount+=count;
             visitsCountDto.setTeacherCount(adultCount);
             visitsCountDto.setStudentCount(childCount);
             visitsCountDto.setInstitutionTicketCount(count);
-            visitsCountDtoList.add(visitsCountDto);
+            //visitsCountDtoList.add(visitsCountDto);
             adultCount=0;childCount=0;count=0;
         }
         if (!foreignerDataList.isEmpty()){
@@ -1352,11 +1357,135 @@ SpotRegService {
                 childCount+= foreignerData.getChild();
                 count++;
             }
+            totalCount+=count;
             visitsCountDto.setForeignerTicketCount(count);
             visitsCountDto.setForeignAdult(adultCount);
             visitsCountDto.setForeignChild(childCount);
+            visitsCountDto.setTotalVisitsCount(totalCount);
             visitsCountDtoList.add(visitsCountDto);
         }
         return new ResponseEntity<>(visitsCountDtoList,HttpStatus.OK);
+    }
+
+    public ResponseEntity<List<VisitorsAmountDto>> visitsIncomeAndTotalCountUpToNow(Integer categoryId) {
+        Optional<CategoryData> categoryDataOptional = categoryRepo.findById(categoryId);
+        List<VisitorsAmountDto> visitorsAmountDtoList = new ArrayList<>();
+        VisitorsAmountDto visitorsAmountDto = new VisitorsAmountDto();
+        Double incomeData=0.0;Integer ticketCount=0;
+        if (categoryDataOptional.isPresent()){
+            CategoryData categoryData = categoryDataOptional.get();
+            if ("Public".equalsIgnoreCase(categoryData.getCategory())){
+                List<PublicData> publicDataList = publicRepo.findAll();
+                if (!publicDataList.isEmpty()){
+                    for (PublicData publicData:publicDataList){
+                        Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(publicData.getPaymentStatusId());
+                        if (paymentStatusOptional.isPresent()){
+                            PaymentStatus paymentStatus = paymentStatusOptional.get();
+                            if ("Received".equalsIgnoreCase(paymentStatus.getStatusName())){
+                                incomeData+=publicData.getGrandTotal();
+                                ticketCount+=(publicData.getAdult()+publicData.getChild()+publicData.getSeniorCitizen());
+                            }
+                        }
+                    }
+                    visitorsAmountDto.setPublicIncome(incomeData);
+                    visitorsAmountDto.setPublicTicketCount(ticketCount);
+                    visitorsAmountDtoList.add(visitorsAmountDto);
+                    return new ResponseEntity<>(visitorsAmountDtoList,HttpStatus.OK);
+                }
+            } else if ("Institution".equalsIgnoreCase(categoryData.getCategory())) {
+                List<InstitutionData> institutionDataList = institutionDataRepo.findAll();
+                if (!institutionDataList.isEmpty()){
+                    for (InstitutionData institutionData : institutionDataList){
+                        Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(institutionData.getPaymentStatusId());
+                        if (paymentStatusOptional.isPresent()){
+                            PaymentStatus paymentStatus = paymentStatusOptional.get();
+                            if ("Received".equalsIgnoreCase(paymentStatus.getStatusName())){
+                                incomeData+=institutionData.getGrandTotal();
+                                ticketCount+=(institutionData.getTeacher()+institutionData.getStudent());
+                            }
+                        }
+                    }
+                    visitorsAmountDto.setInstitutionIncome(incomeData);
+                    visitorsAmountDto.setInstitutionTicketCount(ticketCount);
+                    visitorsAmountDtoList.add(visitorsAmountDto);
+                    return new ResponseEntity<>(visitorsAmountDtoList,HttpStatus.OK);
+                }
+            } else if ("Foreigner".equalsIgnoreCase(categoryData.getCategory())) {
+                List<ForeignerData> foreignerDataList = foreignerDataRepo.findAll();
+                if (!foreignerDataList.isEmpty()){
+                    for (ForeignerData foreignerData:foreignerDataList){
+                        Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(foreignerData.getPaymentStatusId());
+                        if (paymentStatusOptional.isPresent()){
+                            PaymentStatus paymentStatus = paymentStatusOptional.get();
+                            if ("Received".equalsIgnoreCase(paymentStatus.getStatusName())){
+                                incomeData+=foreignerData.getGrandTotal();
+                                ticketCount+=(foreignerData.getAdult()+foreignerData.getChild());
+                            }
+                        }
+                    }
+                    visitorsAmountDto.setForeignerIncome(incomeData);
+                    visitorsAmountDto.setForeignerTicketCount(ticketCount);
+                    visitorsAmountDtoList.add(visitorsAmountDto);
+                    return new ResponseEntity<>(visitorsAmountDtoList,HttpStatus.OK);
+                }
+            }
+        }else {
+            Double incomeAll=0.0;Integer countAll=0;
+            List<PublicData> publicDataList = publicRepo.findAll();
+            if (!publicDataList.isEmpty()){
+                for (PublicData publicData:publicDataList){
+                    Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(publicData.getPaymentStatusId());
+                    if (paymentStatusOptional.isPresent()){
+                        PaymentStatus paymentStatus = paymentStatusOptional.get();
+                        if ("Received".equalsIgnoreCase(paymentStatus.getStatusName())){
+                            incomeData+=publicData.getGrandTotal();
+                            ticketCount+=(publicData.getAdult()+publicData.getChild()+publicData.getSeniorCitizen());
+                        }
+                    }
+                }
+                visitorsAmountDto.setPublicIncome(incomeData);
+                visitorsAmountDto.setPublicTicketCount(ticketCount);
+                incomeAll+=incomeData;countAll+=ticketCount;
+            }
+            incomeData=0.0;ticketCount=0;
+            List<InstitutionData> institutionDataList = institutionDataRepo.findAll();
+            if (!institutionDataList.isEmpty()){
+                for (InstitutionData institutionData : institutionDataList){
+                    Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(institutionData.getPaymentStatusId());
+                    if (paymentStatusOptional.isPresent()){
+                        PaymentStatus paymentStatus = paymentStatusOptional.get();
+                        if ("Received".equalsIgnoreCase(paymentStatus.getStatusName())){
+                            incomeData+=institutionData.getGrandTotal();
+                            ticketCount+=(institutionData.getTeacher()+institutionData.getStudent());
+                        }
+                    }
+                }
+                visitorsAmountDto.setInstitutionIncome(incomeData);
+                visitorsAmountDto.setInstitutionTicketCount(ticketCount);
+                incomeAll+=incomeData;countAll+=ticketCount;
+            }
+            incomeData=0.0;ticketCount=0;
+            List<ForeignerData> foreignerDataList = foreignerDataRepo.findAll();
+            if (!foreignerDataList.isEmpty()){
+                for (ForeignerData foreignerData:foreignerDataList){
+                    Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(foreignerData.getPaymentStatusId());
+                    if (paymentStatusOptional.isPresent()){
+                        PaymentStatus paymentStatus = paymentStatusOptional.get();
+                        if ("Received".equalsIgnoreCase(paymentStatus.getStatusName())){
+                            incomeData+=foreignerData.getGrandTotal();
+                            ticketCount+=(foreignerData.getAdult()+foreignerData.getChild());
+                        }
+                    }
+                }
+                visitorsAmountDto.setForeignerIncome(incomeData);
+                visitorsAmountDto.setForeignerTicketCount(ticketCount);
+                incomeAll+=incomeData;countAll+=ticketCount;
+                visitorsAmountDto.setTotalIncome(incomeAll);
+                visitorsAmountDto.setTotalTicketCount(countAll);
+                visitorsAmountDtoList.add(visitorsAmountDto);
+                return new ResponseEntity<>(visitorsAmountDtoList,HttpStatus.OK);
+            }
+        }
+        return new ResponseEntity<>(new ArrayList<>(),HttpStatus.BAD_REQUEST);
     }
 }
