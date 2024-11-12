@@ -12,9 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.sql.Time;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -83,7 +81,9 @@ public class SlotDetailsService {
                 Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(bookingDetails.getSlotId());
                 if (spotSlotOptional.isPresent()){
                     SpotSlot spotSlot = spotSlotOptional.get();
-                    LocalTime now = LocalTime.now();
+                    ZonedDateTime nowUtc = ZonedDateTime.now(ZoneId.of("UTC"));
+                    LocalTime now  = nowUtc.toLocalTime();
+                    //LocalTime now = LocalTime.now();
                     if (bookingDetails.getBookDate().isEqual(bDate)&& now.isAfter(spotSlot.getSlotStartTime()) && now.isBefore(spotSlot.getSlotEndTime())){
                         return new ResponseEntity<>(bookingDetails,HttpStatus.OK);
                     }else {
@@ -108,7 +108,9 @@ public class SlotDetailsService {
         }
         BookingDetails bookingDetails = new BookingDetails();
         bookingDetails.setBookDate(bDate);
-        LocalTime now = LocalTime.now();
+        ZonedDateTime nowUtc = ZonedDateTime.now(ZoneId.of("UTC"));
+        LocalTime now = nowUtc.toLocalTime();
+        //LocalTime now = LocalTime.now();
         List<SpotSlot> spotSlotList = spotSlotRepo.findAll();
         if (!spotSlotList.isEmpty()){
             for (SpotSlot spotSlot : spotSlotList){

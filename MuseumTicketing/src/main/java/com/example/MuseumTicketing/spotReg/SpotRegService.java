@@ -99,25 +99,33 @@ SpotRegService {
             userCount = spotUserDto.getAdult();
             //calculating total user charge using categoryId,userTypeId and no.ofUserCount.
             totalAdultCharge =amountCalculation.calculateTotalUserCharge(category,typeId,userCount);
+            System.out.println("total Adult charge : "+totalAdultCharge);
         }
         if (spotUserDto.getChild()>0){ //calculating total child ticket charge
             typeId=spotUserDto.getChildTypeId();
             userCount = spotUserDto.getChild();
             totalChildCharge = amountCalculation.calculateTotalUserCharge(category,typeId,userCount);
+            System.out.println("total child charge : "+totalChildCharge);
         }
         if (spotUserDto.getSeniorCitizen()>0){ // calculating total senior citizen ticket charge.
             typeId = spotUserDto.getSeniorCitizenTypeId();
             userCount = spotUserDto.getSeniorCitizen();
             totalSeniorCitizenCharge = amountCalculation.calculateTotalUserCharge(category,typeId,userCount);
+            System.out.println("total senior citizen charge : "+totalSeniorCitizenCharge);
         }
         //total ticket charge by total no.of adult + total no.of child + total no.of senior citizen
         Double totalCharges = totalAdultCharge+totalChildCharge+totalSeniorCitizenCharge;
+        System.out.println("total ticket charge : "+totalCharges);
         Double totalGstRate =0.0; Double totalUserGst;
         totalGstRate = amountCalculation.CalculateGST(); // calculating GST charge
+        System.out.println("total GST charge : "+totalGstRate);
         totalUserGst = totalGstRate*totalCharges;   // total user GST charge
+        System.out.println("total user total GST charge : "+totalUserGst);
         Integer extraCharge= amountCalculation.calculateAdditionalCharges(); // additional charges
+        System.out.println("additional charge : "+extraCharge);
         // calculating grandTotal = totalUserGST charge + additionalCharge + totalTicket charge
         grandTotal = amountCalculation.calculateGrandTotal(totalUserGst,extraCharge,totalCharges);
+        System.out.println("Grand total : "+grandTotal);
         publicDetails.setTotalAmount(totalCharges);
         publicDetails.setTotalGstCharge(totalUserGst);
         publicDetails.setTotalAdditionalCharges(extraCharge);
@@ -262,7 +270,7 @@ SpotRegService {
         } else if (institutionDataOptional.isPresent()) {
             InstitutionData institutionData = institutionDataOptional.get();
             institutionData.setTeacher(spotUpdateDto.getTeacher());
-            institutionData.setTeacher(spotUpdateDto.getTeacher());
+            institutionData.setStudent(spotUpdateDto.getStudent());
             Double totalTeacherCharge=0.0;  Double totalStudentCharge=0.0;
             Double grandTotal;Integer userCount,typeId;
             if (spotUpdateDto.getTeacher()>0){    // calculating total teacher's ticket charge0
