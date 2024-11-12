@@ -41,6 +41,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -259,7 +260,7 @@ SpotRegService {
         } else if (institutionDataOptional.isPresent()) {
             InstitutionData institutionData = institutionDataOptional.get();
             institutionData.setTeacher(spotUpdateDto.getTeacher());
-            institutionData.setTeacher(spotUpdateDto.getTeacher());
+            institutionData.setStudent(spotUpdateDto.getStudent());
             Double totalTeacherCharge=0.0;  Double totalStudentCharge=0.0;
             Double grandTotal;Integer userCount,typeId;
             if (spotUpdateDto.getTeacher()>0){    // calculating total teacher's ticket charge0
@@ -1487,5 +1488,61 @@ SpotRegService {
             }
         }
         return new ResponseEntity<>(new ArrayList<>(),HttpStatus.BAD_REQUEST);
+    }
+
+    public ResponseEntity<List<VisitsCountYearlyDto>> getDetailsByYear(Integer year,Integer categoryId) {
+        List<VisitsCountYearlyDto> visitsCountYearlyDtoList = new ArrayList<>();
+
+
+        Optional<CategoryData> categoryDataOptional = categoryRepo.findById(categoryId);
+        if (categoryDataOptional.isPresent()){
+            CategoryData categoryData = categoryDataOptional.get();
+            if ("Public".equalsIgnoreCase(categoryData.getCategory())){
+                for (Month month : Month.values()){
+                    Double incomeData =0.0,incomeAll=0.0;Integer countData =0,countAll=0;
+
+                    LocalDate startDate = LocalDate.of(year,month,1);
+                    LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+
+                    List<PublicData> publicDataList = publicRepo.findByVisitDateBetween(startDate,endDate);
+                    if (!publicDataList.isEmpty()){
+                        for (PublicData publicData:publicDataList){
+                            Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(publicData.getPaymentStatusId());
+                            if (paymentStatusOptional.isPresent()){
+                                if ("Received".equalsIgnoreCase(paymentStatusOptional.get().getStatusName())){
+                                    VisitsCountYearlyDto visitorsAmountDto = new VisitsCountYearlyDto();
+                                    visitorsAmountDto.setPublicIncome(publicData.getGrandTotal());
+                                    visitorsAmountDto.setMonth(month.name());
+//                                    incomeData+=publicData.getGrandTotal();
+                                    countData+=(publicData.getAdult()+publicData.getChild()+publicData.getSeniorCitizen());
+                                    visitorsAmountDto.setPublicTicketCount(countData);
+                                    visitsCountYearlyDtoList.add(visitorsAmountDto);
+                                }
+
+
+                            }
+
+                        }
+
+//                        visitorsAmountDto.setPublicTicketCount(countData);
+//                        visitorsAmountDto.setPublicIncome(incomeData);
+//                        visitorsAmountDto.setMonth(month.name());
+//                        visitsCountYearlyDtoList.add(visitorsAmountDto);
+
+                    }
+
+                }
+                return new ResponseEntity<>(visitsCountYearlyDtoList,HttpStatus.OK);
+            }return new ResponseEntity<>(new ArrayList<>(),HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(new ArrayList<>(),HttpStatus.BAD_REQUEST);
+
+//        for (Month month : Month.values()){
+//            LocalDate startDate = LocalDate.of(year,month,1);
+//            LocalDate endDate = startDate.withDayOfMonth(startDate.getDayOfMonth());
+//
+//            List<PublicData> publicDataList = publicRepo.findByVisitDateBetween(startDate,endDate);
+//
+//        }
     }
 }

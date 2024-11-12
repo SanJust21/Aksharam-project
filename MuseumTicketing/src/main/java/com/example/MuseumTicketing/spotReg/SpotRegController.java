@@ -10,6 +10,7 @@ import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.GetUserData_;
 import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.SlotIdDto;
 import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.count.VisitorsAmountDto;
 import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.count.VisitsCountDto;
+import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.count.VisitsCountYearlyDto;
 import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.usesrDetails.AllUserDataDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -182,6 +183,15 @@ public class SpotRegController {
     public ResponseEntity<List<VisitorsAmountDto>>visitsIncomeAndTotalCountUptoNow(@RequestParam Integer categoryId){
         try {
             return spotRegService.visitsIncomeAndTotalCountUpToNow(categoryId);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    @GetMapping(path = "/getDetailsByYear")
+    public ResponseEntity<List<VisitsCountYearlyDto>>getDetailsByYear(@RequestParam Integer year, @RequestParam Integer categoryId){
+        try {
+            return spotRegService.getDetailsByYear(year,categoryId);
         }catch (Exception e){
             e.printStackTrace();
         }
