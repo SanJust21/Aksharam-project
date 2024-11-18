@@ -5,6 +5,7 @@ import com.example.MuseumTicketing.spotReg.bookingDetails.booking.BookingDetails
 import com.example.MuseumTicketing.spotReg.bookingDetails.booking.BookingSpotRepo;
 import com.example.MuseumTicketing.spotReg.bookingDetails.slotData.SlotSpotDto;
 import com.example.MuseumTicketing.spotReg.bookingDetails.slotData.SpotSlot;
+import com.example.MuseumTicketing.spotReg.bookingDetails.slotData.SpotSlotGetDto;
 import com.example.MuseumTicketing.spotReg.bookingDetails.slotData.SpotSlotRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Time;
 import java.time.*;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -25,21 +27,43 @@ public class SlotDetailsService {
     private BookingSpotRepo bookingSpotRepo;
 
     public ResponseEntity<?> addSlotDetails(SpotSlot spotSlot) {
-        return new ResponseEntity<>(spotSlotRepo.save(spotSlot), HttpStatus.OK);
+        SpotSlot spotDto = new SpotSlot();
+        LocalTime newStart = spotSlot.getSlotStartTime();
+        LocalTime newEnd = spotSlot.getSlotEndTime();
+        spotDto.setSlotStartTime(newStart.minusHours(5).minusMinutes(30));
+        spotDto.setSlotEndTime(newEnd.minusHours(5).minusMinutes(30));
+        spotSlot.setTotalCapacity(spotSlot.getTotalCapacity());
+        spotDto.setStatus(spotSlot.getStatus());
+        spotSlotRepo.save(spotDto);
+        return new ResponseEntity<>("Start Time : "+newStart+" and End Time : "+newEnd+" slot added successfully+", HttpStatus.OK);
     }
 
-    public ResponseEntity<List<SpotSlot>> getAllSlotDetails() {
+    public ResponseEntity<List<SpotSlotGetDto>> getAllSlotDetails() {
+        List<SpotSlotGetDto> spotSlotGetDtoList = new ArrayList<>();
         List<SpotSlot> spotSlotList = spotSlotRepo.findAll();
         spotSlotList.sort(Comparator.comparing(SpotSlot::getId));
-        return new ResponseEntity<>(spotSlotList,HttpStatus.OK);
+        for (SpotSlot spotSlot : spotSlotList){
+            SpotSlotGetDto spotSlotGetDto = new SpotSlotGetDto();
+            LocalTime newStart = spotSlot.getSlotStartTime();
+            LocalTime newEnd = spotSlot.getSlotEndTime();
+            spotSlotGetDto.setSlotId(spotSlot.getId());
+            spotSlotGetDto.setSlotStartTime(newStart.plusHours(5).plusMinutes(30));
+            spotSlotGetDto.setSlotEndTime(newEnd.plusHours(5).plusMinutes(30));
+            spotSlotGetDto.setCapacity(spotSlot.getTotalCapacity());
+            spotSlotGetDto.setStatus(spotSlot.getStatus());
+            spotSlotGetDtoList.add(spotSlotGetDto);
+        }
+        return new ResponseEntity<>(spotSlotGetDtoList,HttpStatus.OK);
     }
 
     public ResponseEntity<?> updateSlotDetails(SlotSpotDto spotSlotDto, Integer id) {
         Optional<SpotSlot> spotSlotOptional =spotSlotRepo.findById(id);
         if (spotSlotOptional.isPresent()){
             SpotSlot spotSlot = spotSlotOptional.get();
-            spotSlot.setSlotStartTime(spotSlotDto.getSlotStartTime());
-            spotSlot.setSlotEndTime(spotSlotDto.getSlotEndTime());
+            LocalTime newStart = spotSlotDto.getSlotStartTime();
+            LocalTime newEnd = spotSlotDto.getSlotEndTime();
+            spotSlot.setSlotStartTime(newStart.minusHours(5).minusMinutes(30));
+            spotSlot.setSlotEndTime(newEnd.minusHours(5).minusMinutes(30));
             spotSlot.setStatus(spotSlotDto.getStatus());
             spotSlot.setTotalCapacity(spotSlotDto.getCapacity());
             spotSlotRepo.save(spotSlot);

@@ -6,6 +6,7 @@ import com.example.MuseumTicketing.spotReg.bookingDetails.booking.BookingDetails
 import com.example.MuseumTicketing.spotReg.bookingDetails.booking.BookingSpotRepo;
 import com.example.MuseumTicketing.spotReg.bookingDetails.slotData.SlotSpotDto;
 import com.example.MuseumTicketing.spotReg.bookingDetails.slotData.SpotSlot;
+import com.example.MuseumTicketing.spotReg.bookingDetails.slotData.SpotSlotGetDto;
 import com.example.MuseumTicketing.spotReg.bookingDetails.slotData.SpotSlotRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -40,7 +41,7 @@ public class SlotDetailsController {
     }
 
     @GetMapping(path = "/getAllSlot")
-    public ResponseEntity<List<SpotSlot>> getAllSlot(){
+    public ResponseEntity<List<SpotSlotGetDto>> getAllSlot(){
         try {
             return slotDetailsService.getAllSlotDetails();
         }catch (Exception e){
