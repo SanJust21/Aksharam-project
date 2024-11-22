@@ -1,5 +1,6 @@
 package com.example.MuseumTicketing.spotReg;
 
+import com.example.MuseumTicketing.DTO.AdminScanner.TotalIncomeDTO;
 import com.example.MuseumTicketing.Guide.util.ErrorService;
 import com.example.MuseumTicketing.spotReg.category.category.CategoryData;
 import com.example.MuseumTicketing.spotReg.category.category.CategoryRepo;
@@ -10,7 +11,6 @@ import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.GetUserData_;
 import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.SlotIdDto;
 import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.count.VisitorsAmountDto;
 import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.count.VisitsCountDto;
-import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.count.VisitsCountYearlyDto;
 import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.usesrDetails.AllUserDataDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -188,13 +189,14 @@ public class SpotRegController {
         }
         return new ResponseEntity<>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    @GetMapping(path = "/getDetailsByYear")
-    public ResponseEntity<List<VisitsCountYearlyDto>>getDetailsByYear(@RequestParam Integer year, @RequestParam Integer categoryId){
+
+    @GetMapping(path = "/monthlyData")
+    public Map<String, Map<String, Object>> getMonthlyData(@RequestParam int year,@RequestParam Integer categoryId){
         try {
-            return spotRegService.getDetailsByYear(year,categoryId);
+            return spotRegService.getMonthlyDataByYear(year,categoryId);
         }catch (Exception e){
             e.printStackTrace();
         }
-        return new ResponseEntity<>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
+        return null;
     }
 }

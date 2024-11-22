@@ -31,6 +31,7 @@ public class SpotUserDto {
 
     private Integer teacher;
     private Integer teacherTypeId;
+    private Integer paymentStatusId;
 
 
 

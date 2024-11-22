@@ -1,5 +1,6 @@
 package com.example.MuseumTicketing.spotReg;
 
+import com.example.MuseumTicketing.DTO.AdminScanner.TotalIncomeDTO;
 import com.example.MuseumTicketing.Guide.util.AlphaNumeric;
 import com.example.MuseumTicketing.spotReg.bookingDetails.booking.BookingDetails;
 import com.example.MuseumTicketing.spotReg.bookingDetails.booking.BookingSpotRepo;
@@ -37,14 +38,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.services.s3.endpoints.internal.Value;
 
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.Month;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class
@@ -122,6 +122,13 @@ SpotRegService {
         publicDetails.setGrandTotal(grandTotal);
         publicDetails.setPaymentMode(spotUserDto.getPaymentMode());
         publicDetails.setOrderId(alphaNumeric.generateRandomNumber());
+        Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(spotUserDto.getPaymentStatusId());
+        if (paymentStatusOptional.isPresent()){
+            PaymentStatus paymentStatus = paymentStatusOptional.get();
+            if ("Pending".equalsIgnoreCase(paymentStatus.getStatusName())){
+                publicDetails.setPaymentStatusId(paymentStatus.getId());
+            }
+        }
         publicRepo.save(publicDetails);
         return new ResponseEntity<>(publicDetails,HttpStatus.OK);
     }
@@ -167,6 +174,13 @@ SpotRegService {
         institutionData.setTotalAdditionalCharges(extraCharge);
         institutionData.setGrandTotal(grandTotal);
         institutionData.setOrderId(alphaNumeric.generateRandomNumber());
+        Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(spotUserDto.getPaymentStatusId());
+        if (paymentStatusOptional.isPresent()){
+            PaymentStatus paymentStatus = paymentStatusOptional.get();
+            if ("Pending".equalsIgnoreCase(paymentStatus.getStatusName())){
+                institutionData.setPaymentStatusId(paymentStatus.getId());
+            }
+        }
         institutionDataRepo.save(institutionData);
         return new ResponseEntity<>(institutionData,HttpStatus.OK);
     }
@@ -210,6 +224,13 @@ SpotRegService {
         foreignerData.setGrandTotal(grandTotal);
         foreignerData.setPaymentMode(spotUserDto.getPaymentMode());
         foreignerData.setOrderId(alphaNumeric.generateRandomNumber());
+        Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(spotUserDto.getPaymentStatusId());
+        if (paymentStatusOptional.isPresent()){
+            PaymentStatus paymentStatus = paymentStatusOptional.get();
+            if ("Pending".equalsIgnoreCase(paymentStatus.getStatusName())){
+                foreignerData.setPaymentStatusId(paymentStatus.getId());
+            }
+        }
         foreignerDataRepo.save(foreignerData);
         return new ResponseEntity<>(foreignerData,HttpStatus.OK);
     }
@@ -414,6 +435,7 @@ SpotRegService {
                 }
             }
             publicData.setCreatedBy(spotPaymentDto.getCreatedBy());
+            publicData.setCountOfPeople(totalUserCount);
             publicRepo.save(publicData);
             spotBookingDto.setName(publicData.getName());
             spotBookingDto.setPhNumber(publicData.getPhNumber());
@@ -459,6 +481,7 @@ SpotRegService {
             institutionData.setVisitDate(bookingDetails.getBookDate());
             institutionData.setSlotId(bookingDetails.getSlotId());
             institutionData.setCreatedBy(spotPaymentDto.getCreatedBy());
+            institutionData.setCountOfPeople(totalUserCount);
             institutionDataRepo.save(institutionData);
             spotBookingDto.setName(institutionData.getName());
             spotBookingDto.setPhNumber(institutionData.getPhNumber());
@@ -503,6 +526,7 @@ SpotRegService {
             foreignerData.setVisitDate(bookingDetails.getBookDate());
             foreignerData.setSlotId(bookingDetails.getSlotId());
             foreignerData.setCreatedBy(spotPaymentDto.getCreatedBy());
+            foreignerData.setCountOfPeople(totalUserCount);
             foreignerDataRepo.save(foreignerData);
             spotBookingDto.setName(foreignerData.getName());
             spotBookingDto.setPhNumber(foreignerData.getPhNumber());
@@ -1490,59 +1514,137 @@ SpotRegService {
         return new ResponseEntity<>(new ArrayList<>(),HttpStatus.BAD_REQUEST);
     }
 
-    public ResponseEntity<List<VisitsCountYearlyDto>> getDetailsByYear(Integer year,Integer categoryId) {
-        List<VisitsCountYearlyDto> visitsCountYearlyDtoList = new ArrayList<>();
-
-
+    public Map<String, Map<String, Object>> getMonthlyDataByYear(int year,Integer categoryId) {
         Optional<CategoryData> categoryDataOptional = categoryRepo.findById(categoryId);
         if (categoryDataOptional.isPresent()){
             CategoryData categoryData = categoryDataOptional.get();
             if ("Public".equalsIgnoreCase(categoryData.getCategory())){
-                for (Month month : Month.values()){
-                    Double incomeData =0.0,incomeAll=0.0;Integer countData =0,countAll=0;
+                List<Object[]> results = publicRepo.findMonthlyDataByYear(year);
 
-                    LocalDate startDate = LocalDate.of(year,month,1);
-                    LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
-
-                    List<PublicData> publicDataList = publicRepo.findByVisitDateBetween(startDate,endDate);
-                    if (!publicDataList.isEmpty()){
-                        for (PublicData publicData:publicDataList){
-                            Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(publicData.getPaymentStatusId());
-                            if (paymentStatusOptional.isPresent()){
-                                if ("Received".equalsIgnoreCase(paymentStatusOptional.get().getStatusName())){
-                                    VisitsCountYearlyDto visitorsAmountDto = new VisitsCountYearlyDto();
-                                    visitorsAmountDto.setPublicIncome(publicData.getGrandTotal());
-                                    visitorsAmountDto.setMonth(month.name());
-//                                    incomeData+=publicData.getGrandTotal();
-                                    countData+=(publicData.getAdult()+publicData.getChild()+publicData.getSeniorCitizen());
-                                    visitorsAmountDto.setPublicTicketCount(countData);
-                                    visitsCountYearlyDtoList.add(visitorsAmountDto);
-                                }
-
-
-                            }
-
-                        }
-
-//                        visitorsAmountDto.setPublicTicketCount(countData);
-//                        visitorsAmountDto.setPublicIncome(incomeData);
-//                        visitorsAmountDto.setMonth(month.name());
-//                        visitsCountYearlyDtoList.add(visitorsAmountDto);
-
-                    }
-
+                Map<String, Map<String, Object>> monthlyData = new LinkedHashMap<>();
+                for (int month=1;month<=12;month++){
+                    monthlyData.put(getMonthName(month),new HashMap<String,Object>() {{
+                        put("grandTotal",0.0);
+                        put("countOfPeople",0);
+                    }});
                 }
-                return new ResponseEntity<>(visitsCountYearlyDtoList,HttpStatus.OK);
-            }return new ResponseEntity<>(new ArrayList<>(),HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity<>(new ArrayList<>(),HttpStatus.BAD_REQUEST);
+                for (Object[] result : results){
+                    Integer monthInteger = (Integer) result[0];
+                    int month = monthInteger;
+                    double grandTotal = ((Number) result[1]).doubleValue();
+                    int countOfPeople = ((Number) result[2]).intValue();
 
-//        for (Month month : Month.values()){
-//            LocalDate startDate = LocalDate.of(year,month,1);
-//            LocalDate endDate = startDate.withDayOfMonth(startDate.getDayOfMonth());
-//
-//            List<PublicData> publicDataList = publicRepo.findByVisitDateBetween(startDate,endDate);
-//
-//        }
+                    Map<String, Object> monthData =monthlyData.get(getMonthName(month));
+                    if (monthData!=null){
+                        monthData.put("grandTotal",grandTotal);
+                        monthData.put("countOfPeople",countOfPeople);
+                    }
+                }
+                return monthlyData;
+            } else if ("Institution".equalsIgnoreCase(categoryData.getCategory())) {
+                List<Object[]> results = institutionDataRepo.findMonthlyDataByYear(year);
+                Map<String,Map<String,Object>> monthlyData = new LinkedHashMap<>();
+                for (int month=1;month<=12;month++){
+                    monthlyData.put(getMonthName(month),new HashMap<String,Object>(){{
+                        put("grandTotal",0.0);
+                        put("countOfPeople",0);
+                    }});
+                }
+                for (Object[] result:results){
+                    Integer monthInteger=(Integer) result[0];
+                    int month = monthInteger;
+                    double grandTotal= ((Number) result[1]).doubleValue();
+                    int countOfPeople = ((Number) result[2]).intValue();
+                    Map<String, Object> monthData = monthlyData.get(getMonthName(month));
+                    if (monthData!=null){
+                        monthData.put("grandTotal",grandTotal);
+                        monthData.put("countOfPeople",countOfPeople);
+                    }
+                }
+                return monthlyData;
+
+            } else if ("Foreigner".equalsIgnoreCase(categoryData.getCategory())) {
+                List<Object[]> results = foreignerDataRepo.findMonthlyDataByYear(year);
+                Map<String,Map<String,Object>> monthlyData = new LinkedHashMap<>();
+                for (int month=1;month<=12;month++){
+                    monthlyData.put(getMonthName(month),new HashMap<String,Object>(){{
+                        put("grandTotal",0.0);
+                        put("countOfPeople",0);
+                    }});
+                }
+                for (Object[] result:results){
+                    Integer monthInteger =(Integer) result[0];
+                    int month = monthInteger;
+                    double grandTotal = ((Number) result[1]).doubleValue();
+                    int countOfPeople = ((Number) result[2]).intValue();
+                    Map<String,Object> monthData = monthlyData.get(getMonthName(month));
+                    if (monthData!=null){
+                        monthData.put("grandTotal",grandTotal);
+                        monthData.put("countOfPeople",countOfPeople);
+                    }
+                }return monthlyData;
+            }
+        }else {
+            List<Object[]> publicResults = publicRepo.findMonthlyDataByYear(year);
+            List<Object[]> institutionResult = institutionDataRepo.findMonthlyDataByYear(year);
+            List<Object[]> foreignerResult = foreignerDataRepo.findMonthlyDataByYear(year);
+
+            Map<String,Map<String,Object>> monthlyData = new LinkedHashMap<>();
+
+            for (int month =1; month<=12;month++){
+                String monthName = getMonthName(month);
+                Map<String,Object> monthData = new HashMap<>();
+
+                monthData.put("PublicGrandTotal",0.0);
+                monthData.put("PublicCountOfPeople",0);
+                monthData.put("InstitutionGrandTotal",0.0);
+                monthData.put("InstitutionCountOfPeople",0);
+                monthData.put("ForeignerGrandTotal",0.0);
+                monthData.put("ForeignerCountOfPeople",0);
+
+                monthlyData.put(monthName,monthData);
+            }
+
+            for (Object[] result : publicResults){
+                Integer monthInteger = (Integer) result[0];
+                double publicGrandTotal = ((Number) result[1]).doubleValue();
+                int publicCountOfPeople =((Number) result[2]).intValue();
+
+                String monthName = getMonthName(monthInteger);
+                Map<String,Object> monthData = monthlyData.get(monthName);
+                if (monthData!=null){
+                    monthData.put("PublicGrandTotal",publicGrandTotal);
+                    monthData.put("PublicCountOfPeople",publicCountOfPeople);
+                }
+            }
+            for (Object[] result:institutionResult){
+                Integer monthInteger = (Integer) result[0];
+                double institutionGrandTotal = ((Number) result[1]).doubleValue();
+                int institutionCountOfPeople = ((Number) result[2]).intValue();
+                String monthName = getMonthName(monthInteger);
+                Map<String,Object> monthData = monthlyData.get(monthName);
+                if (monthData!=null){
+                    monthData.put("InstitutionGrandTotal",institutionGrandTotal);
+                    monthData.put("InstitutionCountOfPeople",institutionCountOfPeople);
+                }
+            }
+            for (Object[] result:foreignerResult){
+                Integer monthInteger =(Integer) result[0];
+                double foreignerGrandTotal =((Number) result[1]).doubleValue();
+                int foreignerCountOfPeople =((Number) result[2]).intValue();
+
+                String monthName = getMonthName(monthInteger);
+                Map<String,Object> monthData = monthlyData.get(monthName);
+                if (monthData!=null){
+                    monthData.put("ForeignerGrandTotal",foreignerGrandTotal);
+                    monthData.put("ForeignerCountOfPeople",foreignerCountOfPeople);
+                }
+            }
+            return monthlyData;
+        }return null;
+    }
+
+    private String getMonthName(int month) {
+        return java.time.Month.of(month).name();
     }
 }
