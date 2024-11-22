@@ -105,8 +105,8 @@ public class SlotDetailsService {
                 Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(bookingDetails.getSlotId());
                 if (spotSlotOptional.isPresent()){
                     SpotSlot spotSlot = spotSlotOptional.get();
-                    ZonedDateTime nowUtc = ZonedDateTime.now(ZoneId.of("UTC"));
-                    LocalTime now  = nowUtc.toLocalTime();
+                    LocalTime nowTime =LocalTime.now();
+                    LocalTime now = nowTime.plusHours(5).plusMinutes(30);
                     //LocalTime now = LocalTime.now();
                     if (bookingDetails.getBookDate().isEqual(bDate)&& now.isAfter(spotSlot.getSlotStartTime()) && now.isBefore(spotSlot.getSlotEndTime())){
                         return new ResponseEntity<>(bookingDetails,HttpStatus.OK);
@@ -132,9 +132,8 @@ public class SlotDetailsService {
         }
         BookingDetails bookingDetails = new BookingDetails();
         bookingDetails.setBookDate(bDate);
-        ZonedDateTime nowUtc = ZonedDateTime.now(ZoneId.of("UTC"));
-        LocalTime now = nowUtc.toLocalTime();
-        //LocalTime now = LocalTime.now();
+        LocalTime nowTime =LocalTime.now();
+        LocalTime now = nowTime.plusHours(5).plusMinutes(30);
         List<SpotSlot> spotSlotList = spotSlotRepo.findAll();
         if (!spotSlotList.isEmpty()){
             for (SpotSlot spotSlot : spotSlotList){
@@ -157,8 +156,12 @@ public class SlotDetailsService {
         Optional<BookingDetails> bookingDetailsOptional = bookingSpotRepo.findByBookDateAndSlotId(bookDate,slotId);
         if (bookingDetailsOptional.isPresent()){
             BookingDetails bookingDetails = bookingDetailsOptional.get();
-            bookingDetails.setSlotStartTime(bookingDetailsDto.getSlotStartTime());
-            bookingDetails.setSlotEndTime(bookingDetailsDto.getSlotEndTime());
+            LocalTime newStart = bookingDetailsDto.getSlotStartTime();
+            LocalTime newStartUtc = newStart.minusHours(5).minusMinutes(30);
+            bookingDetails.setSlotStartTime(newStartUtc);
+            LocalTime newEnd = bookingDetails.getSlotEndTime();
+            LocalTime newEndUtc = newEnd.minusHours(5).minusMinutes(30);
+            bookingDetails.setSlotEndTime(newEndUtc);
             bookingDetails.setPresentCapacity(bookingDetailsDto.getPresentCapacity());
             bookingDetails.setPresentStatus(bookingDetailsDto.getPresentStatus());
             bookingSpotRepo.save(bookingDetails);

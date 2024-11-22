@@ -507,7 +507,8 @@ SpotRegService {
                 Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(publicData.getSlotId());
                 if (spotSlotOptional.isPresent()){
                     SpotSlot spotSlot = spotSlotOptional.get();
-                    publicDtoData.setSlotTime(spotSlot.getSlotStartTime());
+                    LocalTime newTime = spotSlot.getSlotStartTime();
+                    publicDtoData.setSlotTime(newTime.plusHours(5).plusMinutes(30));
                 }
                 publicDtoData.setGrandTotal(publicData.getGrandTotal());
                 Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(publicData.getPaymentMode());
@@ -558,7 +559,8 @@ SpotRegService {
                 Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(institutionData.getSlotId());
                 if (spotSlotOptional.isPresent()){
                     SpotSlot spotSlot = spotSlotOptional.get();
-                    institutionDtoData.setSlotTime(spotSlot.getSlotStartTime());
+                    LocalTime newTime = spotSlot.getSlotStartTime();
+                    institutionDtoData.setSlotTime(newTime.plusHours(5).plusMinutes(30));
                 }
                 institutionDtoData.setTicketId(institutionData.getTicketId());
                 institutionDtoData.setOrderId(institutionData.getOrderId());
@@ -586,7 +588,8 @@ SpotRegService {
                 Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(foreignerData.getSlotId());
                 if (spotSlotOptional.isPresent()){
                     SpotSlot spotSlot = spotSlotOptional.get();
-                    foreignerDtoData.setSlotTime(spotSlot.getSlotStartTime());
+                    LocalTime newTime = spotSlot.getSlotStartTime();
+                    foreignerDtoData.setSlotTime(newTime.plusHours(5).plusMinutes(30));
                 }
                 foreignerDtoData.setGrandTotal(foreignerData.getGrandTotal());
                 Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(foreignerData.getPaymentMode());
@@ -630,7 +633,8 @@ SpotRegService {
                 Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(publicData.getSlotId());
                 if (spotSlotOptional.isPresent()){
                     SpotSlot spotSlot = spotSlotOptional.get();
-                    publicDtoData.setSlotTime(spotSlot.getSlotStartTime());
+                    LocalTime newTime = spotSlot.getSlotStartTime();
+                    publicDtoData.setSlotTime(newTime.plusHours(5).plusMinutes(30));
                 }
                 publicDtoData.setGrandTotal(publicData.getGrandTotal());
                 Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(publicData.getPaymentMode());
@@ -683,7 +687,8 @@ SpotRegService {
                 Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(institutionData.getSlotId());
                 if (spotSlotOptional.isPresent()){
                     SpotSlot spotSlot = spotSlotOptional.get();
-                    institutionDtoData.setSlotTime(spotSlot.getSlotStartTime());
+                    LocalTime newTime = spotSlot.getSlotStartTime();
+                    institutionDtoData.setSlotTime(newTime.plusHours(5).plusMinutes(30));
                 }
                 institutionDtoData.setTicketId(institutionData.getTicketId());
                 institutionDtoData.setOrderId(institutionData.getOrderId());
@@ -713,7 +718,8 @@ SpotRegService {
                 Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(foreignerData.getSlotId());
                 if (spotSlotOptional.isPresent()){
                     SpotSlot spotSlot = spotSlotOptional.get();
-                    foreignerDtoData.setSlotTime(spotSlot.getSlotStartTime());
+                    LocalTime newTime = spotSlot.getSlotStartTime();
+                    foreignerDtoData.setSlotTime(newTime.plusHours(5).plusMinutes(30));
                 }
                 foreignerDtoData.setGrandTotal(foreignerData.getGrandTotal());
                 Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(foreignerData.getPaymentMode());
@@ -772,7 +778,8 @@ SpotRegService {
                         Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(publicData.getSlotId());
                         if (spotSlotOptional.isPresent()){
                             SpotSlot spotSlot = spotSlotOptional.get();
-                            getUserData.setSlotTime(spotSlot.getSlotStartTime());
+                            LocalTime newTime = spotSlot.getSlotStartTime();
+                            getUserData.setSlotTime(newTime.plusHours(5).plusMinutes(30));
                         }
                         getUserData.setCreatedBy(publicData.getCreatedBy());//
                         getUserDataList.add(getUserData);
@@ -806,12 +813,10 @@ SpotRegService {
                         Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(institutionData.getSlotId());
                         if (spotSlotOptional.isPresent()){
                             SpotSlot spotSlot = spotSlotOptional.get();
-                            getUserData.setSlotTime(spotSlot.getSlotStartTime());
+                            LocalTime newTime = spotSlot.getSlotStartTime();
+                            getUserData.setSlotTime(newTime.plusHours(5).plusMinutes(30));
                         }
                         getUserData.setCreatedBy(institutionData.getCreatedBy());
-//                        getUserData.setAdult(0);
-//                        getUserData.setChild(0);
-//                        getUserData.setSeniorCitizen(0);
                         getUserDataList.add(getUserData);
                     }
                     return new ResponseEntity<>(getUserDataList,HttpStatus.OK);
@@ -841,13 +846,10 @@ SpotRegService {
                         Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(foreignerData.getSlotId());
                         if (spotSlotOptional.isPresent()){
                             SpotSlot spotSlot = spotSlotOptional.get();
-                            getUserData.setSlotTime(spotSlot.getSlotStartTime());
+                            LocalTime newTime = spotSlot.getSlotStartTime();
+                            getUserData.setSlotTime(newTime.plusHours(5).plusMinutes(30));
                         }
                         getUserData.setCreatedBy(foreignerData.getCreatedBy());
-//                        getUserData.setSeniorCitizen(0);
-//                        getUserData.setTeacher(0);
-//                        getUserData.setStudent(0);
-//                        getUserData.setDistrict("NoData");
                         getUserDataList.add(getUserData);
                     }
                     return new ResponseEntity<>(getUserDataList,HttpStatus.OK);
@@ -890,11 +892,11 @@ SpotRegService {
                         }
 
                         publicDtoData.setVisitDate(publicData.getVisitDate());
-
                         Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(publicData.getSlotId());
                         if (spotSlotOptional.isPresent()){
                             SpotSlot spotSlot = spotSlotOptional.get();
-                            publicDtoData.setSlotTime(spotSlot.getSlotStartTime());
+                            LocalTime newTime = spotSlot.getSlotStartTime();
+                            publicDtoData.setSlotTime(newTime.plusHours(5).plusMinutes(30));
                         }
 
                         publicDtoData.setGrandTotal(publicData.getGrandTotal());
@@ -937,7 +939,8 @@ SpotRegService {
                         Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(institutionData.getSlotId());
                         if (spotSlotOptional.isPresent()){
                             SpotSlot spotSlot = spotSlotOptional.get();
-                            institutionDtoData.setSlotTime(spotSlot.getSlotStartTime());
+                            LocalTime newTime =spotSlot.getSlotStartTime();
+                            institutionDtoData.setSlotTime(newTime.plusHours(5).plusMinutes(30));
                         }
                         institutionDtoData.setTicketId(institutionData.getTicketId());
                         institutionDtoData.setOrderId(institutionData.getOrderId());
@@ -966,7 +969,8 @@ SpotRegService {
                         Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(foreignerData.getSlotId());
                         if (spotSlotOptional.isPresent()){
                             SpotSlot spotSlot = spotSlotOptional.get();
-                            foreignerDtoData.setSlotTime(spotSlot.getSlotStartTime());
+                            LocalTime newTime=spotSlot.getSlotStartTime();
+                            foreignerDtoData.setSlotTime(newTime.plusHours(5).plusMinutes(30));
                         }
                         foreignerDtoData.setGrandTotal(foreignerData.getGrandTotal());
                         Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(foreignerData.getPaymentMode());
@@ -1010,7 +1014,8 @@ SpotRegService {
                     Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(publicData.getSlotId());
                     if (spotSlotOptional.isPresent()){
                         SpotSlot spotSlot = spotSlotOptional.get();
-                        publicDtoData.setSlotTime(spotSlot.getSlotStartTime());
+                        LocalTime newTime = spotSlot.getSlotStartTime();
+                        publicDtoData.setSlotTime(newTime.plusHours(5).plusMinutes(30));
                     }
                     publicDtoData.setGrandTotal(publicData.getGrandTotal());
                     Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(publicData.getPaymentMode());
@@ -1058,7 +1063,8 @@ SpotRegService {
                     Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(institutionData.getSlotId());
                     if (spotSlotOptional.isPresent()){
                         SpotSlot spotSlot = spotSlotOptional.get();
-                        institutionDtoData.setSlotTime(spotSlot.getSlotStartTime());
+                        LocalTime newTime = spotSlot.getSlotStartTime();
+                        institutionDtoData.setSlotTime(newTime.plusHours(5).plusMinutes(30));
                     }
                     institutionDtoData.setTicketId(institutionData.getTicketId());
                     institutionDtoData.setOrderId(institutionData.getOrderId());
@@ -1084,7 +1090,8 @@ SpotRegService {
                     Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(foreignerData.getSlotId());
                     if (spotSlotOptional.isPresent()){
                         SpotSlot spotSlot = spotSlotOptional.get();
-                        foreignerDtoData.setSlotTime(spotSlot.getSlotStartTime());
+                        LocalTime newTime = spotSlot.getSlotStartTime();
+                        foreignerDtoData.setSlotTime(newTime.plusHours(5).plusMinutes(30));
                     }
                     foreignerDtoData.setGrandTotal(foreignerData.getGrandTotal());
                     Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(foreignerData.getPaymentMode());
