@@ -32,7 +32,7 @@ public class SlotDetailsService {
         LocalTime newEnd = spotSlot.getSlotEndTime();
         spotDto.setSlotStartTime(newStart.minusHours(5).minusMinutes(30));
         spotDto.setSlotEndTime(newEnd.minusHours(5).minusMinutes(30));
-        spotSlot.setTotalCapacity(spotSlot.getTotalCapacity());
+        spotDto.setTotalCapacity(spotSlot.getTotalCapacity());
         spotDto.setStatus(spotSlot.getStatus());
         spotSlotRepo.save(spotDto);
         return new ResponseEntity<>("Start Time : "+newStart+" and End Time : "+newEnd+" slot added successfully+", HttpStatus.OK);
@@ -105,9 +105,8 @@ public class SlotDetailsService {
                 Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(bookingDetails.getSlotId());
                 if (spotSlotOptional.isPresent()){
                     SpotSlot spotSlot = spotSlotOptional.get();
-                    LocalTime nowTime =LocalTime.now();
-                    LocalTime now = nowTime.plusHours(5).plusMinutes(30);
-                    //LocalTime now = LocalTime.now();
+//                    LocalTime nowTime =LocalTime.now();
+                    LocalTime now = LocalTime.now();
                     if (bookingDetails.getBookDate().isEqual(bDate)&& now.isAfter(spotSlot.getSlotStartTime()) && now.isBefore(spotSlot.getSlotEndTime())){
                         return new ResponseEntity<>(bookingDetails,HttpStatus.OK);
                     }else {
@@ -132,8 +131,7 @@ public class SlotDetailsService {
         }
         BookingDetails bookingDetails = new BookingDetails();
         bookingDetails.setBookDate(bDate);
-        LocalTime nowTime =LocalTime.now();
-        LocalTime now = nowTime.plusHours(5).plusMinutes(30);
+        LocalTime now = LocalTime.now();
         List<SpotSlot> spotSlotList = spotSlotRepo.findAll();
         if (!spotSlotList.isEmpty()){
             for (SpotSlot spotSlot : spotSlotList){

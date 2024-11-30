@@ -72,4 +72,7 @@ public class PublicData {
     @Column(name = "visit_status", nullable = false, columnDefinition = "boolean default false")
     private boolean visitStatus;
 
+    @Column(name = "countOfPeople")
+    private Integer countOfPeople;
+
 }

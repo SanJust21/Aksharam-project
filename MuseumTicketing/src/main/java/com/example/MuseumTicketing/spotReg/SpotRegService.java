@@ -21,10 +21,7 @@ import com.example.MuseumTicketing.spotReg.userData.SpotUserDto;
 import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.*;
 import com.example.MuseumTicketing.spotReg.userData.Institution.InstitutionData;
 import com.example.MuseumTicketing.spotReg.userData.Institution.InstitutionDataRepo;
-import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.count.ForeignerVisitorsDto;
-import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.count.InstitutionVisitorsDto;
-import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.count.PublicVisitorsDto;
-import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.count.VisitsCountDto;
+import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.count.*;
 import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.usesrDetails.AllUserDataDto;
 import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.usesrDetails.ForeignerDtoData;
 import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.usesrDetails.InstitutionDtoData;
@@ -44,9 +41,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class
@@ -378,6 +373,7 @@ SpotRegService {
                 }
             }
             publicData.setCreatedBy(spotPaymentDto.getCreatedBy());
+            publicData.setCountOfPeople(totalUserCount);
             publicRepo.save(publicData);
             spotBookingDto.setName(publicData.getName());
             spotBookingDto.setPhNumber(publicData.getPhNumber());
@@ -423,6 +419,7 @@ SpotRegService {
             institutionData.setVisitDate(bookingDetails.getBookDate());
             institutionData.setSlotId(bookingDetails.getSlotId());
             institutionData.setCreatedBy(spotPaymentDto.getCreatedBy());
+            institutionData.setCountOfPeople(totalUserCount);
             institutionDataRepo.save(institutionData);
             spotBookingDto.setName(institutionData.getName());
             spotBookingDto.setPhNumber(institutionData.getPhNumber());
@@ -467,6 +464,7 @@ SpotRegService {
             foreignerData.setVisitDate(bookingDetails.getBookDate());
             foreignerData.setSlotId(bookingDetails.getSlotId());
             foreignerData.setCreatedBy(spotPaymentDto.getCreatedBy());
+            foreignerData.setCountOfPeople(totalUserCount);
             foreignerDataRepo.save(foreignerData);
             spotBookingDto.setName(foreignerData.getName());
             spotBookingDto.setPhNumber(foreignerData.getPhNumber());
@@ -1327,5 +1325,261 @@ SpotRegService {
             visitsCountDtoList.add(visitsCountDto);
         }
         return new ResponseEntity<>(visitsCountDtoList,HttpStatus.OK);
+    }
+
+    public ResponseEntity<List<VisitorsAmountDto>> visitsIncomeAndTotalCountUpToNow(Integer categoryId) {
+        Optional<CategoryData> categoryDataOptional = categoryRepo.findById(categoryId);
+        List<VisitorsAmountDto> visitorsAmountDtoList = new ArrayList<>();
+        VisitorsAmountDto visitorsAmountDto = new VisitorsAmountDto();
+        Double incomeData=0.0;Integer ticketCount=0;
+        if (categoryDataOptional.isPresent()){
+            CategoryData categoryData = categoryDataOptional.get();
+            if ("Public".equalsIgnoreCase(categoryData.getCategory())){
+                List<PublicData> publicDataList = publicRepo.findAll();
+                if (!publicDataList.isEmpty()){
+                    for (PublicData publicData:publicDataList){
+                        Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(publicData.getPaymentStatusId());
+                        if (paymentStatusOptional.isPresent()){
+                            PaymentStatus paymentStatus = paymentStatusOptional.get();
+                            if ("Received".equalsIgnoreCase(paymentStatus.getStatusName())){
+                                incomeData+=publicData.getGrandTotal();
+                                ticketCount+=(publicData.getAdult()+publicData.getChild()+publicData.getSeniorCitizen());
+                            }
+                        }
+                    }
+                    visitorsAmountDto.setPublicIncome(incomeData);
+                    visitorsAmountDto.setPublicTicketCount(ticketCount);
+                    visitorsAmountDtoList.add(visitorsAmountDto);
+                    return new ResponseEntity<>(visitorsAmountDtoList,HttpStatus.OK);
+                }
+            } else if ("Institution".equalsIgnoreCase(categoryData.getCategory())) {
+                List<InstitutionData> institutionDataList = institutionDataRepo.findAll();
+                if (!institutionDataList.isEmpty()){
+                    for (InstitutionData institutionData : institutionDataList){
+                        Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(institutionData.getPaymentStatusId());
+                        if (paymentStatusOptional.isPresent()){
+                            PaymentStatus paymentStatus = paymentStatusOptional.get();
+                            if ("Received".equalsIgnoreCase(paymentStatus.getStatusName())){
+                                incomeData+=institutionData.getGrandTotal();
+                                ticketCount+=(institutionData.getTeacher()+institutionData.getStudent());
+                            }
+                        }
+                    }
+                    visitorsAmountDto.setInstitutionIncome(incomeData);
+                    visitorsAmountDto.setInstitutionTicketCount(ticketCount);
+                    visitorsAmountDtoList.add(visitorsAmountDto);
+                    return new ResponseEntity<>(visitorsAmountDtoList,HttpStatus.OK);
+                }
+            } else if ("Foreigner".equalsIgnoreCase(categoryData.getCategory())) {
+                List<ForeignerData> foreignerDataList = foreignerDataRepo.findAll();
+                if (!foreignerDataList.isEmpty()){
+                    for (ForeignerData foreignerData:foreignerDataList){
+                        Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(foreignerData.getPaymentStatusId());
+                        if (paymentStatusOptional.isPresent()){
+                            PaymentStatus paymentStatus = paymentStatusOptional.get();
+                            if ("Received".equalsIgnoreCase(paymentStatus.getStatusName())){
+                                incomeData+=foreignerData.getGrandTotal();
+                                ticketCount+=(foreignerData.getAdult()+foreignerData.getChild());
+                            }
+                        }
+                    }
+                    visitorsAmountDto.setForeignerIncome(incomeData);
+                    visitorsAmountDto.setForeignerTicketCount(ticketCount);
+                    visitorsAmountDtoList.add(visitorsAmountDto);
+                    return new ResponseEntity<>(visitorsAmountDtoList,HttpStatus.OK);
+                }
+            }
+        }else {
+            Double incomeAll=0.0;Integer countAll=0;
+            List<PublicData> publicDataList = publicRepo.findAll();
+            if (!publicDataList.isEmpty()){
+                for (PublicData publicData:publicDataList){
+                    Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(publicData.getPaymentStatusId());
+                    if (paymentStatusOptional.isPresent()){
+                        PaymentStatus paymentStatus = paymentStatusOptional.get();
+                        if ("Received".equalsIgnoreCase(paymentStatus.getStatusName())){
+                            incomeData+=publicData.getGrandTotal();
+                            ticketCount+=(publicData.getAdult()+publicData.getChild()+publicData.getSeniorCitizen());
+                        }
+                    }
+                }
+                visitorsAmountDto.setPublicIncome(incomeData);
+                visitorsAmountDto.setPublicTicketCount(ticketCount);
+                incomeAll+=incomeData;countAll+=ticketCount;
+            }
+            incomeData=0.0;ticketCount=0;
+            List<InstitutionData> institutionDataList = institutionDataRepo.findAll();
+            if (!institutionDataList.isEmpty()){
+                for (InstitutionData institutionData : institutionDataList){
+                    Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(institutionData.getPaymentStatusId());
+                    if (paymentStatusOptional.isPresent()){
+                        PaymentStatus paymentStatus = paymentStatusOptional.get();
+                        if ("Received".equalsIgnoreCase(paymentStatus.getStatusName())){
+                            incomeData+=institutionData.getGrandTotal();
+                            ticketCount+=(institutionData.getTeacher()+institutionData.getStudent());
+                        }
+                    }
+                }
+                visitorsAmountDto.setInstitutionIncome(incomeData);
+                visitorsAmountDto.setInstitutionTicketCount(ticketCount);
+                incomeAll+=incomeData;countAll+=ticketCount;
+            }
+            incomeData=0.0;ticketCount=0;
+            List<ForeignerData> foreignerDataList = foreignerDataRepo.findAll();
+            if (!foreignerDataList.isEmpty()){
+                for (ForeignerData foreignerData:foreignerDataList){
+                    Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(foreignerData.getPaymentStatusId());
+                    if (paymentStatusOptional.isPresent()){
+                        PaymentStatus paymentStatus = paymentStatusOptional.get();
+                        if ("Received".equalsIgnoreCase(paymentStatus.getStatusName())){
+                            incomeData+=foreignerData.getGrandTotal();
+                            ticketCount+=(foreignerData.getAdult()+foreignerData.getChild());
+                        }
+                    }
+                }
+                visitorsAmountDto.setForeignerIncome(incomeData);
+                visitorsAmountDto.setForeignerTicketCount(ticketCount);
+                incomeAll+=incomeData;countAll+=ticketCount;
+                visitorsAmountDto.setTotalIncome(incomeAll);
+                visitorsAmountDto.setTotalTicketCount(countAll);
+                visitorsAmountDtoList.add(visitorsAmountDto);
+                return new ResponseEntity<>(visitorsAmountDtoList,HttpStatus.OK);
+            }
+        }
+        return new ResponseEntity<>(new ArrayList<>(),HttpStatus.BAD_REQUEST);
+    }
+
+    public Map<String, Map<String, Object>> getMonthlyDataByYear(int year, Integer categoryId) {
+        Optional<CategoryData> categoryDataOptional = categoryRepo.findById(categoryId);
+        if (categoryDataOptional.isPresent()){
+            CategoryData categoryData = categoryDataOptional.get();
+            if ("Public".equalsIgnoreCase(categoryData.getCategory())){
+                List<Object[]> results = publicRepo.findMonthlyDataByYear(year);
+
+                Map<String, Map<String, Object>> monthlyData = new LinkedHashMap<>();
+                for (int month=1;month<=12;month++){
+                    monthlyData.put(getMonthName(month),new HashMap<String,Object>() {{
+                        put("grandTotal",0.0);
+                        put("countOfPeople",0);
+                    }});
+                }
+                for (Object[] result : results){
+                    Integer monthInteger = (Integer) result[0];
+                    int month = monthInteger;
+                    double grandTotal = ((Number) result[1]).doubleValue();
+                    int countOfPeople = ((Number) result[2]).intValue();
+
+                    Map<String, Object> monthData =monthlyData.get(getMonthName(month));
+                    if (monthData!=null){
+                        monthData.put("grandTotal",grandTotal);
+                        monthData.put("countOfPeople",countOfPeople);
+                    }
+                }
+                return monthlyData;
+            } else if ("Institution".equalsIgnoreCase(categoryData.getCategory())) {
+                List<Object[]> results = institutionDataRepo.findMonthlyDataByYear(year);
+                Map<String,Map<String,Object>> monthlyData = new LinkedHashMap<>();
+                for (int month=1;month<=12;month++){
+                    monthlyData.put(getMonthName(month),new HashMap<String,Object>(){{
+                        put("grandTotal",0.0);
+                        put("countOfPeople",0);
+                    }});
+                }
+                for (Object[] result:results){
+                    Integer monthInteger=(Integer) result[0];
+                    int month = monthInteger;
+                    double grandTotal= ((Number) result[1]).doubleValue();
+                    int countOfPeople = ((Number) result[2]).intValue();
+                    Map<String, Object> monthData = monthlyData.get(getMonthName(month));
+                    if (monthData!=null){
+                        monthData.put("grandTotal",grandTotal);
+                        monthData.put("countOfPeople",countOfPeople);
+                    }
+                }
+                return monthlyData;
+
+            } else if ("Foreigner".equalsIgnoreCase(categoryData.getCategory())) {
+                List<Object[]> results = foreignerDataRepo.findMonthlyDataByYear(year);
+                Map<String,Map<String,Object>> monthlyData = new LinkedHashMap<>();
+                for (int month=1;month<=12;month++){
+                    monthlyData.put(getMonthName(month),new HashMap<String,Object>(){{
+                        put("grandTotal",0.0);
+                        put("countOfPeople",0);
+                    }});
+                }
+                for (Object[] result:results){
+                    Integer monthInteger =(Integer) result[0];
+                    int month = monthInteger;
+                    double grandTotal = ((Number) result[1]).doubleValue();
+                    int countOfPeople = ((Number) result[2]).intValue();
+                    Map<String,Object> monthData = monthlyData.get(getMonthName(month));
+                    if (monthData!=null){
+                        monthData.put("grandTotal",grandTotal);
+                        monthData.put("countOfPeople",countOfPeople);
+                    }
+                }return monthlyData;
+            }
+        }else {
+            List<Object[]> publicResults = publicRepo.findMonthlyDataByYear(year);
+            List<Object[]> institutionResult = institutionDataRepo.findMonthlyDataByYear(year);
+            List<Object[]> foreignerResult = foreignerDataRepo.findMonthlyDataByYear(year);
+
+            Map<String,Map<String,Object>> monthlyData = new LinkedHashMap<>();
+
+            for (int month =1; month<=12;month++){
+                String monthName = getMonthName(month);
+                Map<String,Object> monthData = new HashMap<>();
+
+                monthData.put("PublicGrandTotal",0.0);
+                monthData.put("PublicCountOfPeople",0);
+                monthData.put("InstitutionGrandTotal",0.0);
+                monthData.put("InstitutionCountOfPeople",0);
+                monthData.put("ForeignerGrandTotal",0.0);
+                monthData.put("ForeignerCountOfPeople",0);
+
+                monthlyData.put(monthName,monthData);
+            }
+
+            for (Object[] result : publicResults){
+                Integer monthInteger = (Integer) result[0];
+                double publicGrandTotal = ((Number) result[1]).doubleValue();
+                int publicCountOfPeople =((Number) result[2]).intValue();
+
+                String monthName = getMonthName(monthInteger);
+                Map<String,Object> monthData = monthlyData.get(monthName);
+                if (monthData!=null){
+                    monthData.put("PublicGrandTotal",publicGrandTotal);
+                    monthData.put("PublicCountOfPeople",publicCountOfPeople);
+                }
+            }
+            for (Object[] result:institutionResult){
+                Integer monthInteger = (Integer) result[0];
+                double institutionGrandTotal = ((Number) result[1]).doubleValue();
+                int institutionCountOfPeople = ((Number) result[2]).intValue();
+                String monthName = getMonthName(monthInteger);
+                Map<String,Object> monthData = monthlyData.get(monthName);
+                if (monthData!=null){
+                    monthData.put("InstitutionGrandTotal",institutionGrandTotal);
+                    monthData.put("InstitutionCountOfPeople",institutionCountOfPeople);
+                }
+            }
+            for (Object[] result:foreignerResult){
+                Integer monthInteger =(Integer) result[0];
+                double foreignerGrandTotal =((Number) result[1]).doubleValue();
+                int foreignerCountOfPeople =((Number) result[2]).intValue();
+
+                String monthName = getMonthName(monthInteger);
+                Map<String,Object> monthData = monthlyData.get(monthName);
+                if (monthData!=null){
+                    monthData.put("ForeignerGrandTotal",foreignerGrandTotal);
+                    monthData.put("ForeignerCountOfPeople",foreignerCountOfPeople);
+                }
+            }
+            return monthlyData;
+        }return null;
+    }
+
+    private String getMonthName(int month) {
+        return java.time.Month.of(month).name();
     }
 }
