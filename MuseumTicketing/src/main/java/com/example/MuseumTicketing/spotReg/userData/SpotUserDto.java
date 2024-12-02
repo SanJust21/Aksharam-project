@@ -26,7 +26,7 @@ public class SpotUserDto {
     private Integer seniorCitizen;
     private Integer seniorCitizenTypeId;
 
-    private Integer Student;
+    private Integer student;
     private Integer studentTypeId;
 
     private Integer teacher;

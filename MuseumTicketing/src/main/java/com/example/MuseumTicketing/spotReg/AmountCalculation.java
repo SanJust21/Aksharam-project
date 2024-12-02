@@ -142,7 +142,7 @@ public class AmountCalculation {
         if (bookingDetailsOptional.isPresent()){
             BookingDetails bookingDetails = bookingDetailsOptional.get();
             Integer capacity = bookingDetails.getPresentCapacity();
-            if (capacity>0&&totalUserCount<capacity){
+            if (capacity>0&&totalUserCount<=capacity){
                 Integer calcCapacity = capacity-totalUserCount;
                 bookingDetails.setPresentCapacity(calcCapacity);
                 bookingSpotRepo.save(bookingDetails);

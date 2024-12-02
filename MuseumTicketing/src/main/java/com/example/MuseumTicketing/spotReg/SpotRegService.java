@@ -410,13 +410,11 @@ SpotRegService {
 
         if (publicDataOptional.isPresent()){
            Optional<BookingDetails> bookingDetailsOptional = bookingSpotRepo.findByBookDateAndSlotId(spotPaymentDto.getVisitDate(),spotPaymentDto.getSlotId());
-
            if (bookingDetailsOptional.isPresent()){
                BookingDetails bookingDetails = bookingDetailsOptional.get();
                if (bookingDetails.getPresentCapacity()>0){
                    PublicData publicData = publicDataOptional.get();
                    publicData.setPaymentStatusId(spotPaymentDto.getPaymentStatusId());
-
 
                    //check if payment mode is cash and payment status is received
                    Optional<PaymentStatus>paymentStatusOptional=paymentStatusRepo.findById(spotPaymentDto.getPaymentStatusId());
@@ -448,6 +446,11 @@ SpotRegService {
                    spotBookingDto.setChildCount(publicData.getChild());
                    spotBookingDto.setSeniorCitizenCount(publicData.getSeniorCitizen());
                    spotBookingDto.setVisitDate(publicData.getVisitDate());
+                   Optional<BookingDetails> bookingDetails1 = bookingSpotRepo.findByBookDateAndSlotId(publicData.getVisitDate(), publicData.getSlotId());
+                   if (bookingDetails1.isPresent()){
+                       BookingDetails bookingDetails2 = bookingDetails1.get();
+                       spotBookingDto.setSlotStartTime(bookingDetails2.getSlotStartTime());
+                   }
                    spotBookingDto.setTotalAmount(publicData.getTotalAmount());
                    spotBookingDto.setTotalGstCharge(publicData.getTotalGstCharge());
                    spotBookingDto.setTotalAdditionalCharges(publicData.getTotalAdditionalCharges());
@@ -461,63 +464,64 @@ SpotRegService {
 
                }return new ResponseEntity<>(null,HttpStatus.BAD_REQUEST);
            }
-
-
-
         } else if (institutionDataOptional.isPresent()) {
             Optional<BookingDetails> bookingDetailsOptional = bookingSpotRepo.findByBookDateAndSlotId(spotPaymentDto.getVisitDate(),spotPaymentDto.getSlotId());
-
             if (bookingDetailsOptional.isPresent()){
                 BookingDetails bookingDetails = bookingDetailsOptional.get();
                 if (bookingDetails.getPresentCapacity()>0){
+                    InstitutionData institutionData = institutionDataOptional.get();
+                    institutionData.setPaymentStatusId(spotPaymentDto.getPaymentStatusId());
 
+                    //check if payment mode is cash and payment status is received
+                    Optional<PaymentStatus>paymentStatusOptional=paymentStatusRepo.findById(spotPaymentDto.getPaymentStatusId());
+                    Optional<PaymentMode>paymentModeOptional=paymentModeRepo.findById(institutionData.getPaymentMode());
+
+                    if (paymentModeOptional.isPresent() && paymentStatusOptional.isPresent()){
+                        PaymentStatus paymentStatus =paymentStatusOptional.get();
+                        String name =paymentStatus.getStatusName();
+                        PaymentMode paymentMode = paymentModeOptional.get();
+                        String modeName = paymentMode.getPaymentType();
+                        if ("cash".equalsIgnoreCase(modeName) && "received".equalsIgnoreCase(name)){
+                            institutionData.setTicketId(alphaNumeric.generateSpotRandomNumber());
+                            institutionData.setPaymentId(alphaNumeric.generateRandomNumber());
+                            institutionData.setCreatedTime(LocalTime.now());
+                        }else {
+                            institutionData.setTicketId(null);
+                        }
+                    }
+
+                    // if the user booked the tickets then reduce  the present slot capacity by userCount.
+                    BookingDetails booking = amountCalculation.generateBookingDate(spotPaymentDto.getVisitDate(),spotPaymentDto.getSlotId(),totalUserCount);
+                    institutionData.setVisitDate(booking.getBookDate());
+                    institutionData.setSlotId(booking.getSlotId());
+                    institutionData.setCreatedBy(spotPaymentDto.getCreatedBy());
+                    institutionData.setCountOfPeople(totalUserCount);
+                    institutionDataRepo.save(institutionData);
+                    spotBookingDto.setName(institutionData.getName());
+                    spotBookingDto.setPhNumber(institutionData.getPhNumber());
+                    spotBookingDto.setDistrict(institutionData.getDistrict());
+                    spotBookingDto.setTeacherCount(institutionData.getTeacher());
+                    spotBookingDto.setStudentCount(institutionData.getStudent());
+                    spotBookingDto.setVisitDate(institutionData.getVisitDate());
+                    Optional<BookingDetails> bookingDetails1 = bookingSpotRepo.findByBookDateAndSlotId(institutionData.getVisitDate(), institutionData.getSlotId());
+                    if (bookingDetails1.isPresent()){
+                        BookingDetails bookingDetails2 = bookingDetails1.get();
+                        spotBookingDto.setSlotStartTime(bookingDetails2.getSlotStartTime());
+                    }
+                    spotBookingDto.setTotalAmount(institutionData.getTotalAmount());
+                    spotBookingDto.setTotalGstCharge(institutionData.getTotalGstCharge());
+                    spotBookingDto.setTotalAdditionalCharges(institutionData.getTotalAdditionalCharges());
+                    spotBookingDto.setGrandTotal(institutionData.getGrandTotal());
+                    spotBookingDto.setOrderId(institutionData.getOrderId());
+                    spotBookingDto.setPaymentId(institutionData.getPaymentId());
+                    spotBookingDto.setTicketId(institutionData.getTicketId());
+                    spotBookingDto.setCreatedTime(institutionData.getCreatedTime());
+                    spotBookingDto.setQrCodeImage(spotQRcodeService.generateQRCode(institutionData.getTicketId()));
+                    return new ResponseEntity<>(spotBookingDto,HttpStatus.OK);
                 }
             }
 
-            InstitutionData institutionData = institutionDataOptional.get();
-            institutionData.setPaymentStatusId(spotPaymentDto.getPaymentStatusId());
 
-            //check if payment mode is cash and payment status is received
-            Optional<PaymentStatus>paymentStatusOptional=paymentStatusRepo.findById(spotPaymentDto.getPaymentStatusId());
-            Optional<PaymentMode>paymentModeOptional=paymentModeRepo.findById(institutionData.getPaymentMode());
-
-            if (paymentModeOptional.isPresent() && paymentStatusOptional.isPresent()){
-                PaymentStatus paymentStatus =paymentStatusOptional.get();
-                String name =paymentStatus.getStatusName();
-                PaymentMode paymentMode = paymentModeOptional.get();
-                String modeName = paymentMode.getPaymentType();
-                if ("cash".equalsIgnoreCase(modeName) && "received".equalsIgnoreCase(name)){
-                    institutionData.setTicketId(alphaNumeric.generateSpotRandomNumber());
-                    institutionData.setPaymentId(alphaNumeric.generateRandomNumber());
-                    institutionData.setCreatedTime(LocalTime.now());
-                }else {
-                    institutionData.setTicketId(null);
-                }
-            }
-
-            // if the user booked the tickets then reduce  the present slot capacity by userCount.
-            BookingDetails bookingDetails = amountCalculation.generateBookingDate(spotPaymentDto.getVisitDate(),spotPaymentDto.getSlotId(),totalUserCount);
-            institutionData.setVisitDate(bookingDetails.getBookDate());
-            institutionData.setSlotId(bookingDetails.getSlotId());
-            institutionData.setCreatedBy(spotPaymentDto.getCreatedBy());
-            institutionData.setCountOfPeople(totalUserCount);
-            institutionDataRepo.save(institutionData);
-            spotBookingDto.setName(institutionData.getName());
-            spotBookingDto.setPhNumber(institutionData.getPhNumber());
-            spotBookingDto.setDistrict(institutionData.getDistrict());
-            spotBookingDto.setTeacherCount(institutionData.getTeacher());
-            spotBookingDto.setStudentCount(institutionData.getStudent());
-            spotBookingDto.setVisitDate(institutionData.getVisitDate());
-            spotBookingDto.setTotalAmount(institutionData.getTotalAmount());
-            spotBookingDto.setTotalGstCharge(institutionData.getTotalGstCharge());
-            spotBookingDto.setTotalAdditionalCharges(institutionData.getTotalAdditionalCharges());
-            spotBookingDto.setGrandTotal(institutionData.getGrandTotal());
-            spotBookingDto.setOrderId(institutionData.getOrderId());
-            spotBookingDto.setPaymentId(institutionData.getPaymentId());
-            spotBookingDto.setTicketId(institutionData.getTicketId());
-            spotBookingDto.setCreatedTime(institutionData.getCreatedTime());
-            spotBookingDto.setQrCodeImage(spotQRcodeService.generateQRCode(institutionData.getTicketId()));
-            return new ResponseEntity<>(spotBookingDto,HttpStatus.OK);
 
         } else if (foreignerDataOptional.isPresent()) {
             Optional<BookingDetails> bookingDetailsOptional = bookingSpotRepo.findByBookDateAndSlotId(spotPaymentDto.getVisitDate(),spotPaymentDto.getSlotId());
@@ -557,6 +561,11 @@ SpotRegService {
                     spotBookingDto.setAdultCount(foreignerData.getAdult());
                     spotBookingDto.setChildCount(foreignerData.getChild());
                     spotBookingDto.setVisitDate(foreignerData.getVisitDate());
+                    Optional<BookingDetails> bookingDetails1 = bookingSpotRepo.findByBookDateAndSlotId(foreignerData.getVisitDate(),foreignerData.getSlotId());
+                    if (bookingDetails1.isPresent()){
+                        BookingDetails bookingDetails2 = bookingDetails1.get();
+                        spotBookingDto.setSlotStartTime(bookingDetails2.getSlotStartTime());
+                    }
                     spotBookingDto.setTotalAmount(foreignerData.getTotalAmount());
                     spotBookingDto.setTotalGstCharge(foreignerData.getTotalGstCharge());
                     spotBookingDto.setTotalAdditionalCharges(foreignerData.getTotalAdditionalCharges());
@@ -568,9 +577,7 @@ SpotRegService {
                     spotBookingDto.setQrCodeImage(spotQRcodeService.generateQRCode(foreignerData.getTicketId()));
                     return new ResponseEntity<>(spotBookingDto,HttpStatus.OK);
                 }return new ResponseEntity<>(null,HttpStatus.BAD_REQUEST);
-            }
-
-
+            }return new ResponseEntity<>(null,HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>(null,HttpStatus.NOT_FOUND);
     }
