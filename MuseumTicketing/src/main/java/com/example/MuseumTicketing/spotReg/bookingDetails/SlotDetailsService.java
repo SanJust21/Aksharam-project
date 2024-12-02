@@ -27,7 +27,21 @@ public class SlotDetailsService {
     private BookingSpotRepo bookingSpotRepo;
 
     public ResponseEntity<?> addSlotDetails(SpotSlot spotSlot) {
-        return new ResponseEntity<>(spotSlotRepo.save(spotSlot), HttpStatus.OK);
+
+        LocalTime sStartTime = spotSlot.getSlotStartTime();
+        LocalTime sEndTime = spotSlot.getSlotEndTime();
+        Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findBySlotStartTimeAndSlotEndTime(sStartTime,sEndTime);
+        if (spotSlotOptional.isPresent()){
+            return new ResponseEntity<>("StartTime : "+sStartTime+" and EndTime : "+sEndTime+" are already existing.",HttpStatus.CONFLICT);
+        }else {
+            SpotSlot slot = new SpotSlot();
+            slot.setSlotStartTime(sStartTime);
+            slot.setSlotEndTime(sEndTime);
+            slot.setTotalCapacity(spotSlot.getTotalCapacity());
+            slot.setStatus(spotSlot.getStatus());
+            spotSlotRepo.save(slot);
+            return new ResponseEntity<>(slot,HttpStatus.OK);
+        }
     }
 
     public ResponseEntity<List<SpotSlot>> getAllSlotDetails() {
