@@ -602,6 +602,7 @@ SpotRegService {
                 Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(publicData.getSlotId());
                 if (spotSlotOptional.isPresent()){
                     SpotSlot spotSlot = spotSlotOptional.get();
+                    allUserDataDto.setVisitDate(publicData.getVisitDate());
                     allUserDataDto.setSlotTime(spotSlot.getSlotStartTime());
                 }
                 allUserDataDto.setGrandTotal(publicData.getGrandTotal());
@@ -653,6 +654,7 @@ SpotRegService {
                 Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(institutionData.getSlotId());
                 if (spotSlotOptional.isPresent()){
                     SpotSlot spotSlot = spotSlotOptional.get();
+                    allUserDataDto.setVisitDate(institutionData.getVisitDate());
                     allUserDataDto.setSlotTime(spotSlot.getSlotStartTime());
                 }
                 allUserDataDto.setTicketId(institutionData.getTicketId());
@@ -681,6 +683,7 @@ SpotRegService {
                 Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(foreignerData.getSlotId());
                 if (spotSlotOptional.isPresent()){
                     SpotSlot spotSlot = spotSlotOptional.get();
+                    allUserDataDto.setVisitDate(foreignerData.getVisitDate());
                     allUserDataDto.setSlotTime(spotSlot.getSlotStartTime());
                 }
                 allUserDataDto.setGrandTotal(foreignerData.getGrandTotal());
