@@ -823,7 +823,7 @@ SpotRegService {
                 }
                 foreignerDtoData.setTicketId(foreignerData.getTicketId());
                 foreignerDtoData.setOrderId(foreignerData.getOrderId());
-                foreignerDtoData.setPaymentId(foreignerDtoData.getPaymentId());
+                foreignerDtoData.setPaymentId(foreignerData.getPaymentId());
                 foreignerDtoData.setGeneratedTime(foreignerData.getCreatedTime());
                 foreignerDtoData.setCreatedBy(foreignerData.getCreatedBy());
                 foreignerDtoData.setVisitorsStatus(foreignerData.isVisitStatus());
