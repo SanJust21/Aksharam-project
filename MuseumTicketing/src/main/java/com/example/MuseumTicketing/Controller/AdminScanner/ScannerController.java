@@ -8,7 +8,14 @@ import com.example.MuseumTicketing.Repo.InstitutionDetailsRepo;
 import com.example.MuseumTicketing.Repo.PublicDetailsRepo;
 import com.example.MuseumTicketing.Repo.UsersRepo;
 import com.example.MuseumTicketing.Service.AdminScanner.ScannerService;
+import com.example.MuseumTicketing.spotReg.userData.Institution.InstitutionData;
+import com.example.MuseumTicketing.spotReg.userData.Institution.InstitutionDataRepo;
+import com.example.MuseumTicketing.spotReg.userData.foreigner.ForeignerData;
+import com.example.MuseumTicketing.spotReg.userData.foreigner.ForeignerDataRepo;
+import com.example.MuseumTicketing.spotReg.userData.publicUser.PublicData;
+import com.example.MuseumTicketing.spotReg.userData.publicUser.PublicRepo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -37,6 +44,13 @@ public class ScannerController {
 
     private final PublicDetailsRepo publicDetailsRepo;
 
+    @Autowired
+    private ForeignerDataRepo foreignerDataRepo;
+    @Autowired
+    private InstitutionDataRepo institutionDataRepo;
+    @Autowired
+    private PublicRepo publicRepo;
+
     //@CrossOrigin(origins = AppConfig.BASE_URL)
     @GetMapping("/hello/{employeeId}")
     public ResponseEntity<Object> sayHello(@PathVariable String employeeId) {
@@ -59,6 +73,9 @@ public class ScannerController {
         Optional<ForeignerDetails> foreignerDetails = foreignerDetailsRepo.findByticketId(scanRequest.getTicketId());
         Optional<InstitutionDetails> institutionDetails = institutionDetailsRepo.findByticketId(scanRequest.getTicketId());
         Optional<PublicDetails> publicDetails = publicDetailsRepo.findByticketId(scanRequest.getTicketId());
+        Optional<ForeignerData> foreignerData = foreignerDataRepo.findByTicketId(scanRequest.getTicketId());
+        Optional<InstitutionData> institutionDataOptional = institutionDataRepo.findByTicketId(scanRequest.getTicketId());
+        Optional<PublicData> publicDataOptional = publicRepo.findByTicketId(scanRequest.getTicketId());
 
         try{
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS");
@@ -76,6 +93,12 @@ public class ScannerController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new CustomResponse("Visit date is different. " + institutionDetails.get().getVisitDate(), HttpStatus.BAD_REQUEST.value()));
             } else if (publicDetails.isPresent() && !publicDetails.get().getVisitDate().isEqual(LocalDate.now())) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new CustomResponse("Visit date is different. " + publicDetails.get().getVisitDate(), HttpStatus.BAD_REQUEST.value()));
+            } else if (publicDataOptional.isPresent() && !publicDataOptional.get().getVisitDate().isEqual(LocalDate.now())) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new CustomResponse("Visit Date is different. "+publicDataOptional.get().getVisitDate(),HttpStatus.BAD_REQUEST.value()));
+            } else if (institutionDataOptional.isPresent() && !institutionDataOptional.get().getVisitDate().isEqual(LocalDate.now())) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new CustomResponse("Visit Date is different "+institutionDataOptional.get().getVisitDate(),HttpStatus.BAD_REQUEST.value()));
+            } else if (foreignerData.isPresent() && !foreignerData.get().getVisitDate().isEqual(LocalDate.now())) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new CustomResponse("Visit Date is different "+foreignerData.get().getVisitDate(),HttpStatus.BAD_REQUEST.value()));
             }
             //return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new CustomResponse("Visit date is different.", HttpStatus.BAD_REQUEST.value()));
         }
