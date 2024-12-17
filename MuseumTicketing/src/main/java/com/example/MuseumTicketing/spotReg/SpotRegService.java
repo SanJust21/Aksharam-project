@@ -129,6 +129,7 @@ SpotRegService {
                 publicDetails.setPaymentStatusId(paymentStatus.getId());
             }
         }
+        log.info("log PublicDetails : "+publicDetails);
         publicRepo.save(publicDetails);
         return new ResponseEntity<>(publicDetails,HttpStatus.OK);
     }
@@ -181,6 +182,7 @@ SpotRegService {
                 institutionData.setPaymentStatusId(paymentStatus.getId());
             }
         }
+        log.info("Info institutionData : "+institutionData);
         institutionDataRepo.save(institutionData);
         return new ResponseEntity<>(institutionData,HttpStatus.OK);
     }
@@ -231,6 +233,7 @@ SpotRegService {
                 foreignerData.setPaymentStatusId(paymentStatus.getId());
             }
         }
+        log.info("info foreigner Data : "+foreignerData);
         foreignerDataRepo.save(foreignerData);
         return new ResponseEntity<>(foreignerData,HttpStatus.OK);
     }

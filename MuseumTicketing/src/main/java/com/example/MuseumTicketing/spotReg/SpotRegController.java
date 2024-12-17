@@ -12,6 +12,7 @@ import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.SlotIdDto;
 import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.count.VisitorsAmountDto;
 import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.count.VisitsCountDto;
 import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.usesrDetails.AllUserDataDto;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping(path = "api/spotData")
 @CrossOrigin
+@Slf4j
 public class SpotRegController {
     @Autowired
     private SpotRegService spotRegService;
@@ -38,6 +40,8 @@ public class SpotRegController {
     @PostMapping(path = "/userReg")
     public ResponseEntity<?>userReg(@RequestParam Integer category,@RequestBody SpotUserDto spotUserDto){
         try {
+            log.info("CategoryId  : "+category);
+            log.info("SpotUserDto : "+spotUserDto);
             Optional<CategoryData> categoryDataOptional = categoryRepo.findById(category);
             if (categoryDataOptional.isPresent()){
                 CategoryData categoryData = categoryDataOptional.get();
