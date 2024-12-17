@@ -2,14 +2,10 @@ package com.example.MuseumTicketing.Service.AdminScanner;
 
 import com.example.MuseumTicketing.DTO.AdminScanner.CustomResponse;
 import com.example.MuseumTicketing.DTO.DetailsRequest;
-import com.example.MuseumTicketing.Model.ForeignerDetails;
-import com.example.MuseumTicketing.Model.InstitutionDetails;
-import com.example.MuseumTicketing.Model.PublicDetails;
-import com.example.MuseumTicketing.Model.ScannedDetails;
-import com.example.MuseumTicketing.Repo.ForeignerDetailsRepo;
-import com.example.MuseumTicketing.Repo.InstitutionDetailsRepo;
-import com.example.MuseumTicketing.Repo.PublicDetailsRepo;
-import com.example.MuseumTicketing.Repo.ScannedDetailsRepo;
+import com.example.MuseumTicketing.Model.*;
+import com.example.MuseumTicketing.Repo.*;
+import com.example.MuseumTicketing.spotReg.bookingDetails.slotData.SpotSlot;
+import com.example.MuseumTicketing.spotReg.bookingDetails.slotData.SpotSlotRepo;
 import com.example.MuseumTicketing.spotReg.userData.Institution.InstitutionData;
 import com.example.MuseumTicketing.spotReg.userData.Institution.InstitutionDataRepo;
 import com.example.MuseumTicketing.spotReg.userData.foreigner.ForeignerData;
@@ -29,26 +25,32 @@ import java.util.Optional;
 @Service
 public class ScannerService {
 
+    @Autowired
+    private SpotSlotRepo spotSlotRepo;
+    @Autowired
+    private ShowTimeRepo showTimeRepo;
+
 
         private final ForeignerDetailsRepo foreignerDetailsRepo;
         private final InstitutionDetailsRepo institutionDetailsRepo;
         private final PublicDetailsRepo publicDetailsRepo;
+        private final PublicRepo publicRepo;
+        private final InstitutionDataRepo institutionDataRepo;
+        private final ForeignerDataRepo foreignerDataRepo;
 
         private final ScannedDetailsRepo scannedDetailsRepo;
 
     @Autowired
-    public ScannerService(ForeignerDetailsRepo foreignerDetailsRepo, InstitutionDetailsRepo institutionDetailsRepo, PublicDetailsRepo publicDetailsRepo, ScannedDetailsRepo scannedDetailsRepo) {
+    public ScannerService(ForeignerDetailsRepo foreignerDetailsRepo, InstitutionDetailsRepo institutionDetailsRepo, PublicDetailsRepo publicDetailsRepo, PublicRepo publicRepo, InstitutionDataRepo institutionDataRepo, ForeignerDataRepo foreignerDataRepo, ScannedDetailsRepo scannedDetailsRepo) {
         this.foreignerDetailsRepo = foreignerDetailsRepo;
         this.institutionDetailsRepo = institutionDetailsRepo;
         this.publicDetailsRepo = publicDetailsRepo;
+        this.publicRepo = publicRepo;
+        this.institutionDataRepo = institutionDataRepo;
+        this.foreignerDataRepo = foreignerDataRepo;
         this.scannedDetailsRepo = scannedDetailsRepo;
     }
-    @Autowired
-    private PublicRepo publicRepo;
-    @Autowired
-    private InstitutionDataRepo institutionDataRepo;
-    @Autowired
-    private ForeignerDataRepo foreignerDataRepo;
+
 
     public ResponseEntity<?> identifyUserAndGetDetails(String ticketId, LocalDateTime scannedTime) {
         // Check if ticket is already scanned
@@ -93,11 +95,11 @@ public class ScannerService {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new CustomResponse("Visit date is different." + institutionDetails.get().getVisitDate(), HttpStatus.BAD_REQUEST.value()));
         } else if (publicDetails.isPresent() && !publicDetails.get().getVisitDate().isEqual(LocalDate.now())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new CustomResponse("Visit date is different." + publicDetails.get().getVisitDate(), HttpStatus.BAD_REQUEST.value()));
-        } else if (publicDataOptional.isPresent() && publicDataOptional.get().getVisitDate().isEqual(LocalDate.now())) {
+        } else if (publicDataOptional.isPresent() && !publicDataOptional.get().getVisitDate().isEqual(LocalDate.now())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new CustomResponse("Visit Date is different."+publicDataOptional.get().getVisitDate(),HttpStatus.BAD_REQUEST.value()));
-        } else if (institutionDataOptional.isPresent() && institutionDataOptional.get().getVisitDate().isEqual(LocalDate.now())) {
+        } else if (institutionDataOptional.isPresent() && !institutionDataOptional.get().getVisitDate().isEqual(LocalDate.now())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new CustomResponse("Visit date is different. "+institutionDataOptional.get().getVisitDate(),HttpStatus.BAD_REQUEST.value()));
-        } else if (foreignerDataOptional.isPresent() && foreignerDataOptional.get().getVisitDate().isEqual(LocalDate.now())) {
+        } else if (foreignerDataOptional.isPresent() && !foreignerDataOptional.get().getVisitDate().isEqual(LocalDate.now())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new CustomResponse("Visit Date is different."+foreignerDataOptional.get().getVisitDate(),HttpStatus.BAD_REQUEST.value()));
         }
 
@@ -123,25 +125,28 @@ public class ScannerService {
             publicDetail.setVisitStatus(true);
             publicDetailsRepo.save(publicDetail);
         } else if (publicDataOptional.isPresent()) {
+            DetailsRequest detailsRequest = convertToDetailsRequest(publicDataOptional.get());
             PublicData publicData = publicDataOptional.get();
-            scannedDetails.setName(publicData.getName());
+            scannedDetails.setName(detailsRequest.getName());
             scannedDetails.setType("public");
             publicData.setVisitStatus(true);
             publicRepo.save(publicData);
         } else if (institutionDataOptional.isPresent()) {
+            DetailsRequest detailsRequest = convertToDetailsRequest(institutionDataOptional.get());
             InstitutionData institutionData = institutionDataOptional.get();
             scannedDetails.setName(institutionData.getName());
             scannedDetails.setType("Institution");
             institutionData.setVisitStatus(true);
             institutionDataRepo.save(institutionData);
         } else if (foreignerDataOptional.isPresent()) {
+            DetailsRequest detailsRequest = convertToDetailsRequest(foreignerDataOptional.get());
             ForeignerData foreignerData = foreignerDataOptional.get();
             scannedDetails.setName(foreignerData.getName());
             scannedDetails.setType("Foreigner");
             foreignerData.setVisitStatus(true);
             foreignerDataRepo.save(foreignerData);
         }
-//spotBookingDetails are present only in the above area
+
         scannedDetailsRepo.save(scannedDetails);
 
         // Return appropriate details request based on ticketId
@@ -196,11 +201,13 @@ public class ScannerService {
 //        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No details found for the provided ticket ID.");
 //    }
 
+
+
     private DetailsRequest convertToDetailsRequest(ForeignerData foreignerData) {
         DetailsRequest detailsRequest = new DetailsRequest();
         ScannedDetails scannedDetails = new ScannedDetails();
         detailsRequest.setSessionId("n/a");
-        detailsRequest.setType("Foreigner");
+        detailsRequest.setType("foreigner");
         detailsRequest.setMobileNumber(foreignerData.getPhNumber());
         detailsRequest.setEmail("n/a");
         detailsRequest.setInstitutionName("n/a");
@@ -210,8 +217,17 @@ public class ScannerService {
         detailsRequest.setNumberOfChildren(foreignerData.getChild());
         detailsRequest.setTotalPrice(foreignerData.getGrandTotal());
         detailsRequest.setVisitDate(foreignerData.getVisitDate());
-        detailsRequest.setBookDate(foreignerData.getVisitDate());
+        Optional<SpotSlot>spotSlotOptional = spotSlotRepo.findById(foreignerData.getSlotId());
+        if (spotSlotOptional.isPresent()){
+            SpotSlot spotSlot = spotSlotOptional.get();
+            detailsRequest.setSlotStartTime(spotSlot.getSlotStartTime());
+            detailsRequest.setSlotEndTime(spotSlot.getSlotEndTime());
+        }
+        detailsRequest.setBookDate(LocalDate.now());
         detailsRequest.setPaymentid(foreignerData.getPaymentId());
+        detailsRequest.setVisitStatus(foreignerData.isVisitStatus());
+        detailsRequest.setTicketId(foreignerData.getTicketId());
+        detailsRequest.setPaymentStatus(true);
         detailsRequest.setTotalTickets(foreignerData.getAdult()+foreignerData.getChild());
         return detailsRequest;
     }
@@ -231,6 +247,11 @@ public class ScannerService {
         detailsRequest.setNumberOfChildren(foreignerDetails.getNumberOfChildren());
         detailsRequest.setTotalPrice(foreignerDetails.getTotalPrice());
         detailsRequest.setVisitDate(foreignerDetails.getVisitDate());
+        Optional<ShowTime> showTimeOptional = showTimeRepo.findByStartTime(foreignerDetails.getSlotName());
+        if (showTimeOptional.isPresent()){
+            detailsRequest.setSlotStartTime(showTimeOptional.get().getStartTime());
+            detailsRequest.setSlotEndTime(showTimeOptional.get().getEndTime());
+        }
         detailsRequest.setBookDate(foreignerDetails.getBookDate());
         detailsRequest.setPaymentid(foreignerDetails.getPaymentid());
         detailsRequest.setVisitStatus(foreignerDetails.isVisitStatus());
@@ -246,19 +267,28 @@ public class ScannerService {
 
         ScannedDetails scannedDetails = new ScannedDetails();
         detailsRequest.setSessionId("n/a");
-        detailsRequest.setType("Institution");
+        detailsRequest.setType("institution");
         detailsRequest.setMobileNumber(institutionData.getPhNumber());
         detailsRequest.setEmail("n/a");
         detailsRequest.setInstitutionName(institutionData.getName());
         detailsRequest.setDistrict(institutionData.getDistrict());
         detailsRequest.setName("n/a");
-        detailsRequest.setNumberOfTeachers(institutionData.getTeacher());
         detailsRequest.setNumberOfStudents(institutionData.getStudent());
+        detailsRequest.setNumberOfTeachers(institutionData.getTeacher());
         detailsRequest.setTotalPrice(institutionData.getGrandTotal());
         detailsRequest.setVisitDate(institutionData.getVisitDate());
-        detailsRequest.setBookDate(institutionData.getVisitDate());
+        Optional<SpotSlot>spotSlotOptional = spotSlotRepo.findById(institutionData.getSlotId());
+        if (spotSlotOptional.isPresent()){
+            SpotSlot spotSlot = spotSlotOptional.get();
+            detailsRequest.setSlotStartTime(spotSlot.getSlotStartTime());
+            detailsRequest.setSlotEndTime(spotSlot.getSlotEndTime());
+        }
+        detailsRequest.setBookDate(LocalDate.now());
         detailsRequest.setPaymentid(institutionData.getPaymentId());
-        detailsRequest.setTotalTickets(institutionData.getStudent()+institutionData.getTeacher());
+        detailsRequest.setVisitStatus(institutionData.isVisitStatus());
+        detailsRequest.setTicketId(institutionData.getTicketId());
+        detailsRequest.setPaymentStatus(true);
+        detailsRequest.setTotalTickets(institutionData.getStudent()+ institutionData.getTeacher());
         return detailsRequest;
     }
     public DetailsRequest convertToDetailsRequest(InstitutionDetails institutionDetails) {
@@ -278,12 +308,17 @@ public class ScannerService {
         detailsRequest.setNumberOfTeachers(institutionDetails.getNumberOfTeachers());
         detailsRequest.setTotalPrice(institutionDetails.getTotalPrice());
         detailsRequest.setVisitDate(institutionDetails.getVisitDate());
+        Optional<ShowTime> showTimeOptional = showTimeRepo.findByStartTime(institutionDetails.getSlotName());
+        if (showTimeOptional.isPresent()){
+            detailsRequest.setSlotStartTime(showTimeOptional.get().getStartTime());
+            detailsRequest.setSlotEndTime(showTimeOptional.get().getEndTime());
+        }
         detailsRequest.setBookDate(institutionDetails.getBookDate());
         detailsRequest.setPaymentid(institutionDetails.getPaymentid());
         detailsRequest.setVisitStatus(institutionDetails.isVisitStatus());
         detailsRequest.setTicketId(institutionDetails.getTicketId());
         detailsRequest.setPaymentStatus(institutionDetails.isPaymentStatus());
-        detailsRequest.setTotalTickets(institutionDetails.getNumberOfStudents()+ detailsRequest.getNumberOfTeachers());
+        detailsRequest.setTotalTickets(institutionDetails.getNumberOfStudents()+ institutionDetails.getNumberOfTeachers());
 
         return detailsRequest;
     }
@@ -291,7 +326,7 @@ public class ScannerService {
         DetailsRequest detailsRequest = new DetailsRequest();
         ScannedDetails scannedDetails = new ScannedDetails();
         detailsRequest.setSessionId("n/a");
-        detailsRequest.setType("Public");
+        detailsRequest.setType("public");
         detailsRequest.setMobileNumber(publicData.getPhNumber());
         detailsRequest.setEmail("n/a");
         detailsRequest.setName(publicData.getName());
@@ -302,8 +337,17 @@ public class ScannerService {
         detailsRequest.setNumberOfSeniors(publicData.getSeniorCitizen());
         detailsRequest.setTotalPrice(publicData.getGrandTotal());
         detailsRequest.setVisitDate(publicData.getVisitDate());
-        detailsRequest.setBookDate(publicData.getVisitDate());
+        Optional<SpotSlot>spotSlotOptional = spotSlotRepo.findById(publicData.getSlotId());
+        if (spotSlotOptional.isPresent()){
+            SpotSlot spotSlot = spotSlotOptional.get();
+            detailsRequest.setSlotStartTime(spotSlot.getSlotStartTime());
+            detailsRequest.setSlotEndTime(spotSlot.getSlotEndTime());
+        }
+        detailsRequest.setBookDate(LocalDate.now());
         detailsRequest.setPaymentid(publicData.getPaymentId());
+        detailsRequest.setVisitStatus(publicData.isVisitStatus());
+        detailsRequest.setTicketId(publicData.getTicketId());
+        detailsRequest.setPaymentStatus(true);
         detailsRequest.setTotalTickets(publicData.getAdult()+publicData.getChild()+publicData.getSeniorCitizen());
         return detailsRequest;
     }
@@ -325,6 +369,11 @@ public class ScannerService {
         detailsRequest.setNumberOfSeniors(publicDetails.getNumberOfSeniors());
         detailsRequest.setTotalPrice(publicDetails.getTotalPrice());
         detailsRequest.setVisitDate(publicDetails.getVisitDate());
+        Optional<ShowTime> showTimeOptional = showTimeRepo.findByStartTime(publicDetails.getSlotName());
+        if (showTimeOptional.isPresent()){
+            detailsRequest.setSlotStartTime(showTimeOptional.get().getStartTime());
+            detailsRequest.setSlotEndTime(showTimeOptional.get().getEndTime());
+        }
         detailsRequest.setBookDate(publicDetails.getBookDate());
         detailsRequest.setPaymentid(publicDetails.getPaymentid());
         detailsRequest.setVisitStatus(publicDetails.isVisitStatus());

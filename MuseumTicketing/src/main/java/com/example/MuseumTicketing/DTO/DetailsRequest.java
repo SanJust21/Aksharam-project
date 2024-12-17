@@ -22,7 +22,10 @@ public class DetailsRequest {
     private int numberOfStudents;
     private int numberOfTeachers;
     private LocalDate visitDate;
+    private LocalTime slotStartTime;
+    private LocalTime slotEndTime;
     private LocalDate bookDate;
+    private boolean visitStatus;
 
     // Fields for public details
     private String name;
@@ -33,19 +36,14 @@ public class DetailsRequest {
     private double totalPrice;
     private String paymentid;
 
-    private boolean visitStatus;
+
     private String ticketId;
     private boolean paymentStatus;
     private int bookingId;
-    private LocalTime slotName;
 
-    public LocalTime getSlotName() {
-        return slotName;
-    }
 
-    public void setSlotName(LocalTime slotName) {
-        this.slotName = slotName;
-    }
+
+
 
     public int getBookingId() {
         return bookingId;
