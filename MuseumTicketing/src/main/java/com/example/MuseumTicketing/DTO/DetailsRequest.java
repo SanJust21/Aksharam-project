@@ -41,9 +41,16 @@ public class DetailsRequest {
     private boolean paymentStatus;
     private int bookingId;
 
+    private LocalTime slotName;
 
 
+    public LocalTime getSlotName() {
+        return slotName;
+    }
 
+    public void setSlotName(LocalTime slotName) {
+        this.slotName = slotName;
+    }
 
     public int getBookingId() {
         return bookingId;

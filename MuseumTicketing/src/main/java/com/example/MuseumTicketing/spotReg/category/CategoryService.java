@@ -4,6 +4,8 @@ import com.example.MuseumTicketing.spotReg.category.additionCharge.AdditionCharg
 import com.example.MuseumTicketing.spotReg.category.additionCharge.AdditionChargeRepo;
 import com.example.MuseumTicketing.spotReg.category.category.CategoryData;
 import com.example.MuseumTicketing.spotReg.category.category.CategoryRepo;
+import com.example.MuseumTicketing.spotReg.category.district.DistrictData;
+import com.example.MuseumTicketing.spotReg.category.district.DistrictRepo;
 import com.example.MuseumTicketing.spotReg.category.gst.GSTData;
 import com.example.MuseumTicketing.spotReg.category.gst.GSTRepo;
 import com.example.MuseumTicketing.spotReg.category.paymentMode.PaymentMode;
@@ -42,6 +44,8 @@ public class CategoryService {
     private AdditionChargeRepo additionChargeRepo;
     @Autowired
     private PaymentStatusRepo paymentStatusRepo;
+    @Autowired
+    private DistrictRepo districtRepo;
 
 
     public ResponseEntity<?> addCategory(CategoryData categoryData) {
@@ -335,5 +339,18 @@ public class CategoryService {
             return new ResponseEntity<>(name+" is deleted",HttpStatus.OK);
         }
         return new ResponseEntity<>("id : "+id+" isn't valid",HttpStatus.BAD_REQUEST);
+    }
+
+    public ResponseEntity<?> addDistrict(DistrictData districtData) {
+        try {
+            return new ResponseEntity<>(districtRepo.save(districtData),HttpStatus.OK);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    public ResponseEntity<List<DistrictData>> getDistrict() {
+        return new ResponseEntity<>(districtRepo.findAll(),HttpStatus.OK);
     }
 }

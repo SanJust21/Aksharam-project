@@ -97,6 +97,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/category/getPaymentStatus").permitAll()
                         .requestMatchers("/api/category/updatePaymentStatus/{id}").hasAnyAuthority(Role.ADMIN.name())
                         .requestMatchers("/api/category/deleteStatus/{id}").hasAnyAuthority(Role.ADMIN.name())
+                        .requestMatchers("/api/category/addDistrict").hasAnyAuthority(Role.ADMIN.name())
+                        .requestMatchers("/api/category/getDistrict").permitAll()
                         .requestMatchers("/api/slot/addSlot").hasAnyAuthority(Role.ADMIN.name())
                         .requestMatchers("/api/slot/getAllSlot").permitAll()
                         .requestMatchers("/api/slot/updateSlot").hasAnyAuthority(Role.ADMIN.name())

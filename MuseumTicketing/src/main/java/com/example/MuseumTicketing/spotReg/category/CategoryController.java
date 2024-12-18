@@ -3,6 +3,7 @@ package com.example.MuseumTicketing.spotReg.category;
 import com.example.MuseumTicketing.Guide.util.ErrorService;
 import com.example.MuseumTicketing.spotReg.category.additionCharge.AdditionCharge;
 import com.example.MuseumTicketing.spotReg.category.category.CategoryData;
+import com.example.MuseumTicketing.spotReg.category.district.DistrictData;
 import com.example.MuseumTicketing.spotReg.category.gst.GSTData;
 import com.example.MuseumTicketing.spotReg.category.paymentMode.PaymentMode;
 import com.example.MuseumTicketing.spotReg.category.paymentStatus.PaymentStatus;
@@ -314,4 +315,24 @@ public class CategoryController {
             return errorService.handlerException(e);
         }
     }
+
+    @PostMapping(path = "/addDistrict")
+    public ResponseEntity<?>addDistrict(@RequestBody DistrictData districtData){
+        try {
+            return categoryService.addDistrict(districtData);
+        }catch (Exception e){
+            return errorService.handlerException(e);
+        }
+    }
+
+    @GetMapping(path = "/getDistrict")
+    public ResponseEntity<List<DistrictData>>getDistrictData(){
+        try {
+            return categoryService.getDistrict();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
 }
