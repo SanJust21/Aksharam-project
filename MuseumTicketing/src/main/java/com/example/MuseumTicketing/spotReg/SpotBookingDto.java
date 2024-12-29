@@ -14,7 +14,11 @@ public class SpotBookingDto {
     private Integer childCount;
     private Integer seniorCitizenCount;
     private Integer teacherCount;
+    private Double teacherTicketCharge;
     private Integer studentCount;
+    private Double studentTicketCharge;
+    private Double payableStudentCharge;
+    private Double discountAmount;
     private LocalDate visitDate;
     private LocalTime slotStartTime;
     private Double totalAmount;

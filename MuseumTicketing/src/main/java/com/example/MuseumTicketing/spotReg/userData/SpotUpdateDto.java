@@ -13,6 +13,8 @@ public class SpotUpdateDto {
     private Integer seniorCitizen;
     private Integer seniorCitizenTypeId;
 
+    private Integer discountRate;
+
     private Integer Student;
     private Integer studentTypeId;
 

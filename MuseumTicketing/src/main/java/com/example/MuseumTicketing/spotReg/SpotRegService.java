@@ -9,6 +9,8 @@ import com.example.MuseumTicketing.spotReg.bookingDetails.slotData.SpotSlotRepo;
 import com.example.MuseumTicketing.spotReg.category.additionCharge.AdditionChargeRepo;
 import com.example.MuseumTicketing.spotReg.category.category.CategoryData;
 import com.example.MuseumTicketing.spotReg.category.category.CategoryRepo;
+import com.example.MuseumTicketing.spotReg.category.discount.DiscountCount;
+import com.example.MuseumTicketing.spotReg.category.discount.DiscountCountRepo;
 import com.example.MuseumTicketing.spotReg.category.gst.GSTRepo;
 import com.example.MuseumTicketing.spotReg.category.paymentMode.PaymentMode;
 import com.example.MuseumTicketing.spotReg.category.paymentMode.PaymentModeRepo;
@@ -80,6 +82,10 @@ SpotRegService {
     private CategoryRepo categoryRepo;
     @Autowired
     private SpotQRcodeService spotQRcodeService;
+    @Autowired
+    private DiscountCountRepo discountCountRepo;
+
+    public static final Integer studentDiscountId=1;
 
 
     public ResponseEntity<?> publicUserReg(SpotUserDto spotUserDto, Integer category) {
@@ -156,35 +162,93 @@ SpotRegService {
             //calculating total students ticket charge by categoryId, userTypeId and count
             totalStudentCharge = amountCalculation.calculateTotalUserCharge(category,typeId,userCount);
         }
-        // total ticket charge = total student ticket charge + total teachers ticket charge
-        Double totalCharges = totalStudentCharge+totalTeacherCharge;
 
-        //calculate total user GST charge
-        Double totalGstRate =amountCalculation.CalculateGST(),totalUserGst;
-        totalUserGst = totalGstRate*totalCharges;
+        //calculateStudent DiscountRate.
+        Double discountAmount=0.0,payableStudentCharge=0.0;
+        Optional<DiscountCount> discountCountOptional = discountCountRepo.findById(studentDiscountId);
+        if (discountCountOptional.isPresent()){
+            DiscountCount discountCount = discountCountOptional.get();
+            if ("studentDiscountCount".equals(discountCount.getUserType())){
 
-        //calculating additional chagres
-        Integer extraCharge= amountCalculation.calculateAdditionalCharges();
+                //check studentCount > discountCount of student
+                if (spotUserDto.getStudent()>discountCount.getDisCount()){
+                    discountAmount=((double)spotUserDto.getDiscountRate()/100);
+                    log.info("discountAmount: "+discountAmount);
+                    institutionData.setDiscountAmount(discountAmount);
+                    payableStudentCharge = totalStudentCharge-discountAmount;
+                    institutionData.setStudentTicketCharge(totalStudentCharge);
+                    institutionData.setTeacherTicketCharge(totalTeacherCharge);
+                    institutionData.setPayableStudentCharge(payableStudentCharge);
 
-        //Grand total = total GST charge + total additional charge + total ticket charge
-        grandTotal = amountCalculation.calculateGrandTotal(totalUserGst,extraCharge,totalCharges);
+                    // total ticket charge = total student ticket charge + total teachers ticket charge
+                    Double totalCharges = payableStudentCharge+totalTeacherCharge;
 
-        institutionData.setTotalAmount(totalCharges);
-        institutionData.setPaymentMode(spotUserDto.getPaymentMode());
-        institutionData.setTotalGstCharge(totalUserGst);
-        institutionData.setTotalAdditionalCharges(extraCharge);
-        institutionData.setGrandTotal(grandTotal);
-        institutionData.setOrderId(alphaNumeric.generateRandomNumber());
-        Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(spotUserDto.getPaymentStatusId());
-        if (paymentStatusOptional.isPresent()){
-            PaymentStatus paymentStatus = paymentStatusOptional.get();
-            if ("Pending".equalsIgnoreCase(paymentStatus.getStatusName())){
-                institutionData.setPaymentStatusId(paymentStatus.getId());
+                    //calculate total user GST charge
+                    Double totalGstRate =amountCalculation.CalculateGST(),totalUserGst;
+                    totalUserGst = totalGstRate*totalCharges;
+
+                    //calculating additional chagres
+                    Integer extraCharge= amountCalculation.calculateAdditionalCharges();
+                    //Grand total = total GST charge + total additional charge + total ticket charge
+                    grandTotal = amountCalculation.calculateGrandTotal(totalUserGst,extraCharge,totalCharges);
+
+                    institutionData.setTotalAmount(totalCharges);
+                    institutionData.setPaymentMode(spotUserDto.getPaymentMode());
+                    institutionData.setTotalGstCharge(totalUserGst);
+                    institutionData.setTotalAdditionalCharges(extraCharge);
+                    institutionData.setGrandTotal(grandTotal);
+                    institutionData.setOrderId(alphaNumeric.generateRandomNumber());
+                    Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(spotUserDto.getPaymentStatusId());
+                    if (paymentStatusOptional.isPresent()){
+                        PaymentStatus paymentStatus = paymentStatusOptional.get();
+                        if ("Pending".equalsIgnoreCase(paymentStatus.getStatusName())){
+                            institutionData.setPaymentStatusId(paymentStatus.getId());
+                        }
+                    }
+                    log.info("Info institutionData : "+institutionData);
+                    institutionDataRepo.save(institutionData);
+                    return new ResponseEntity<>(institutionData,HttpStatus.OK);
+                }else {
+                    // total ticket charge = total student ticket charge + total teachers ticket charge
+                    Double totalCharges = totalStudentCharge+totalTeacherCharge;
+                    institutionData.setStudentTicketCharge(totalStudentCharge);
+                    institutionData.setTeacherTicketCharge(totalTeacherCharge);
+                    institutionData.setPayableStudentCharge(totalStudentCharge);
+                    institutionData.setDiscountAmount((double) spotUserDto.getDiscountRate());
+
+                    //calculate total user GST charge
+                    Double totalGstRate =amountCalculation.CalculateGST(),totalUserGst;
+                    totalUserGst = totalGstRate*totalCharges;
+
+                    //calculating additional chagres
+                    Integer extraCharge= amountCalculation.calculateAdditionalCharges();
+
+                    //Grand total = total GST charge + total additional charge + total ticket charge
+                    grandTotal = amountCalculation.calculateGrandTotal(totalUserGst,extraCharge,totalCharges);
+
+                    institutionData.setTotalAmount(totalCharges);
+                    institutionData.setPaymentMode(spotUserDto.getPaymentMode());
+                    institutionData.setTotalGstCharge(totalUserGst);
+                    institutionData.setTotalAdditionalCharges(extraCharge);
+                    institutionData.setGrandTotal(grandTotal);
+                    institutionData.setOrderId(alphaNumeric.generateRandomNumber());
+                    Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(spotUserDto.getPaymentStatusId());
+                    if (paymentStatusOptional.isPresent()){
+                        PaymentStatus paymentStatus = paymentStatusOptional.get();
+                        if ("Pending".equalsIgnoreCase(paymentStatus.getStatusName())){
+                            institutionData.setPaymentStatusId(paymentStatus.getId());
+                        }
+                    }
+                    log.info("Info institutionData : "+institutionData);
+                    institutionDataRepo.save(institutionData);
+                    return new ResponseEntity<>(institutionData,HttpStatus.OK);
+                }
+            }else {
+                return new ResponseEntity<>("studentDiscountCount is not present in discount Table ",HttpStatus.NOT_FOUND);
             }
+        }else {
+            return new ResponseEntity<>("studentDiscountId is not present in discount Table ",HttpStatus.NOT_FOUND);
         }
-        log.info("Info institutionData : "+institutionData);
-        institutionDataRepo.save(institutionData);
-        return new ResponseEntity<>(institutionData,HttpStatus.OK);
     }
 
     public ResponseEntity<?> ForeignerReg(SpotUserDto spotUserDto, Integer category) {
@@ -504,6 +568,10 @@ SpotRegService {
                     spotBookingDto.setPhNumber(institutionData.getPhNumber());
                     spotBookingDto.setDistrict(institutionData.getDistrict());
                     spotBookingDto.setTeacherCount(institutionData.getTeacher());
+                    spotBookingDto.setTeacherTicketCharge(institutionData.getTeacherTicketCharge());
+                    spotBookingDto.setStudentTicketCharge(institutionData.getStudentTicketCharge());
+                    spotBookingDto.setPayableStudentCharge(institutionData.getPayableStudentCharge());
+                    spotBookingDto.setDiscountAmount(institutionData.getDiscountAmount());
                     spotBookingDto.setStudentCount(institutionData.getStudent());
                     spotBookingDto.setVisitDate(institutionData.getVisitDate());
                     Optional<BookingDetails> bookingDetails1 = bookingSpotRepo.findByBookDateAndSlotId(institutionData.getVisitDate(), institutionData.getSlotId());

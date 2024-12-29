@@ -4,6 +4,9 @@ import com.example.MuseumTicketing.spotReg.category.additionCharge.AdditionCharg
 import com.example.MuseumTicketing.spotReg.category.additionCharge.AdditionChargeRepo;
 import com.example.MuseumTicketing.spotReg.category.category.CategoryData;
 import com.example.MuseumTicketing.spotReg.category.category.CategoryRepo;
+import com.example.MuseumTicketing.spotReg.category.discount.DiscountCount;
+import com.example.MuseumTicketing.spotReg.category.discount.DiscountCountDto;
+import com.example.MuseumTicketing.spotReg.category.discount.DiscountCountRepo;
 import com.example.MuseumTicketing.spotReg.category.district.DistrictData;
 import com.example.MuseumTicketing.spotReg.category.district.DistrictRepo;
 import com.example.MuseumTicketing.spotReg.category.gst.GSTData;
@@ -46,6 +49,8 @@ public class CategoryService {
     private PaymentStatusRepo paymentStatusRepo;
     @Autowired
     private DistrictRepo districtRepo;
+    @Autowired
+    private DiscountCountRepo discountCountRepo;
 
 
     public ResponseEntity<?> addCategory(CategoryData categoryData) {
@@ -352,5 +357,30 @@ public class CategoryService {
 
     public ResponseEntity<List<DistrictData>> getDistrict() {
         return new ResponseEntity<>(districtRepo.findAll(),HttpStatus.OK);
+    }
+
+    public ResponseEntity<?> addDiscountCount(DiscountCount discountCount) {
+        try {
+            return new ResponseEntity<>(discountCountRepo.save(discountCount),HttpStatus.OK);
+        }catch (Exception e){
+            e.printStackTrace();
+        }return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    public ResponseEntity<List<DiscountCount>> getDiscountCount() {
+        return new ResponseEntity<>(discountCountRepo.findAll(),HttpStatus.OK);
+    }
+
+    public ResponseEntity<?> updateDiscountCount(Integer id, DiscountCountDto countDto) {
+        Optional<DiscountCount> discountCountOptional = discountCountRepo.findById(id);
+        if (discountCountOptional.isPresent()){
+            DiscountCount discountCount = discountCountOptional.get();
+            discountCount.setDisCount(countDto.getDisCount());
+            discountCount.setUserType(countDto.getUserType());
+            discountCountRepo.save(discountCount);
+            return new ResponseEntity<>(discountCount,HttpStatus.OK);
+        }else {
+            return new ResponseEntity<>("Id isn't present",HttpStatus.BAD_REQUEST);
+        }
     }
 }
