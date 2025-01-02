@@ -14,12 +14,28 @@ public class VisitsCountDto {
     private Integer childCount;
     private Integer seniorCitizen;
 
+    private Double publicGrandTotal;
+    private Double adultGrandTotal;
+    private Double childGrandTotal;
+    private Double seniorCitizenGrandTotal;
+
     private Integer institutionTicketCount;
     private Integer teacherCount;
     private Integer studentCount;
+    private Integer no_Of_Discount;
+
+    private Double institutionGrandTotal;
+    private Double teacherGrandTotal;
+    private Double studentGrandTotal;
+
+    private Double overAllDiscountPercentage;
 
     private Integer foreignerTicketCount;
     private Integer foreignAdult;
     private Integer foreignChild;
     private Integer totalVisitsCount;
+
+    private Double foreignerGrandTotal;
+    private Double foreignerAdultGrandTotal;
+    private Double foreignerChildGrandTotal;
 }

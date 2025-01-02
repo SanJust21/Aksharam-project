@@ -383,4 +383,16 @@ public class CategoryService {
             return new ResponseEntity<>("Id isn't present",HttpStatus.BAD_REQUEST);
         }
     }
+
+    public ResponseEntity<?> deleteDiscountById(Integer id) {
+        Optional<DiscountCount> discountCountOptional = discountCountRepo.findById(id);
+        if (discountCountOptional.isPresent()){
+            DiscountCount discountCount = discountCountOptional.get();
+            String name = discountCount.getUserType();
+            discountCountRepo.delete(discountCount);
+            return new ResponseEntity<>(name+" is deleted",HttpStatus.OK);
+        }else {
+            return new ResponseEntity<>("Id is not valid",HttpStatus.NOT_FOUND);
+        }
+    }
 }

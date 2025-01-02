@@ -174,6 +174,7 @@ public class SpotRegController {
         }
     }
 
+    //visitors count and grand total from a range of date
     @GetMapping(path = "/visitorsCountByRangeOfDate")
     public ResponseEntity<List<VisitsCountDto>> visitorsCountByDateRange(@RequestParam LocalDate startDate, @RequestParam LocalDate endDate){
         try {

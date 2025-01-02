@@ -365,4 +365,13 @@ public class CategoryController {
         }
     }
 
+    @DeleteMapping(path = "/deleteDiscount")
+    public ResponseEntity<?>deleteDiscount(@RequestParam Integer id){
+        try {
+            return categoryService.deleteDiscountById(id);
+        }catch (Exception e){
+           return errorService.handlerException(e);
+        }
+    }
+
 }

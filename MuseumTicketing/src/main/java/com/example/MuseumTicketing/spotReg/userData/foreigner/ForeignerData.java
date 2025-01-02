@@ -30,6 +30,12 @@ public class ForeignerData {
     @Column(name = "visitDate")
     private LocalDate visitDate;
 
+    @Column(name = "adultGrandTotal")
+    private Double adultGrandTotal;
+
+    @Column(name = "childGrandTotal")
+    private Double childGrandTotal;
+
     @Column(name = "totalAmount")
     private Double totalAmount;
 

@@ -101,6 +101,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/category/getDistrict").permitAll()
                         .requestMatchers("/api/category/addDiscount").hasAnyAuthority(Role.ADMIN.name())
                         .requestMatchers("/api/category/getDiscountCount").permitAll()
+                        .requestMatchers("/api/category/deleteDiscount").hasAnyAuthority(Role.ADMIN.name())
                         .requestMatchers("/api/category/updateDiscountCount").hasAnyAuthority(Role.ADMIN.name())
                         .requestMatchers("/api/slot/addSlot").hasAnyAuthority(Role.ADMIN.name())
                         .requestMatchers("/api/slot/getAllSlot").permitAll()

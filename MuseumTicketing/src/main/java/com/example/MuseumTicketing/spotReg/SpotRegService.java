@@ -104,16 +104,19 @@ SpotRegService {
             //calculating total user charge using categoryId,userTypeId and no.ofUserCount.
             totalAdultCharge =amountCalculation.calculateTotalUserCharge(category,typeId,userCount);
         }
+        publicDetails.setAdultGrandTotal(totalAdultCharge);
         if (spotUserDto.getChild()>0){ //calculating total child ticket charge
             typeId=spotUserDto.getChildTypeId();
             userCount = spotUserDto.getChild();
             totalChildCharge = amountCalculation.calculateTotalUserCharge(category,typeId,userCount);
         }
+        publicDetails.setChildGrandTotal(totalChildCharge);
         if (spotUserDto.getSeniorCitizen()>0){ // calculating total senior citizen ticket charge.
             typeId = spotUserDto.getSeniorCitizenTypeId();
             userCount = spotUserDto.getSeniorCitizen();
             totalSeniorCitizenCharge = amountCalculation.calculateTotalUserCharge(category,typeId,userCount);
         }
+        publicDetails.setSeniorCitizenGrandTotal(totalSeniorCitizenCharge);
         //total ticket charge by total no.of adult + total no.of child + total no.of senior citizen
         Double totalCharges = totalAdultCharge+totalChildCharge+totalSeniorCitizenCharge;
         Double totalGstRate =0.0; Double totalUserGst;
@@ -266,12 +269,14 @@ SpotRegService {
 
             totalAdultCharge=amountCalculation.calculateTotalUserCharge(category,typeId,userCount);
         }
+        foreignerData.setAdultGrandTotal(totalAdultCharge);
         if (spotUserDto.getChild()>0){      // calculating ticket charge of foreign child ticket charge
             typeId=spotUserDto.getChildTypeId();
             userCount = spotUserDto.getChild();
 
             totalChildCharge=amountCalculation.calculateTotalUserCharge(category,typeId,userCount);
         }
+        foreignerData.setChildGrandTotal(totalChildCharge);
         Double totalCharges=totalAdultCharge+totalChildCharge;      // total ticket charge = adult charge + child charge
 
         //calculating GST charge
@@ -1447,58 +1452,98 @@ SpotRegService {
 
         List<VisitsCountDto> visitsCountDtoList = new ArrayList<>();
         VisitsCountDto visitsCountDto = new VisitsCountDto();
-        Integer adultCount =0,childCount=0,seniorCitizenCount=0,count=0,totalCount=0;
+        Integer adultCount =0,childCount=0,seniorCitizenCount=0,count=0,totalCount=0,flag=0,discountNumber=0;
         //VisitsCountDto visitsCountDto = new VisitsCountDto();
-        if (!publicDataList.isEmpty()){
+        Double adultGrandTotals=0.0,childGrandTotals=0.0,seniorCitizenGrandTotal=0.0,overAllGrandTotal=0.0,discountPercentage=0.0;
+
+        if (publicDataList.isEmpty() && institutionDataList.isEmpty() && foreignerDataList.isEmpty()){
+            return new ResponseEntity<>(new ArrayList<>(),HttpStatus.NO_CONTENT);
+        }else {
+            if (!publicDataList.isEmpty()){
 //            List<PublicVisitorsDto> publicVisitorsDtoList = new ArrayList<>();
 
 //            PublicVisitorsDto publicVisitorsDto = new PublicVisitorsDto();
-            for (PublicData publicData : publicDataList){
-                adultCount+=publicData.getAdult();
-                childCount+=publicData.getChild();
-                seniorCitizenCount+=publicData.getSeniorCitizen();
-                count++;
-            }
-            totalCount+=count;
-            visitsCountDto.setPublicTicketCount(count);
-            visitsCountDto.setAdultCount(adultCount);
-            visitsCountDto.setChildCount(childCount);
-            visitsCountDto.setSeniorCitizen(seniorCitizenCount);
-            //visitsCountDtoList.add(visitsCountDto);
+                for (PublicData publicData : publicDataList){
+                    adultCount+=publicData.getAdult();
+                    childCount+=publicData.getChild();
+                    seniorCitizenCount+=publicData.getSeniorCitizen();
+                    count++;
+                    adultGrandTotals += publicData.getAdultGrandTotal();
+                    childGrandTotals += publicData.getChildGrandTotal();
+                    seniorCitizenGrandTotal +=publicData.getSeniorCitizenGrandTotal();
+
+                }
+                overAllGrandTotal+=adultGrandTotals+childGrandTotals+seniorCitizenGrandTotal;
+                totalCount+=count;
+                visitsCountDto.setPublicTicketCount(count);
+                visitsCountDto.setAdultCount(adultCount);
+                visitsCountDto.setChildCount(childCount);
+                visitsCountDto.setSeniorCitizen(seniorCitizenCount);
+                visitsCountDto.setPublicGrandTotal(overAllGrandTotal);
+                visitsCountDto.setAdultGrandTotal(adultGrandTotals);
+                visitsCountDto.setChildGrandTotal(childGrandTotals);
+                visitsCountDto.setSeniorCitizenGrandTotal(seniorCitizenGrandTotal);
+                //visitsCountDtoList.add(visitsCountDto);
 //            visitsCountDto.setPublicVisitorsDtoList(publicVisitorsDtoList);
-            adultCount=0;childCount=0;count=0;
-        }
-        if (!institutionDataList.isEmpty()){
-            List<InstitutionVisitorsDto> institutionVisitorsDtoList = new ArrayList<>();
-//            InstitutionVisitorsDto institutionVisitorsDto = new InstitutionVisitorsDto();
-            for (InstitutionData institutionData : institutionDataList){
-                adultCount+=institutionData.getTeacher();
-                childCount+=institutionData.getStudent();
-                count++;
+                adultCount=0;childCount=0;count=0;adultGrandTotals=0.0;childGrandTotals=0.0;overAllGrandTotal=0.0;
             }
-            totalCount+=count;
-            visitsCountDto.setTeacherCount(adultCount);
-            visitsCountDto.setStudentCount(childCount);
-            visitsCountDto.setInstitutionTicketCount(count);
-            //visitsCountDtoList.add(visitsCountDto);
-            adultCount=0;childCount=0;count=0;
-        }
-        if (!foreignerDataList.isEmpty()){
+            if (!institutionDataList.isEmpty()){
+                List<InstitutionVisitorsDto> institutionVisitorsDtoList = new ArrayList<>();
+//            InstitutionVisitorsDto institutionVisitorsDto = new InstitutionVisitorsDto();
+                for (InstitutionData institutionData : institutionDataList){
+                    adultCount+=institutionData.getTeacher();
+                    childCount+=institutionData.getStudent();
+                    count++;
+
+
+                    Double disAmount = institutionData.getDiscountAmount()*100;
+                    if (flag<disAmount){
+                        discountNumber++;
+                        discountPercentage+=disAmount;
+                    }
+                    adultGrandTotals+=institutionData.getTeacherTicketCharge();
+                    childGrandTotals+=institutionData.getPayableStudentCharge();
+
+
+                }
+                totalCount+=count;
+                overAllGrandTotal=adultGrandTotals+childGrandTotals;
+                visitsCountDto.setTeacherCount(adultCount);
+                visitsCountDto.setStudentCount(childCount);
+                visitsCountDto.setInstitutionTicketCount(count);
+                visitsCountDto.setInstitutionGrandTotal(overAllGrandTotal);
+                visitsCountDto.setTeacherGrandTotal(adultGrandTotals);
+                visitsCountDto.setStudentGrandTotal(childGrandTotals);
+                visitsCountDto.setNo_Of_Discount(discountNumber);
+                visitsCountDto.setOverAllDiscountPercentage(discountPercentage);
+                //visitsCountDtoList.add(visitsCountDto);
+                adultCount=0;childCount=0;count=0;adultGrandTotals=0.0;childGrandTotals=0.0;overAllGrandTotal=0.0;
+            }
+            if (!foreignerDataList.isEmpty()){
 
 //            ForeignerVisitorsDto foreignerVisitorsDto = new ForeignerVisitorsDto();
-            for (ForeignerData foreignerData : foreignerDataList){
-                adultCount+= foreignerData.getAdult();
-                childCount+= foreignerData.getChild();
-                count++;
+                for (ForeignerData foreignerData : foreignerDataList){
+                    adultCount+= foreignerData.getAdult();
+                    childCount+= foreignerData.getChild();
+                    count++;
+                    adultGrandTotals+=foreignerData.getAdultGrandTotal();
+                    childGrandTotals+=foreignerData.getChildGrandTotal();
+
+                }
+                totalCount+=count;
+                overAllGrandTotal+=adultGrandTotals+childGrandTotals;
+                visitsCountDto.setForeignerTicketCount(count);
+                visitsCountDto.setForeignAdult(adultCount);
+                visitsCountDto.setForeignChild(childCount);
+                visitsCountDto.setTotalVisitsCount(totalCount);
+                visitsCountDto.setForeignerAdultGrandTotal(adultGrandTotals);
+                visitsCountDto.setForeignerChildGrandTotal(childGrandTotals);
+                visitsCountDto.setForeignerGrandTotal(overAllGrandTotal);
+                visitsCountDtoList.add(visitsCountDto);
             }
-            totalCount+=count;
-            visitsCountDto.setForeignerTicketCount(count);
-            visitsCountDto.setForeignAdult(adultCount);
-            visitsCountDto.setForeignChild(childCount);
-            visitsCountDto.setTotalVisitsCount(totalCount);
-            visitsCountDtoList.add(visitsCountDto);
+            return new ResponseEntity<>(visitsCountDtoList,HttpStatus.OK);
         }
-        return new ResponseEntity<>(visitsCountDtoList,HttpStatus.OK);
+
     }
 
     public ResponseEntity<List<VisitorsAmountDto>> visitsIncomeAndTotalCountUpToNow(Integer categoryId) {
