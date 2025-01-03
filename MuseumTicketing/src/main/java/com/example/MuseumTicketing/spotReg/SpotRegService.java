@@ -175,9 +175,11 @@ SpotRegService {
 
                 //check studentCount > discountCount of student
                 if (spotUserDto.getStudent()>discountCount.getDisCount()){
-                    discountAmount=((double)spotUserDto.getDiscountRate()/100);
-                    log.info("discountAmount: "+discountAmount);
-                    institutionData.setDiscountAmount(discountAmount);
+                    Double disAmountNew=((double)spotUserDto.getDiscountRate()/100);
+                    log.info("discountAmount: "+disAmountNew);
+                    institutionData.setDiscountAmount(disAmountNew);
+                    discountAmount= totalStudentCharge*disAmountNew;
+                    log.info("discount less Result : "+discountAmount);
                     payableStudentCharge = totalStudentCharge-discountAmount;
                     institutionData.setStudentTicketCharge(totalStudentCharge);
                     institutionData.setTeacherTicketCharge(totalTeacherCharge);
