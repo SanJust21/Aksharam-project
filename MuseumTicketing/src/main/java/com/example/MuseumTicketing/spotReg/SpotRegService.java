@@ -1165,6 +1165,8 @@ SpotRegService {
 //                    allUserDataDtoList.add(allUserDataDto);
                     return new ResponseEntity<>(allUserDataDtoList,HttpStatus.OK);
                 }
+            }else {
+                return new ResponseEntity<>(new ArrayList<>(),HttpStatus.NO_CONTENT);
             }
         }else {
 
@@ -1291,90 +1293,108 @@ SpotRegService {
         List<ForeignerData> foreignerDataList = foreignerDataRepo.findByVisitDate(visitDate);
         Double revenueAmount = 0.0,totalRevenue=0.0;
         GetRevenueDetails getRevenueDetails = new GetRevenueDetails();
-        if (!publicDataList.isEmpty()){
-            for (PublicData publicData : publicDataList){
-                revenueAmount+=publicData.getGrandTotal();
+        if (publicDataList.isEmpty() && institutionDataList.isEmpty() && foreignerDataList.isEmpty()){
+            return new ResponseEntity<>("No data",HttpStatus.NO_CONTENT);
+        }else {
+            if (!publicDataList.isEmpty()){
+                for (PublicData publicData : publicDataList){
+                    revenueAmount+=publicData.getGrandTotal();
+                }
+                totalRevenue+=revenueAmount;
+                getRevenueDetails.setPublicRevenue(revenueAmount);
             }
-            totalRevenue+=revenueAmount;
-            getRevenueDetails.setPublicRevenue(revenueAmount);
-        }
-        if (!institutionDataList.isEmpty()){
-            for (InstitutionData institutionData : institutionDataList){
-                revenueAmount+=institutionData.getGrandTotal();
+            if (!institutionDataList.isEmpty()){
+                for (InstitutionData institutionData : institutionDataList){
+                    revenueAmount+=institutionData.getGrandTotal();
+                }
+                totalRevenue+=revenueAmount;
+                getRevenueDetails.setInstitutionRevenue(revenueAmount);
             }
-            totalRevenue+=revenueAmount;
-            getRevenueDetails.setInstitutionRevenue(revenueAmount);
-        }
-        if (!foreignerDataList.isEmpty()){
-            for (ForeignerData foreignerData :foreignerDataList){
-                revenueAmount+=foreignerData.getGrandTotal();
+            if (!foreignerDataList.isEmpty()){
+                for (ForeignerData foreignerData :foreignerDataList){
+                    revenueAmount+=foreignerData.getGrandTotal();
+                }
+                totalRevenue+=revenueAmount;
+                getRevenueDetails.setForeignerRevenue(revenueAmount);
+                getRevenueDetails.setOverAllRevenue(totalRevenue);
             }
-            totalRevenue+=revenueAmount;
-            getRevenueDetails.setForeignerRevenue(revenueAmount);
-            getRevenueDetails.setOverAllRevenue(totalRevenue);
+            return new ResponseEntity<>(getRevenueDetails,HttpStatus.OK);
         }
-        return new ResponseEntity<>(getRevenueDetails,HttpStatus.OK);
+
     }
 
     public ResponseEntity<?> totalPublicVisitorsCountByDate(LocalDate vDate) {
         List<PublicData> publicDataList = publicRepo.findByVisitDate(vDate);
         Integer adultCount =0,childCount=0,seniorCitizenCount=0,count=0;
         List<PublicVisitorsDto> publicVisitorsDtoList = new ArrayList<>();
-        if (!publicDataList.isEmpty()){
+        if (publicDataList.isEmpty()){
+            return new ResponseEntity<>("No Data",HttpStatus.NO_CONTENT);
+        }else {
+            if (!publicDataList.isEmpty()){
 
-            PublicVisitorsDto publicVisitorsDto = new PublicVisitorsDto();
-            for (PublicData publicData : publicDataList){
-                adultCount+=publicData.getAdult();
-                childCount+=publicData.getChild();
-                seniorCitizenCount+=publicData.getSeniorCitizen();
-                count++;
+                PublicVisitorsDto publicVisitorsDto = new PublicVisitorsDto();
+                for (PublicData publicData : publicDataList){
+                    adultCount+=publicData.getAdult();
+                    childCount+=publicData.getChild();
+                    seniorCitizenCount+=publicData.getSeniorCitizen();
+                    count++;
+                }
+                publicVisitorsDto.setAdultCount(adultCount);
+                publicVisitorsDto.setChildCount(childCount);
+                publicVisitorsDto.setSeniorCitizen(seniorCitizenCount);
+                publicVisitorsDto.setPublicTicketCount(count);
+                publicVisitorsDtoList.add(publicVisitorsDto);
             }
-            publicVisitorsDto.setAdultCount(adultCount);
-            publicVisitorsDto.setChildCount(childCount);
-            publicVisitorsDto.setSeniorCitizen(seniorCitizenCount);
-            publicVisitorsDto.setPublicTicketCount(count);
-            publicVisitorsDtoList.add(publicVisitorsDto);
+            return new ResponseEntity<>(publicVisitorsDtoList,HttpStatus.OK);
         }
-        return new ResponseEntity<>(publicVisitorsDtoList,HttpStatus.OK);
     }
 
     public ResponseEntity<?> totalInstitutionVisitorsCountByDate(LocalDate vDate) {
         List<InstitutionData> institutionDataList = institutionDataRepo.findByVisitDate(vDate);
         Integer teacherCount =0,studentCount=0,count=0;
         List<InstitutionVisitorsDto> institutionVisitorsDtoList = new ArrayList<>();
-        if (!institutionDataList.isEmpty()){
-            InstitutionVisitorsDto institutionVisitorsDto = new InstitutionVisitorsDto();
-            for (InstitutionData institutionData : institutionDataList){
-                teacherCount+=institutionData.getTeacher();
-                studentCount+=institutionData.getStudent();
-                count++;
+        if (institutionDataList.isEmpty()){
+            return new ResponseEntity<>("No Data",HttpStatus.NO_CONTENT);
+        }else {
+            if (!institutionDataList.isEmpty()){
+                InstitutionVisitorsDto institutionVisitorsDto = new InstitutionVisitorsDto();
+                for (InstitutionData institutionData : institutionDataList){
+                    teacherCount+=institutionData.getTeacher();
+                    studentCount+=institutionData.getStudent();
+                    count++;
+                }
+                institutionVisitorsDto.setInstitutionTicketCount(count);
+                institutionVisitorsDto.setTeacherCount(teacherCount);
+                institutionVisitorsDto.setStudnetCount(studentCount);
+                institutionVisitorsDtoList.add(institutionVisitorsDto);
             }
-            institutionVisitorsDto.setInstitutionTicketCount(count);
-            institutionVisitorsDto.setTeacherCount(teacherCount);
-            institutionVisitorsDto.setStudnetCount(studentCount);
-            institutionVisitorsDtoList.add(institutionVisitorsDto);
+            return new ResponseEntity<>(institutionVisitorsDtoList,HttpStatus.OK);
         }
-        return new ResponseEntity<>(institutionVisitorsDtoList,HttpStatus.OK);
+
     }
 
     public ResponseEntity<?> totalForeignerVisitorsCountByDate(LocalDate vDate) {
         List<ForeignerData> foreignerDataList = foreignerDataRepo.findByVisitDate(vDate);
         Integer adultCount =0,childCount=0,count=0;
         List<ForeignerVisitorsDto> foreignerVisitorsDtoList = new ArrayList<>();
-        if (!foreignerDataList.isEmpty()){
-            ForeignerVisitorsDto foreignerVisitorsDto = new ForeignerVisitorsDto();
-            for (ForeignerData foreignerData : foreignerDataList){
-                adultCount+=foreignerData.getAdult();
-                childCount+=foreignerData.getChild();
-                count++;
+        if (foreignerDataList.isEmpty()){
+            return new ResponseEntity<>("No data",HttpStatus.NO_CONTENT);
+        }else {
+            if (!foreignerDataList.isEmpty()){
+                ForeignerVisitorsDto foreignerVisitorsDto = new ForeignerVisitorsDto();
+                for (ForeignerData foreignerData : foreignerDataList){
+                    adultCount+=foreignerData.getAdult();
+                    childCount+=foreignerData.getChild();
+                    count++;
+                }
+                foreignerVisitorsDto.setForeignerTicketCount(count);
+                foreignerVisitorsDto.setForeignAdult(adultCount);
+                foreignerVisitorsDto.setForeignChild(childCount);
+                foreignerVisitorsDtoList.add(foreignerVisitorsDto);
+                return new ResponseEntity<>(foreignerVisitorsDto,HttpStatus.OK);
             }
-            foreignerVisitorsDto.setForeignerTicketCount(count);
-            foreignerVisitorsDto.setForeignAdult(adultCount);
-            foreignerVisitorsDto.setForeignChild(childCount);
-            foreignerVisitorsDtoList.add(foreignerVisitorsDto);
-            return new ResponseEntity<>(foreignerVisitorsDto,HttpStatus.OK);
+            return new ResponseEntity<>("Something went wrong",HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>("Something went wrong",HttpStatus.BAD_REQUEST);
     }
 
     public ResponseEntity<?> totalVisitorSCountByDate(LocalDate vDate) {
@@ -1386,61 +1406,64 @@ SpotRegService {
         VisitsCountDto visitsCountDto = new VisitsCountDto();
 
         Integer adultCount =0,childCount=0,seniorCitizenCount=0,count=0,totalCount=0;
-
-        if (!publicDataList.isEmpty()){
+        if (publicDataList.isEmpty()&&institutionDataList.isEmpty()&& foreignerDataList.isEmpty()){
+            return new ResponseEntity<>("No data",HttpStatus.NO_CONTENT);
+        }else {
+            if (!publicDataList.isEmpty()){
 //            List<PublicVisitorsDto> publicVisitorsDtoList = new ArrayList<>();
 //            PublicVisitorsDto publicVisitorsDto = new PublicVisitorsDto();
 
-            for (PublicData publicData : publicDataList){
-                adultCount+=publicData.getAdult();
-                childCount+=publicData.getChild();
-                seniorCitizenCount+=publicData.getSeniorCitizen();
-                count++;
-            }
-            totalCount+=count;
-            visitsCountDto.setAdultCount(adultCount);
-            visitsCountDto.setChildCount(childCount);
-            visitsCountDto.setSeniorCitizen(seniorCitizenCount);
-            visitsCountDto.setPublicTicketCount(count);
-            //visitsCountDtoList.add(visitsCountDto);
+                for (PublicData publicData : publicDataList){
+                    adultCount+=publicData.getAdult();
+                    childCount+=publicData.getChild();
+                    seniorCitizenCount+=publicData.getSeniorCitizen();
+                    count++;
+                }
+                totalCount+=count;
+                visitsCountDto.setAdultCount(adultCount);
+                visitsCountDto.setChildCount(childCount);
+                visitsCountDto.setSeniorCitizen(seniorCitizenCount);
+                visitsCountDto.setPublicTicketCount(count);
+                //visitsCountDtoList.add(visitsCountDto);
 //            visitsCountDto.setPublicVisitorsDtoList(publicVisitorsDtoList);
-            count=0;adultCount=0;childCount=0;
-        }
-        if (!institutionDataList.isEmpty()){
-            List<InstitutionVisitorsDto> institutionVisitorsDtoList = new ArrayList<>();
+                count=0;adultCount=0;childCount=0;
+            }
+            if (!institutionDataList.isEmpty()){
+                List<InstitutionVisitorsDto> institutionVisitorsDtoList = new ArrayList<>();
 //            InstitutionVisitorsDto institutionVisitorsDto = new InstitutionVisitorsDto();
 //            VisitsCountDto visitsCountDto = new VisitsCountDto();
-            for (InstitutionData institutionData:institutionDataList){
-                adultCount+=institutionData.getTeacher();
-                childCount+=institutionData.getStudent();
-                count++;
-            }
-            totalCount+=count;
-            visitsCountDto.setTeacherCount(adultCount);
-            visitsCountDto.setStudentCount(childCount);
-            visitsCountDto.setInstitutionTicketCount(count);
-            //visitsCountDtoList.add(visitsCountDto);
+                for (InstitutionData institutionData:institutionDataList){
+                    adultCount+=institutionData.getTeacher();
+                    childCount+=institutionData.getStudent();
+                    count++;
+                }
+                totalCount+=count;
+                visitsCountDto.setTeacherCount(adultCount);
+                visitsCountDto.setStudentCount(childCount);
+                visitsCountDto.setInstitutionTicketCount(count);
+                //visitsCountDtoList.add(visitsCountDto);
 //            visitsCountDto.setInstitutionVisitorsDtoList(institutionVisitorsDtoList);
-            count=0;adultCount=0;childCount=0;
-        }
-        if (!foreignerDataList.isEmpty()){
-            List<ForeignerVisitorsDto> foreignerVisitorsDtoList = new ArrayList<>();
+                count=0;adultCount=0;childCount=0;
+            }
+            if (!foreignerDataList.isEmpty()){
+                List<ForeignerVisitorsDto> foreignerVisitorsDtoList = new ArrayList<>();
 //            ForeignerVisitorsDto foreignerVisitorsDto = new ForeignerVisitorsDto();
 //            VisitsCountDto visitsCountDto = new VisitsCountDto();
-            for (ForeignerData foreignerData:foreignerDataList){
-                adultCount+=foreignerData.getAdult();
-                childCount+=foreignerData.getChild();
-                count++;
-            }
-            totalCount+=count;
-            visitsCountDto.setForeignAdult(adultCount);
-            visitsCountDto.setForeignChild(childCount);
-            visitsCountDto.setForeignerTicketCount(count);
-            visitsCountDto.setTotalVisitsCount(totalCount);
-            visitsCountDtoList.add(visitsCountDto);
-            return new ResponseEntity<>(visitsCountDtoList,HttpStatus.OK);
+                for (ForeignerData foreignerData:foreignerDataList){
+                    adultCount+=foreignerData.getAdult();
+                    childCount+=foreignerData.getChild();
+                    count++;
+                }
+                totalCount+=count;
+                visitsCountDto.setForeignAdult(adultCount);
+                visitsCountDto.setForeignChild(childCount);
+                visitsCountDto.setForeignerTicketCount(count);
+                visitsCountDto.setTotalVisitsCount(totalCount);
+                visitsCountDtoList.add(visitsCountDto);
+                return new ResponseEntity<>(visitsCountDtoList,HttpStatus.OK);
 //            visitsCountDto.setForeignerVisitorsDtoList(foreignerVisitorsDtoList);
 //            visitsCountDtoList.add(visitsCountDto);
+            }
         }
         return new ResponseEntity<>(null,HttpStatus.BAD_REQUEST);
     }
