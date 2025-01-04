@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping(path = "api/spotData")
+@RequestMapping(path = "/beta/api/spotData")
 @CrossOrigin
 @Slf4j
 public class SpotRegController {

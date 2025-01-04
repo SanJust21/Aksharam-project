@@ -24,7 +24,7 @@ import java.time.Month;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/dashboard")
+@RequestMapping("/beta/api/dashboard")
 @CrossOrigin
 @RequiredArgsConstructor
 public class DashboardController {
