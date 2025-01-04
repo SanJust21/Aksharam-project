@@ -48,6 +48,9 @@ public class InstitutionData {
     @Column(name = "studentTicketCharge")
     private Double studentTicketCharge;
 
+    @Column(name = "studentDiscount")
+    private Double studentDiscount;
+
     @Column(name = "studentDiscountAmount")
     private Double payableStudentCharge;
 

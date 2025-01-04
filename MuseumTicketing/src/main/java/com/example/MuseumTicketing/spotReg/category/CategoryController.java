@@ -5,6 +5,7 @@ import com.example.MuseumTicketing.spotReg.category.additionCharge.AdditionCharg
 import com.example.MuseumTicketing.spotReg.category.category.CategoryData;
 import com.example.MuseumTicketing.spotReg.category.discount.DiscountCount;
 import com.example.MuseumTicketing.spotReg.category.discount.DiscountCountDto;
+import com.example.MuseumTicketing.spotReg.category.discount.GetDiscountDto;
 import com.example.MuseumTicketing.spotReg.category.district.DistrictData;
 import com.example.MuseumTicketing.spotReg.category.gst.GSTData;
 import com.example.MuseumTicketing.spotReg.category.paymentMode.PaymentMode;
@@ -347,7 +348,7 @@ public class CategoryController {
     }
 
     @GetMapping(path = "/getDiscountCount")
-    public ResponseEntity<List<DiscountCount>>getDiscountCount(){
+    public ResponseEntity<List<GetDiscountDto>>getDiscountCount(){
         try {
             return categoryService.getDiscountCount();
         }catch (Exception e){

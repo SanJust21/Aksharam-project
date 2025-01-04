@@ -7,6 +7,7 @@ import com.example.MuseumTicketing.spotReg.category.category.CategoryRepo;
 import com.example.MuseumTicketing.spotReg.category.discount.DiscountCount;
 import com.example.MuseumTicketing.spotReg.category.discount.DiscountCountDto;
 import com.example.MuseumTicketing.spotReg.category.discount.DiscountCountRepo;
+import com.example.MuseumTicketing.spotReg.category.discount.GetDiscountDto;
 import com.example.MuseumTicketing.spotReg.category.district.DistrictData;
 import com.example.MuseumTicketing.spotReg.category.district.DistrictRepo;
 import com.example.MuseumTicketing.spotReg.category.gst.GSTData;
@@ -367,8 +368,38 @@ public class CategoryService {
         }return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    public ResponseEntity<List<DiscountCount>> getDiscountCount() {
-        return new ResponseEntity<>(discountCountRepo.findAll(),HttpStatus.OK);
+    public ResponseEntity<List<GetDiscountDto>> getDiscountCount() {
+        List<GetDiscountDto> getDiscountDtoList = new ArrayList<>();
+        List<DiscountCount> discountCountList = discountCountRepo.findAll();
+        if (!discountCountList.isEmpty()){
+            for (DiscountCount discountCount : discountCountList){
+                GetDiscountDto getDiscountDto = new GetDiscountDto();
+                getDiscountDto.setId(discountCount.getId());
+                getDiscountDto.setUserType(discountCount.getUserType());
+                getDiscountDto.setDisCount(discountCount.getDisCount());
+
+                Optional<CategoryData> categoryDataOptional = categoryRepo.findById(discountCount.getCategoryId());
+                if (categoryDataOptional.isPresent()){
+                    CategoryData categoryData = categoryDataOptional.get();
+                    getDiscountDto.setCategoryId(discountCount.getCategoryId());
+                    getDiscountDto.setCategoryName(categoryData.getCategory());
+                }else {
+                    getDiscountDto.setCategoryId(discountCount.getCategoryId());
+                    getDiscountDto.setCategoryName(null);
+                }
+                Optional<TypeData> typeDataOptional = typeRepo.findById(discountCount.getTypeId());
+                if (typeDataOptional.isPresent()){
+                    TypeData typeData = typeDataOptional.get();
+                    getDiscountDto.setTypeId(discountCount.getTypeId());
+                    getDiscountDto.setTypeName(typeData.getType());
+                }else {
+                    getDiscountDto.setTypeId(discountCount.getTypeId());
+                    getDiscountDto.setTypeName(null);
+                }
+                getDiscountDtoList.add(getDiscountDto);
+            }
+        }
+        return new ResponseEntity<>(getDiscountDtoList,HttpStatus.OK);
     }
 
     public ResponseEntity<?> updateDiscountCount(Integer id, DiscountCountDto countDto) {

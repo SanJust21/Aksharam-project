@@ -15,6 +15,12 @@ public class DiscountCount {
     @Column(name = "disCount")
     private Integer disCount;
 
+    @Column(name = "categoryId")
+    private Integer categoryId;
+
+    @Column(name = "typeId")
+    private Integer typeId;
+
     @Column(name = "userType")
     private String userType;
 }

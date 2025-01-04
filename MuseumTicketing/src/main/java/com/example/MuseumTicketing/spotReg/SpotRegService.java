@@ -85,7 +85,7 @@ SpotRegService {
     @Autowired
     private DiscountCountRepo discountCountRepo;
 
-    public static final Integer studentDiscountId=1;
+    //public static final Integer studentDiscountId=1;
 
 
     public ResponseEntity<?> publicUserReg(SpotUserDto spotUserDto, Integer category) {
@@ -168,10 +168,12 @@ SpotRegService {
 
         //calculateStudent DiscountRate.
         Double discountAmount=0.0,payableStudentCharge=0.0;
-        Optional<DiscountCount> discountCountOptional = discountCountRepo.findById(studentDiscountId);
+//        Optional<DiscountCount> discountCountOptional = discountCountRepo.findById(studentDiscountId);
+
+        //discount calculation for student
+        Optional<DiscountCount> discountCountOptional = discountCountRepo.findByCategoryIdAndTypeId(category,spotUserDto.getStudentTypeId());
         if (discountCountOptional.isPresent()){
             DiscountCount discountCount = discountCountOptional.get();
-            if ("studentDiscountCount".equals(discountCount.getUserType())){
 
                 //check studentCount > discountCount of student
                 if (spotUserDto.getStudent()>discountCount.getDisCount()){
@@ -180,6 +182,7 @@ SpotRegService {
                     institutionData.setDiscountAmount(disAmountNew);
                     discountAmount= totalStudentCharge*disAmountNew;
                     log.info("discount less Result : "+discountAmount);
+                    institutionData.setStudentDiscount(discountAmount);
                     payableStudentCharge = totalStudentCharge-discountAmount;
                     institutionData.setStudentTicketCharge(totalStudentCharge);
                     institutionData.setTeacherTicketCharge(totalTeacherCharge);
@@ -248,9 +251,7 @@ SpotRegService {
                     institutionDataRepo.save(institutionData);
                     return new ResponseEntity<>(institutionData,HttpStatus.OK);
                 }
-            }else {
-                return new ResponseEntity<>("studentDiscountCount is not present in discount Table ",HttpStatus.NOT_FOUND);
-            }
+
         }else {
             return new ResponseEntity<>("studentDiscountId is not present in discount Table ",HttpStatus.NOT_FOUND);
         }
@@ -340,6 +341,9 @@ SpotRegService {
             }
             //total ticket charge by total no.of adult + total no.of child + total no.of senior citizen
             Double totalCharges = totalAdultCharge+totalChildCharge+totalSeniorCitizenCharge;
+            publicData.setAdultGrandTotal(totalAdultCharge);
+            publicData.setChildGrandTotal(totalChildCharge);
+            publicData.setSeniorCitizenGrandTotal(totalSeniorCitizenCharge);
             Double totalGstRate =0.0; Double totalUserGst;
             totalGstRate = amountCalculation.CalculateGST(); // calculating GST charge
             totalUserGst = totalGstRate*totalCharges;   // total user GST charge
@@ -370,25 +374,79 @@ SpotRegService {
                 //calculating total students ticket charge by categoryId, userTypeId and count
                 totalStudentCharge = amountCalculation.calculateTotalUserCharge(categoryId,typeId,userCount);
             }
-            // total ticket charge = total student ticket charge + total teachers ticket charge
-            Double totalCharges = totalStudentCharge+totalTeacherCharge;
 
-            //calculate total user GST charge
-            Double totalGstRate =amountCalculation.CalculateGST(),totalUserGst;
-            totalUserGst = totalGstRate*totalCharges;
+            //calculateStudent DiscountRate.
+            Double discountAmount=0.0,payableStudentCharge=0.0;
+            //discount calculation for student
+            Optional<DiscountCount> discountCountOptional = discountCountRepo.findByCategoryIdAndTypeId(categoryId,spotUpdateDto.getStudentTypeId());
+            if (discountCountOptional.isPresent()){
+                DiscountCount discountCount = discountCountOptional.get();
 
-            //calculating additional chagres
-            Integer extraCharge= amountCalculation.calculateAdditionalCharges();
+                //check studentCount > discountCount of student
+                if (spotUpdateDto.getStudent()>discountCount.getDisCount()){
+                    Double disAmountNew=((double)spotUpdateDto.getDiscountRate()/100);
+                    log.info("discountAmount: "+disAmountNew);
+                    institutionData.setDiscountAmount(disAmountNew);
+                    discountAmount= totalStudentCharge*disAmountNew;
+                    log.info("discount less Result : "+discountAmount);
+                    institutionData.setStudentDiscount(discountAmount);
+                    payableStudentCharge = totalStudentCharge-discountAmount;
+                    institutionData.setStudentTicketCharge(totalStudentCharge);
+                    institutionData.setTeacherTicketCharge(totalTeacherCharge);
+                    institutionData.setPayableStudentCharge(payableStudentCharge);
 
-            //Grand total = total GST charge + total additional charge + total ticket charge
-            grandTotal = amountCalculation.calculateGrandTotal(totalUserGst,extraCharge,totalCharges);
+                    // total ticket charge = total student ticket charge + total teachers ticket charge
+                    Double totalCharges = payableStudentCharge+totalTeacherCharge;
 
-            institutionData.setTotalAmount(totalCharges);
-            institutionData.setTotalGstCharge(totalUserGst);
-            institutionData.setTotalAdditionalCharges(extraCharge);
-            institutionData.setGrandTotal(grandTotal);
-            institutionDataRepo.save(institutionData);
-            return new ResponseEntity<>(institutionData,HttpStatus.OK);
+                    //calculate total user GST charge
+                    Double totalGstRate =amountCalculation.CalculateGST(),totalUserGst;
+                    totalUserGst = totalGstRate*totalCharges;
+
+                    //calculating additional chagres
+                    Integer extraCharge= amountCalculation.calculateAdditionalCharges();
+                    //Grand total = total GST charge + total additional charge + total ticket charge
+                    grandTotal = amountCalculation.calculateGrandTotal(totalUserGst,extraCharge,totalCharges);
+
+                    institutionData.setTotalAmount(totalCharges);
+
+                    institutionData.setTotalGstCharge(totalUserGst);
+                    institutionData.setTotalAdditionalCharges(extraCharge);
+                    institutionData.setGrandTotal(grandTotal);
+
+                    log.info("Info institutionData : "+institutionData);
+                    institutionDataRepo.save(institutionData);
+                    return new ResponseEntity<>(institutionData,HttpStatus.OK);
+                }else {
+
+                    // total ticket charge = total student ticket charge + total teachers ticket charge
+                    Double totalCharges = totalStudentCharge+totalTeacherCharge;
+                    institutionData.setStudentTicketCharge(totalStudentCharge);
+                    institutionData.setDiscountAmount((double)spotUpdateDto.getDiscountRate());
+                    institutionData.setPayableStudentCharge(totalStudentCharge);
+                    institutionData.setTeacherTicketCharge(totalTeacherCharge);
+
+                    //calculate total user GST charge
+                    Double totalGstRate =amountCalculation.CalculateGST(),totalUserGst;
+                    totalUserGst = totalGstRate*totalCharges;
+
+                    //calculating additional chagres
+                    Integer extraCharge= amountCalculation.calculateAdditionalCharges();
+
+                    //Grand total = total GST charge + total additional charge + total ticket charge
+                    grandTotal = amountCalculation.calculateGrandTotal(totalUserGst,extraCharge,totalCharges);
+
+                    institutionData.setTotalAmount(totalCharges);
+                    institutionData.setTotalGstCharge(totalUserGst);
+                    institutionData.setTotalAdditionalCharges(extraCharge);
+                    institutionData.setGrandTotal(grandTotal);
+                    institutionDataRepo.save(institutionData);
+                    return new ResponseEntity<>(institutionData,HttpStatus.OK);
+                }
+
+            }else {
+                return new ResponseEntity<>("No discount Details ",HttpStatus.NO_CONTENT);
+            }
+
         } else if (foreignerDataOptional.isPresent()) {
             ForeignerData foreignerData = foreignerDataOptional.get();
             foreignerData.setAdult(spotUpdateDto.getAdult());
@@ -410,6 +468,8 @@ SpotRegService {
             }
             Double totalCharges=totalAdultCharge+totalChildCharge;      // total ticket charge = adult charge + child charge
 
+            foreignerData.setAdultGrandTotal(totalAdultCharge);
+            foreignerData.setChildGrandTotal(totalChildCharge);
             //calculating GST charge
             Double totalGstRate =amountCalculation.CalculateGST(),totalUserGst;
             totalUserGst = totalGstRate*totalCharges;
@@ -419,6 +479,7 @@ SpotRegService {
 
             //grand total = GST + additionalCharge + ticketCharge
             grandTotal = amountCalculation.calculateGrandTotal(totalUserGst,extraCharge,totalCharges);
+
 
             foreignerData.setTotalAmount(totalCharges);
             foreignerData.setTotalGstCharge(totalUserGst);
