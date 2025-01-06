@@ -16,7 +16,9 @@ import com.example.MuseumTicketing.spotReg.category.paymentMode.PaymentMode;
 import com.example.MuseumTicketing.spotReg.category.paymentMode.PaymentModeRepo;
 import com.example.MuseumTicketing.spotReg.category.paymentStatus.PaymentStatus;
 import com.example.MuseumTicketing.spotReg.category.paymentStatus.PaymentStatusRepo;
+import com.example.MuseumTicketing.spotReg.category.price.PriceData;
 import com.example.MuseumTicketing.spotReg.category.price.PriceDataRepo;
+import com.example.MuseumTicketing.spotReg.category.type.TypeData;
 import com.example.MuseumTicketing.spotReg.category.type.TypeRepo;
 import com.example.MuseumTicketing.spotReg.userData.SpotPaymentDto;
 import com.example.MuseumTicketing.spotReg.userData.SpotUpdateDto;
@@ -33,6 +35,7 @@ import com.example.MuseumTicketing.spotReg.userData.foreigner.ForeignerData;
 import com.example.MuseumTicketing.spotReg.userData.foreigner.ForeignerDataRepo;
 import com.example.MuseumTicketing.spotReg.userData.publicUser.PublicData;
 import com.example.MuseumTicketing.spotReg.userData.publicUser.PublicRepo;
+import com.example.MuseumTicketing.spotReg.userData.publicUser.TypeGrandTotalDto;
 import com.google.zxing.WriterException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1886,5 +1889,68 @@ SpotRegService {
 
     private String getMonthName(int month) {
         return java.time.Month.of(month).name();
+    }
+
+    public ResponseEntity<?> updateTypeGrandTotal(Integer categoryId, TypeGrandTotalDto totalDto) {
+        Optional<CategoryData> categoryDataOptional = categoryRepo.findById(categoryId);
+        if (categoryDataOptional.isPresent()){
+            CategoryData categoryData = categoryDataOptional.get();
+            if ("Public".equalsIgnoreCase(categoryData.getCategory())){
+                Optional<PublicData> publicDataOptional = publicRepo.findById(totalDto.getTableId());
+                if (publicDataOptional.isPresent()){
+                    PublicData publicData = publicDataOptional.get();
+                    List<TypeData> typeDataList = typeRepo.findByCategoryId(categoryId);
+                    if (!typeDataList.isEmpty()){
+                        for (TypeData typeData:typeDataList){
+                            if ("Adult".equalsIgnoreCase(typeData.getType())){
+                                Optional<PriceData> priceDataOptional = priceDataRepo.findByCategoryIdAndTypeId(categoryId,typeData.getId());
+                                if (priceDataOptional.isPresent()){
+                                    PriceData priceData = priceDataOptional.get();
+                                    Double adultCharge = priceData.getPrice() * publicData.getAdult();
+
+                                    Double defaultCharge =0.0;
+                                    if (adultCharge==totalDto.getAdultGrandTotal()) {
+                                        publicData.setAdultGrandTotal(adultCharge);
+                                        publicData.setSeniorCitizenGrandTotal(0.0);
+                                        publicRepo.save(publicData);
+                                        return new ResponseEntity<>(publicData,HttpStatus.OK);
+                                    }else {
+                                        publicData.setAdultGrandTotal(adultCharge);
+                                        publicData.setSeniorCitizenGrandTotal(defaultCharge);
+                                        publicRepo.save(publicData);
+                                        return new ResponseEntity<>(publicData,HttpStatus.BAD_REQUEST);
+                                    }
+                                }else {
+                                    return new ResponseEntity<>("Can't find price",HttpStatus.BAD_REQUEST);
+                                }
+                            }
+                            if ("Child".equalsIgnoreCase(typeData.getType())){
+                                Optional<PriceData> priceDataOptional = priceDataRepo.findByCategoryIdAndTypeId(categoryId,typeData.getId());
+                                if (priceDataOptional.isPresent()){
+                                    PriceData priceData = priceDataOptional.get();
+                                    Double childCharge = priceData.getPrice() * publicData.getChild();
+                                    if (childCharge==totalDto.getChildGrandTotal()){
+                                        publicData.setChildGrandTotal(childCharge);
+                                        publicRepo.save(publicData);
+                                        return new ResponseEntity<>(publicData,HttpStatus.OK);
+                                    }else {
+                                        publicData.setChildGrandTotal(childCharge);
+                                        publicRepo.save(publicData);
+                                        return new ResponseEntity<>(publicData,HttpStatus.BAD_REQUEST);
+                                    }
+
+                                }
+                            }
+                        }
+                    }
+
+                }else {
+                    return new ResponseEntity<>("Table Id : "+totalDto.getTableId()+"  is not valid",HttpStatus.BAD_REQUEST);
+                }
+            }
+        }else {
+            return new ResponseEntity<>("Category is not valid",HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

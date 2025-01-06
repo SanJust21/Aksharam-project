@@ -12,6 +12,7 @@ import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.SlotIdDto;
 import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.count.VisitorsAmountDto;
 import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.count.VisitsCountDto;
 import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.usesrDetails.AllUserDataDto;
+import com.example.MuseumTicketing.spotReg.userData.publicUser.TypeGrandTotalDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -203,5 +204,14 @@ public class SpotRegController {
             e.printStackTrace();
         }
         return null;
+    }
+
+    @PutMapping(path = "updateTypeGrandTotal")
+    public ResponseEntity<?>updateTypeGrandTotal(@RequestParam Integer categoryId, @RequestBody TypeGrandTotalDto totalDto){
+        try {
+            return spotRegService.updateTypeGrandTotal(categoryId,totalDto);
+        }catch (Exception e){
+            return errorService.handlerException(e);
+        }
     }
 }
