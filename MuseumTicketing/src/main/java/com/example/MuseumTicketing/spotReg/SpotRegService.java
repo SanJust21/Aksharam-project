@@ -1906,36 +1906,31 @@ SpotRegService {
                                     Double adultCharge = priceData.getPrice() * publicData.getAdult();
 
                                     Double defaultCharge =0.0;
-                                    if (adultCharge==totalDto.getAdultGrandTotal()) {
+                                    if (adultCharge.equals(totalDto.getAdultGrandTotal())) {
                                         publicData.setAdultGrandTotal(adultCharge);
                                         publicData.setSeniorCitizenGrandTotal(0.0);
-                                        publicRepo.save(publicData);
-                                        return new ResponseEntity<>(publicData,HttpStatus.OK);
+
                                     }else {
                                         publicData.setAdultGrandTotal(adultCharge);
                                         publicData.setSeniorCitizenGrandTotal(defaultCharge);
-                                        publicRepo.save(publicData);
-                                        return new ResponseEntity<>(publicData,HttpStatus.BAD_REQUEST);
                                     }
-                                }else {
-                                    return new ResponseEntity<>("Can't find price",HttpStatus.BAD_REQUEST);
                                 }
+
                             }
                             if ("Child".equalsIgnoreCase(typeData.getType())){
-                                Optional<PriceData> priceDataOptional = priceDataRepo.findByCategoryIdAndTypeId(categoryId,typeData.getId());
-                                if (priceDataOptional.isPresent()){
-                                    PriceData priceData = priceDataOptional.get();
+                                Optional<PriceData> priceDataOptional1 = priceDataRepo.findByCategoryIdAndTypeId(categoryId,typeData.getId());
+                                if (priceDataOptional1.isPresent()){
+                                    PriceData priceData = priceDataOptional1.get();
                                     Double childCharge = priceData.getPrice() * publicData.getChild();
-                                    if (childCharge==totalDto.getChildGrandTotal()){
+                                    if (childCharge.equals(totalDto.getChildGrandTotal())){
                                         publicData.setChildGrandTotal(childCharge);
                                         publicRepo.save(publicData);
                                         return new ResponseEntity<>(publicData,HttpStatus.OK);
                                     }else {
                                         publicData.setChildGrandTotal(childCharge);
                                         publicRepo.save(publicData);
-                                        return new ResponseEntity<>(publicData,HttpStatus.BAD_REQUEST);
+                                        return new ResponseEntity<>(publicData,HttpStatus.ACCEPTED);
                                     }
-
                                 }
                             }
                         }
@@ -1951,45 +1946,45 @@ SpotRegService {
                     List<TypeData> typeDataList = typeRepo.findByCategoryId(categoryId);
                     if (!typeDataList.isEmpty()){
                         for (TypeData typeData:typeDataList){
+                            Double defaultCharge =0.0;
                             if ("Teacher".equalsIgnoreCase(typeData.getType())){
                                 Optional<PriceData> priceDataOptional = priceDataRepo.findByCategoryIdAndTypeId(categoryId,typeData.getId());
                                 if (priceDataOptional.isPresent()){
                                     PriceData priceData = priceDataOptional.get();
                                     Double teacherTicketCharge = priceData.getPrice() * institutionData.getTeacher();
-                                    if (teacherTicketCharge == totalDto.getTeacherGrandTotal()){
+                                    if (teacherTicketCharge .equals(totalDto.getTeacherGrandTotal())){
                                         institutionData.setTeacherTicketCharge(teacherTicketCharge);
-                                        if ("Student".equalsIgnoreCase(typeData.getType())){
-                                            Optional<PriceData> priceDataOptional1 = priceDataRepo.findByCategoryIdAndTypeId(categoryId,typeData.getId());
-                                            if (priceDataOptional1.isPresent()){
-                                                PriceData priceData1 = priceDataOptional1.get();
-                                                Double studentTicketCharge = priceData1.getPrice() * institutionData.getStudent();
-                                                if (studentTicketCharge == totalDto.getStudentGrandTotal()){
-                                                    institutionData.setStudentTicketCharge(studentTicketCharge);
-                                                    institutionDataRepo.save(institutionData);
-                                                    return new ResponseEntity<>(institutionData,HttpStatus.OK);
-                                                }
-                                            }
-                                        }
-                                        
                                     }else {
                                         institutionData.setTeacherTicketCharge(teacherTicketCharge);
-                                        if ("Student".equalsIgnoreCase(typeData.getType())){
-                                            Optional<PriceData> priceDataOptional1 = priceDataRepo.findByCategoryIdAndTypeId(categoryId,typeData.getId());
-                                            if (priceDataOptional1.isPresent()){
-                                                PriceData priceData1 = priceDataOptional1.get();
-                                                Double studentTicketCharge = priceData1.getPrice() * institutionData.getStudent();
-                                                if (studentTicketCharge == totalDto.getStudentGrandTotal()){
-                                                    institutionData.setStudentTicketCharge(studentTicketCharge);
-                                                    institutionDataRepo.save(institutionData);
-                                                    return new ResponseEntity<>(institutionData,HttpStatus.BAD_REQUEST);
-                                                }
-                                            }
-                                        }
+                                    }
+                                }
+                            }
+                            if ("Student".equalsIgnoreCase(typeData.getType())){
+                                Optional<PriceData> priceDataOptional1 = priceDataRepo.findByCategoryIdAndTypeId(categoryId,typeData.getId());
+                                if (priceDataOptional1.isPresent()){
+                                    PriceData priceData1 = priceDataOptional1.get();
+                                    Double studentTicketCharge = priceData1.getPrice() * institutionData.getStudent();
+                                    if (studentTicketCharge .equals(totalDto.getStudentGrandTotal())){
+                                        institutionData.setStudentTicketCharge(studentTicketCharge);
+                                        institutionData.setPayableStudentCharge(defaultCharge);
+                                        institutionData.setDiscountAmount(defaultCharge);
+                                        institutionData.setStudentDiscount(defaultCharge);
+                                        institutionDataRepo.save(institutionData);
+                                        return new ResponseEntity<>(institutionData,HttpStatus.OK);
+                                    }else {
+                                        institutionData.setStudentTicketCharge(studentTicketCharge);
+                                        institutionData.setPayableStudentCharge(defaultCharge);
+                                        institutionData.setDiscountAmount(defaultCharge);
+                                        institutionData.setStudentDiscount(defaultCharge);
+                                        institutionDataRepo.save(institutionData);
+                                        return new ResponseEntity<>(institutionData,HttpStatus.ACCEPTED);
                                     }
                                 }
                             }
                         }
                     }
+                }else {
+                    return new ResponseEntity<>("Table Id : "+totalDto.getTableId()+"  is not valid",HttpStatus.BAD_REQUEST);
                 }
             } else if ("foreigner".equalsIgnoreCase(categoryData.getCategory())) {
                     Optional<ForeignerData> foreignerDataOptional = foreignerDataRepo.findById(totalDto.getTableId());
@@ -2003,17 +1998,11 @@ SpotRegService {
                                     if (priceDataOptional.isPresent()){
                                         PriceData priceData = priceDataOptional.get();
                                         Double adultCharge = priceData.getPrice() * foreignerData.getAdult();
-                                        if (adultCharge==totalDto.getAdultGrandTotal()) {
+                                        if (adultCharge.equals(totalDto.getAdultGrandTotal())) {
                                             foreignerData.setAdultGrandTotal(adultCharge);
-                                            foreignerDataRepo.save(foreignerData);
-                                            return new ResponseEntity<>(foreignerData,HttpStatus.OK);
                                         }else {
                                             foreignerData.setAdultGrandTotal(adultCharge);
-                                            foreignerDataRepo.save(foreignerData);
-                                            return new ResponseEntity<>(foreignerData,HttpStatus.BAD_REQUEST);
                                         }
-                                    }else {
-                                        return new ResponseEntity<>("Can't find price",HttpStatus.BAD_REQUEST);
                                     }
                                 }
                                 if ("Child".equalsIgnoreCase(typeData.getType())){
@@ -2021,14 +2010,14 @@ SpotRegService {
                                     if (priceDataOptional.isPresent()){
                                         PriceData priceData = priceDataOptional.get();
                                         Double childCharge = priceData.getPrice() * foreignerData.getChild();
-                                        if (childCharge==totalDto.getChildGrandTotal()){
+                                        if (childCharge.equals(totalDto.getChildGrandTotal())){
                                             foreignerData.setChildGrandTotal(childCharge);
                                             foreignerDataRepo.save(foreignerData);
                                             return new ResponseEntity<>(foreignerData,HttpStatus.OK);
                                         }else {
                                             foreignerData.setChildGrandTotal(childCharge);
                                             foreignerDataRepo.save(foreignerData);
-                                            return new ResponseEntity<>(foreignerData,HttpStatus.BAD_REQUEST);
+                                            return new ResponseEntity<>(foreignerData,HttpStatus.ACCEPTED);
                                         }
 
                                     }
@@ -2039,7 +2028,8 @@ SpotRegService {
                     }else {
                         return new ResponseEntity<>("Table Id : "+totalDto.getTableId()+"  is not valid",HttpStatus.BAD_REQUEST);
                     }
-
+            }else {
+                return new ResponseEntity<>("Category  : "+categoryId+" is not valid",HttpStatus.NO_CONTENT);
             }
         }else {
             return new ResponseEntity<>("Category is not valid",HttpStatus.BAD_REQUEST);
