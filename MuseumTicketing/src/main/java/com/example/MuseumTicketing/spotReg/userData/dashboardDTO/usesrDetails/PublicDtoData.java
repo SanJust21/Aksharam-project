@@ -10,6 +10,8 @@ public class PublicDtoData {
     private String name;
     private String phNumber;
     private Integer adultCount;
+    private Double adultCharge;
+    private Double childCharge;
     private Integer childCount;
     private Integer seniorCitizenCount;
     private LocalDate visitDate;

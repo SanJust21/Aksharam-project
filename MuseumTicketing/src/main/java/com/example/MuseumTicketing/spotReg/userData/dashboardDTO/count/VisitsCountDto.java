@@ -38,4 +38,6 @@ public class VisitsCountDto {
     private Double foreignerGrandTotal;
     private Double foreignerAdultGrandTotal;
     private Double foreignerChildGrandTotal;
+
+    private Double overAllIncome;
 }

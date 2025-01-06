@@ -13,6 +13,12 @@ public class InstitutionDtoData {
     private Integer teacherCount;
     private Integer studentCount;
 
+    private Double teacherCharge;
+    private Double studentCharge;
+    private Double studentDiscount;
+    private Double payableStudentCharge;
+    private Double discountAmount;
+
     private LocalDate visitDate;
     private LocalTime slotTime;
     private Double grandTotal;
