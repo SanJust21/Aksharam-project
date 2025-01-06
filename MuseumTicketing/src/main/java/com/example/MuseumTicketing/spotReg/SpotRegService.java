@@ -1,6 +1,5 @@
 package com.example.MuseumTicketing.spotReg;
 
-import com.example.MuseumTicketing.DTO.AdminScanner.TotalIncomeDTO;
 import com.example.MuseumTicketing.Guide.util.AlphaNumeric;
 import com.example.MuseumTicketing.spotReg.bookingDetails.booking.BookingDetails;
 import com.example.MuseumTicketing.spotReg.bookingDetails.booking.BookingSpotRepo;
@@ -35,7 +34,7 @@ import com.example.MuseumTicketing.spotReg.userData.foreigner.ForeignerData;
 import com.example.MuseumTicketing.spotReg.userData.foreigner.ForeignerDataRepo;
 import com.example.MuseumTicketing.spotReg.userData.publicUser.PublicData;
 import com.example.MuseumTicketing.spotReg.userData.publicUser.PublicRepo;
-import com.example.MuseumTicketing.spotReg.userData.publicUser.TypeGrandTotalDto;
+import com.example.MuseumTicketing.spotReg.userData.TypeGrandTotalDto;
 import com.google.zxing.WriterException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,12 +42,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import software.amazon.awssdk.services.s3.endpoints.internal.Value;
 
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.Month;
 import java.util.*;
 
 @Service
@@ -1947,6 +1944,102 @@ SpotRegService {
                 }else {
                     return new ResponseEntity<>("Table Id : "+totalDto.getTableId()+"  is not valid",HttpStatus.BAD_REQUEST);
                 }
+            } else if ("institution".equalsIgnoreCase(categoryData.getCategory())) {
+                Optional<InstitutionData> institutionDataOptional = institutionDataRepo.findById(totalDto.getTableId());
+                if (institutionDataOptional.isPresent()){
+                    InstitutionData institutionData = institutionDataOptional.get();
+                    List<TypeData> typeDataList = typeRepo.findByCategoryId(categoryId);
+                    if (!typeDataList.isEmpty()){
+                        for (TypeData typeData:typeDataList){
+                            if ("Teacher".equalsIgnoreCase(typeData.getType())){
+                                Optional<PriceData> priceDataOptional = priceDataRepo.findByCategoryIdAndTypeId(categoryId,typeData.getId());
+                                if (priceDataOptional.isPresent()){
+                                    PriceData priceData = priceDataOptional.get();
+                                    Double teacherTicketCharge = priceData.getPrice() * institutionData.getTeacher();
+                                    if (teacherTicketCharge == totalDto.getTeacherGrandTotal()){
+                                        institutionData.setTeacherTicketCharge(teacherTicketCharge);
+                                        if ("Student".equalsIgnoreCase(typeData.getType())){
+                                            Optional<PriceData> priceDataOptional1 = priceDataRepo.findByCategoryIdAndTypeId(categoryId,typeData.getId());
+                                            if (priceDataOptional1.isPresent()){
+                                                PriceData priceData1 = priceDataOptional1.get();
+                                                Double studentTicketCharge = priceData1.getPrice() * institutionData.getStudent();
+                                                if (studentTicketCharge == totalDto.getStudentGrandTotal()){
+                                                    institutionData.setStudentTicketCharge(studentTicketCharge);
+                                                    institutionDataRepo.save(institutionData);
+                                                    return new ResponseEntity<>(institutionData,HttpStatus.OK);
+                                                }
+                                            }
+                                        }
+                                        
+                                    }else {
+                                        institutionData.setTeacherTicketCharge(teacherTicketCharge);
+                                        if ("Student".equalsIgnoreCase(typeData.getType())){
+                                            Optional<PriceData> priceDataOptional1 = priceDataRepo.findByCategoryIdAndTypeId(categoryId,typeData.getId());
+                                            if (priceDataOptional1.isPresent()){
+                                                PriceData priceData1 = priceDataOptional1.get();
+                                                Double studentTicketCharge = priceData1.getPrice() * institutionData.getStudent();
+                                                if (studentTicketCharge == totalDto.getStudentGrandTotal()){
+                                                    institutionData.setStudentTicketCharge(studentTicketCharge);
+                                                    institutionDataRepo.save(institutionData);
+                                                    return new ResponseEntity<>(institutionData,HttpStatus.BAD_REQUEST);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else if ("foreigner".equalsIgnoreCase(categoryData.getCategory())) {
+                    Optional<ForeignerData> foreignerDataOptional = foreignerDataRepo.findById(totalDto.getTableId());
+                    if (foreignerDataOptional.isPresent()){
+                        ForeignerData foreignerData = foreignerDataOptional.get();
+                        List<TypeData> typeDataList = typeRepo.findByCategoryId(categoryId);
+                        if (!typeDataList.isEmpty()){
+                            for (TypeData typeData:typeDataList){
+                                if ("Adult".equalsIgnoreCase(typeData.getType())){
+                                    Optional<PriceData> priceDataOptional = priceDataRepo.findByCategoryIdAndTypeId(categoryId,typeData.getId());
+                                    if (priceDataOptional.isPresent()){
+                                        PriceData priceData = priceDataOptional.get();
+                                        Double adultCharge = priceData.getPrice() * foreignerData.getAdult();
+                                        if (adultCharge==totalDto.getAdultGrandTotal()) {
+                                            foreignerData.setAdultGrandTotal(adultCharge);
+                                            foreignerDataRepo.save(foreignerData);
+                                            return new ResponseEntity<>(foreignerData,HttpStatus.OK);
+                                        }else {
+                                            foreignerData.setAdultGrandTotal(adultCharge);
+                                            foreignerDataRepo.save(foreignerData);
+                                            return new ResponseEntity<>(foreignerData,HttpStatus.BAD_REQUEST);
+                                        }
+                                    }else {
+                                        return new ResponseEntity<>("Can't find price",HttpStatus.BAD_REQUEST);
+                                    }
+                                }
+                                if ("Child".equalsIgnoreCase(typeData.getType())){
+                                    Optional<PriceData> priceDataOptional = priceDataRepo.findByCategoryIdAndTypeId(categoryId,typeData.getId());
+                                    if (priceDataOptional.isPresent()){
+                                        PriceData priceData = priceDataOptional.get();
+                                        Double childCharge = priceData.getPrice() * foreignerData.getChild();
+                                        if (childCharge==totalDto.getChildGrandTotal()){
+                                            foreignerData.setChildGrandTotal(childCharge);
+                                            foreignerDataRepo.save(foreignerData);
+                                            return new ResponseEntity<>(foreignerData,HttpStatus.OK);
+                                        }else {
+                                            foreignerData.setChildGrandTotal(childCharge);
+                                            foreignerDataRepo.save(foreignerData);
+                                            return new ResponseEntity<>(foreignerData,HttpStatus.BAD_REQUEST);
+                                        }
+
+                                    }
+                                }
+                            }
+                        }
+
+                    }else {
+                        return new ResponseEntity<>("Table Id : "+totalDto.getTableId()+"  is not valid",HttpStatus.BAD_REQUEST);
+                    }
+
             }
         }else {
             return new ResponseEntity<>("Category is not valid",HttpStatus.BAD_REQUEST);

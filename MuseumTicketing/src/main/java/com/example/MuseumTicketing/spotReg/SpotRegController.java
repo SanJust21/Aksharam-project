@@ -1,6 +1,5 @@
 package com.example.MuseumTicketing.spotReg;
 
-import com.example.MuseumTicketing.DTO.AdminScanner.TotalIncomeDTO;
 import com.example.MuseumTicketing.Guide.util.ErrorService;
 import com.example.MuseumTicketing.spotReg.category.category.CategoryData;
 import com.example.MuseumTicketing.spotReg.category.category.CategoryRepo;
@@ -8,11 +7,10 @@ import com.example.MuseumTicketing.spotReg.userData.SpotPaymentDto;
 import com.example.MuseumTicketing.spotReg.userData.SpotUpdateDto;
 import com.example.MuseumTicketing.spotReg.userData.SpotUserDto;
 import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.GetUserData_;
-import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.SlotIdDto;
 import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.count.VisitorsAmountDto;
 import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.count.VisitsCountDto;
 import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.usesrDetails.AllUserDataDto;
-import com.example.MuseumTicketing.spotReg.userData.publicUser.TypeGrandTotalDto;
+import com.example.MuseumTicketing.spotReg.userData.TypeGrandTotalDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -206,7 +204,7 @@ public class SpotRegController {
         return null;
     }
 
-    @PutMapping(path = "updateTypeGrandTotal")
+    @PutMapping(path = "/updateTypeGrandTotal")
     public ResponseEntity<?>updateTypeGrandTotal(@RequestParam Integer categoryId, @RequestBody TypeGrandTotalDto totalDto){
         try {
             return spotRegService.updateTypeGrandTotal(categoryId,totalDto);

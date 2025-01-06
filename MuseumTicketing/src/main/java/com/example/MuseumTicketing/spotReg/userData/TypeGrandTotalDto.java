@@ -1,4 +1,4 @@
-package com.example.MuseumTicketing.spotReg.userData.publicUser;
+package com.example.MuseumTicketing.spotReg.userData;
 
 import lombok.Data;
 
@@ -8,4 +8,9 @@ public class TypeGrandTotalDto {
     private Double adultGrandTotal;
     private Double childGrandTotal;
     private Double seniorCitizenGrandTotal;
+
+    private Double teacherGrandTotal;
+    private Double studentGrandTotal;
+
+
 }
