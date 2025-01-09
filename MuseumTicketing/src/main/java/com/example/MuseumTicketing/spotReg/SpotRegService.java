@@ -1564,13 +1564,15 @@ SpotRegService {
                 visitsCountDto.setForeignChild(childCount);
                 visitsCountDto.setForeignerTicketCount(count);
                 visitsCountDto.setTotalVisitsCount(totalCount);
-                visitsCountDtoList.add(visitsCountDto);
-                return new ResponseEntity<>(visitsCountDtoList,HttpStatus.OK);
+//                visitsCountDtoList.add(visitsCountDto);
+//                return new ResponseEntity<>(visitsCountDtoList,HttpStatus.OK);
 //            visitsCountDto.setForeignerVisitorsDtoList(foreignerVisitorsDtoList);
 //            visitsCountDtoList.add(visitsCountDto);
             }
+            visitsCountDtoList.add(visitsCountDto);
+            return new ResponseEntity<>(visitsCountDtoList,HttpStatus.OK);
         }
-        return new ResponseEntity<>(null,HttpStatus.BAD_REQUEST);
+//        return new ResponseEntity<>(null,HttpStatus.BAD_REQUEST);
     }
 
     public ResponseEntity<List<VisitsCountDto>> visitorsCountByDateRange(LocalDate startDate, LocalDate endDate) {
