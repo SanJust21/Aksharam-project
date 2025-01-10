@@ -8,4 +8,8 @@ import java.util.Optional;
 public interface TypeRepo extends JpaRepository<TypeData,Integer> {
 
     List<TypeData> findByCategoryId(Integer id);
+
+    Optional<TypeData> findByType(String type);
+
+    Optional<TypeData> findByCategoryIdAndType(Integer catId, String typeD);
 }

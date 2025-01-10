@@ -55,8 +55,15 @@ public class CategoryService {
 
 
     public ResponseEntity<?> addCategory(CategoryData categoryData) {
-        categoryRepo.save(categoryData);
-        return new ResponseEntity<>(categoryData, HttpStatus.OK);
+        String name = categoryData.getCategory();
+        Optional<CategoryData> categoryDataOptional = categoryRepo.findByCategory(name);
+        if (categoryDataOptional.isPresent()){
+            return new ResponseEntity<>("Category : "+name+" is already exist",HttpStatus.CONFLICT);
+        }else {
+            categoryRepo.save(categoryData);
+            return new ResponseEntity<>(categoryData, HttpStatus.OK);
+        }
+
     }
 
     public ResponseEntity<List<CategoryData>> getCategory() {
@@ -65,14 +72,20 @@ public class CategoryService {
     }
 
     public ResponseEntity<?> updateCategory(Integer id, CategoryData categoryData) {
-        Optional<CategoryData>categoryDataOptional=categoryRepo.findById(id);
-        if (categoryDataOptional.isPresent()){
-            CategoryData categoryData1 = categoryDataOptional.get();
-            categoryData1.setCategory(categoryData.getCategory());
-            categoryRepo.save(categoryData1);
-            return new ResponseEntity<>(categoryData1,HttpStatus.OK);
+        String name = categoryData.getCategory();
+        Optional<CategoryData> categoryDataOptional1 = categoryRepo.findByCategory(name);
+        if (categoryDataOptional1.isPresent()){
+            return new ResponseEntity<>("Category : "+name+" is already exist",HttpStatus.CONFLICT);
         }else {
-            return new ResponseEntity<>("Id isn't valid",HttpStatus.BAD_REQUEST);
+            Optional<CategoryData>categoryDataOptional=categoryRepo.findById(id);
+            if (categoryDataOptional.isPresent()){
+                CategoryData categoryData1 = categoryDataOptional.get();
+                categoryData1.setCategory(categoryData.getCategory());
+                categoryRepo.save(categoryData1);
+                return new ResponseEntity<>(categoryData1,HttpStatus.OK);
+            }else {
+                return new ResponseEntity<>("Id isn't valid",HttpStatus.BAD_REQUEST);
+            }
         }
     }
 
@@ -89,14 +102,28 @@ public class CategoryService {
     }
 
     public ResponseEntity<?> addType(TypeData typeData) {
-        TypeData typeData1 = new TypeData();
-        Optional<CategoryData>categoryDataOptional=categoryRepo.findById(typeData.getCategoryId());
-        if (categoryDataOptional.isPresent()){
-            CategoryData categoryData = categoryDataOptional.get();
-            typeData1.setCategoryId(categoryData.getId());
+        String name = typeData.getType();
+        Optional<TypeData> typeDataOptional = typeRepo.findByType(name);
+        if (typeDataOptional.isPresent()){
+            return new ResponseEntity<>("Type"+name+" is already Exist",HttpStatus.CONFLICT);
+        }else {
+            Integer catId = typeData.getCategoryId();
+            String typeD = typeData.getType();
+            Optional<TypeData> typeData1 = typeRepo.findByCategoryIdAndType(catId,typeD);
+            if (typeData1.isPresent()){
+                return new ResponseEntity<>("Category Id :"+catId+" type Name :"+typeD+" is already exist",HttpStatus.CONFLICT);
+            }else {
+                TypeData typeDataN = new TypeData();
+                Optional<CategoryData>categoryDataOptional=categoryRepo.findById(typeData.getCategoryId());
+                if (categoryDataOptional.isPresent()){
+                    CategoryData categoryData = categoryDataOptional.get();
+                    typeDataN.setCategoryId(categoryData.getId());
+                }
+                typeDataN.setType(typeData.getType());
+                return new ResponseEntity<>(typeRepo.save(typeData),HttpStatus.OK);
+            }
         }
-        typeData1.setType(typeData.getType());
-        return new ResponseEntity<>(typeRepo.save(typeData),HttpStatus.OK);
+
     }
 
     public ResponseEntity<?> getTypeDetails() {
@@ -109,15 +136,28 @@ public class CategoryService {
     }
 
     public ResponseEntity<?> updateTypeDetails(Integer id, TypeData typeData) {
-        Optional<TypeData>typeDataOptional=typeRepo.findById(id);
-        if (typeDataOptional.isPresent()){
-            TypeData typeData1 =typeDataOptional.get();
-            typeData1.setType(typeData.getType());
-            typeData1.setCategoryId(typeData.getCategoryId());
-            typeRepo.save(typeData1);
-            return new ResponseEntity<>(typeData1,HttpStatus.OK);
+        String name = typeData.getType();
+        Optional<TypeData> typeDataOptional1 = typeRepo.findByType(name);
+        if (typeDataOptional1.isPresent()){
+            return new ResponseEntity<>("Type"+name+" is already Exist",HttpStatus.CONFLICT);
         }else {
-            return new ResponseEntity<>("id isn't valid",HttpStatus.BAD_REQUEST);
+            Integer catId = typeData.getCategoryId();
+            String typeD = typeData.getType();
+            Optional<TypeData> typeData1 = typeRepo.findByCategoryIdAndType(catId,typeD);
+            if (typeData1.isPresent()){
+                return new ResponseEntity<>("Category Id :"+catId+" type Name :"+typeD+" is already exist",HttpStatus.CONFLICT);
+            }else {
+                Optional<TypeData>typeDataOptional=typeRepo.findById(id);
+                if (typeDataOptional.isPresent()){
+                    TypeData typeDataN =typeDataOptional.get();
+                    typeDataN.setType(typeData.getType());
+                    typeDataN.setCategoryId(typeData.getCategoryId());
+                    typeRepo.save(typeDataN);
+                    return new ResponseEntity<>(typeDataN,HttpStatus.OK);
+                }else {
+                    return new ResponseEntity<>("id isn't valid",HttpStatus.BAD_REQUEST);
+                }
+            }
         }
     }
 
@@ -135,11 +175,17 @@ public class CategoryService {
 
 
     public ResponseEntity<?> addGSTDetails(GSTData gstData) {
-        GSTData gstData1 =new GSTData();
-        Double gstRate = (gstData.getAmount()/100);
-        gstData1.setItem(gstData.getItem());
-        gstData1.setAmount(gstRate);
-        return new ResponseEntity<>(gstRepo.save(gstData1),HttpStatus.OK);
+        String name = gstData.getItem();
+        Optional<GSTData>gstDataOptional = gstRepo.findByItem(name);
+        if (gstDataOptional.isPresent()){
+            return new ResponseEntity<>("Gst : "+name+" is already exist",HttpStatus.CONFLICT);
+        }else {
+            GSTData gstData1 =new GSTData();
+            Double gstRate = (gstData.getAmount()/100);
+            gstData1.setItem(gstData.getItem());
+            gstData1.setAmount(gstRate);
+            return new ResponseEntity<>(gstRepo.save(gstData1),HttpStatus.OK);
+        }
     }
 
     public ResponseEntity<List<GSTData>> getAllGST() {
@@ -147,15 +193,21 @@ public class CategoryService {
     }
 
     public ResponseEntity<?> updateGST(Integer id, GSTData gstData) {
-        Optional<GSTData>gstDataOptional=gstRepo.findById(id);
-        if (gstDataOptional.isPresent()){
-            GSTData gstData1 = gstDataOptional.get();
-            gstData1.setItem(gstData.getItem());
-            gstData1.setAmount(gstData.getAmount());
-            gstRepo.save(gstData1);
-            return new ResponseEntity<>(gstData1,HttpStatus.OK);
+        String name = gstData.getItem();
+        Optional<GSTData>gstDataOptional1 = gstRepo.findByItem(name);
+        if (gstDataOptional1.isPresent()){
+            return new ResponseEntity<>("Gst : "+name+" is already exist",HttpStatus.CONFLICT);
         }else {
-            return new ResponseEntity<>("Id isn't valid",HttpStatus.BAD_REQUEST);
+            Optional<GSTData>gstDataOptional=gstRepo.findById(id);
+            if (gstDataOptional.isPresent()){
+                GSTData gstData1 = gstDataOptional.get();
+                gstData1.setItem(gstData.getItem());
+                gstData1.setAmount(gstData.getAmount());
+                gstRepo.save(gstData1);
+                return new ResponseEntity<>(gstData1,HttpStatus.OK);
+            }else {
+                return new ResponseEntity<>("Id isn't valid",HttpStatus.BAD_REQUEST);
+            }
         }
     }
 
@@ -172,7 +224,13 @@ public class CategoryService {
     }
 
     public ResponseEntity<?> additionalChargeAdd(AdditionCharge additionCharge) {
-        return new ResponseEntity<>(additionChargeRepo.save(additionCharge),HttpStatus.OK);
+        String name = additionCharge.getAddChargeName();
+        Optional<AdditionCharge>additionChargeOptional=additionChargeRepo.findByAddChargeName(name);
+        if (additionChargeOptional.isPresent()){
+            return new ResponseEntity<>("Additional Charge : "+name+" is already exist",HttpStatus.CONFLICT);
+        }else {
+            return new ResponseEntity<>(additionChargeRepo.save(additionCharge),HttpStatus.OK);
+        }
     }
 
     public ResponseEntity<List<AdditionCharge>> getAdditionalCharge() {
@@ -180,14 +238,21 @@ public class CategoryService {
     }
 
     public ResponseEntity<?> updateAdditionalCharge(Integer id, AdditionCharge additionCharge) {
-        Optional<AdditionCharge>additionChargeOptional=additionChargeRepo.findById(id);
-        if (additionChargeOptional.isPresent()){
-            AdditionCharge additionCharge1 = additionChargeOptional.get();
-            additionCharge1.setCharge(additionCharge.getCharge());
-            additionCharge1.setAddChargeName(additionCharge.getAddChargeName());
-            return new ResponseEntity<>(additionChargeRepo.save(additionCharge1),HttpStatus.OK);
+        String name = additionCharge.getAddChargeName();
+        Optional<AdditionCharge>additionChargeOptional1=additionChargeRepo.findByAddChargeName(name);
+        if (additionChargeOptional1.isPresent()){
+            return new ResponseEntity<>("Additional Charge : "+name+" is already exist",HttpStatus.CONFLICT);
+        }else {
+            Optional<AdditionCharge>additionChargeOptional=additionChargeRepo.findById(id);
+            if (additionChargeOptional.isPresent()){
+                AdditionCharge additionCharge1 = additionChargeOptional.get();
+                additionCharge1.setCharge(additionCharge.getCharge());
+                additionCharge1.setAddChargeName(additionCharge.getAddChargeName());
+                return new ResponseEntity<>(additionChargeRepo.save(additionCharge1),HttpStatus.OK);
+            }
+            return new ResponseEntity<>("Id isn't valid",HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>("Id isn't valid",HttpStatus.BAD_REQUEST);
+
     }
 
     public ResponseEntity<?> deleteAdditionalCharge(Integer id) {
@@ -202,20 +267,25 @@ public class CategoryService {
     }
 
     public ResponseEntity<?> addPrice(PriceData priceData) {
-        PriceData priceData1 = new PriceData();
-        Optional<CategoryData>categoryDataOptional=categoryRepo.findById(priceData.getCategoryId());
-        if (categoryDataOptional.isPresent()){
-            CategoryData categoryData = categoryDataOptional.get();
-            priceData1.setCategoryId(categoryData.getId());
+        Optional<PriceData> priceDataOptional = priceDataRepo.findByCategoryIdAndTypeId(priceData.getCategoryId(), priceData.getTypeId());
+        if (priceDataOptional.isPresent()){
+            return new ResponseEntity<>("CategoryId : "+priceData.getCategoryId()+" and TypeId : "+priceData.getTypeId()+" is already present",HttpStatus.CONFLICT);
+        }else {
+            PriceData priceData1 = new PriceData();
+            Optional<CategoryData>categoryDataOptional=categoryRepo.findById(priceData.getCategoryId());
+            if (categoryDataOptional.isPresent()){
+                CategoryData categoryData = categoryDataOptional.get();
+                priceData1.setCategoryId(categoryData.getId());
+            }
+            Optional<TypeData>typeDataOptional=typeRepo.findById(priceData.getTypeId());
+            if (typeDataOptional.isPresent()){
+                TypeData typeData = typeDataOptional.get();
+                priceData1.setTypeId(typeData.getId());
+            }
+            priceData1.setPrice(priceData.getPrice());
+            priceDataRepo.save(priceData1);
+            return new ResponseEntity<>(priceData1,HttpStatus.OK);
         }
-        Optional<TypeData>typeDataOptional=typeRepo.findById(priceData.getTypeId());
-        if (typeDataOptional.isPresent()){
-            TypeData typeData = typeDataOptional.get();
-            priceData1.setTypeId(typeData.getId());
-        }
-        priceData1.setPrice(priceData.getPrice());
-        priceDataRepo.save(priceData1);
-        return new ResponseEntity<>(priceData1,HttpStatus.OK);
     }
 
     public ResponseEntity<List<PriceDto>> getPriceAll() {
@@ -251,16 +321,21 @@ public class CategoryService {
     }
 
     public ResponseEntity<?> updatePriceData(Integer id, PriceData priceData) {
-        Optional<PriceData>priceDataOptional=priceDataRepo.findById(id);
-        if (priceDataOptional.isPresent()){
-            PriceData priceData1 =priceDataOptional.get();
-            priceData1.setCategoryId(priceData.getCategoryId());
-            priceData1.setTypeId(priceData.getTypeId());
-            priceData1.setPrice(priceData.getPrice());
-            priceDataRepo.save(priceData1);
-            return new ResponseEntity<>(priceData1,HttpStatus.OK);
+        Optional<PriceData> priceDataOptional1 = priceDataRepo.findByCategoryIdAndTypeId(priceData.getCategoryId(), priceData.getTypeId());
+        if (priceDataOptional1.isPresent()){
+            return new ResponseEntity<>("CategoryId : "+priceData.getCategoryId()+" and TypeId : "+priceData.getTypeId()+" is already present",HttpStatus.CONFLICT);
+        }else {
+            Optional<PriceData>priceDataOptional=priceDataRepo.findById(id);
+            if (priceDataOptional.isPresent()){
+                PriceData priceData1 =priceDataOptional.get();
+                priceData1.setCategoryId(priceData.getCategoryId());
+                priceData1.setTypeId(priceData.getTypeId());
+                priceData1.setPrice(priceData.getPrice());
+                priceDataRepo.save(priceData1);
+                return new ResponseEntity<>(priceData1,HttpStatus.OK);
+            }
+            return new ResponseEntity<>("Id : "+id+" isn't valid",HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>("Id : "+id+" isn't valid",HttpStatus.BAD_REQUEST);
     }
 
     public ResponseEntity<?> updatePriceOnly(Integer id, Integer typeId,Double price) {
