@@ -23,4 +23,7 @@ public interface PublicRepo extends JpaRepository<PublicData,Long> {
             "SUM(pd.countOfPeople)AS totalCountOfPeople " +
             "FROM PublicData pd WHERE YEAR(pd.visitDate) = :year GROUP BY MONTH(pd.visitDate) ORDER BY month")
     List<Object[]> findMonthlyDataByYear(@Param("year") int year);
+
+
+    List<PublicData> findByPaymentModeAndVisitDate(Integer paymentModeId, LocalDate dateDetails);
 }

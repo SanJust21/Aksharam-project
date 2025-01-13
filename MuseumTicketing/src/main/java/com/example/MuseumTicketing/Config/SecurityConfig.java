@@ -124,6 +124,7 @@ public class SecurityConfig {
                         .requestMatchers("/beta/api/spotData/visitsIncomeAndTotalCountUpToNow").hasAnyAuthority(Role.ADMIN.name())
                         .requestMatchers("/beta/api/spotData/monthlyData").hasAnyAuthority(Role.ADMIN.name())
                         .requestMatchers("/beta/api/spotData/updateTypeGrandTotal").hasAnyAuthority(Role.ADMIN.name())
+                        .requestMatchers("/beta/api/spotData/getCountAndGrandTotalByPaymentMode").hasAnyAuthority(Role.ADMIN.name())
                         .requestMatchers("/beta/api/admin").hasAnyAuthority(Role.ADMIN.name())
                         .requestMatchers("/beta/api/admin/addEmployee").hasAnyAuthority(Role.ADMIN.name())
                         .requestMatchers("/beta/api/admin/employees").hasAnyAuthority(Role.ADMIN.name())

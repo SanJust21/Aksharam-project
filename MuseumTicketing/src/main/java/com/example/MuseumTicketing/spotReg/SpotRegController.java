@@ -204,6 +204,7 @@ public class SpotRegController {
         return null;
     }
 
+    //userData grandTotalTypeCalculation using tableId
     @PutMapping(path = "/updateTypeGrandTotal")
     public ResponseEntity<?>updateTypeGrandTotal(@RequestParam Integer categoryId, @RequestBody TypeGrandTotalDto totalDto){
         try {
@@ -211,5 +212,16 @@ public class SpotRegController {
         }catch (Exception e){
             return errorService.handlerException(e);
         }
+    }
+
+    //getCountAndGrandTotalByPaymentMode
+    @GetMapping(path = "/getCountAndGrandTotalByPaymentMode")
+    public ResponseEntity<List<VisitsCountDto>>getCountAndGrandTotalByPaymentMode(@RequestParam Integer paymentModeId,@RequestParam LocalDate dateDetails){
+        try {
+            return spotRegService.getCountAndGrandTotalByPaymentMode(paymentModeId,dateDetails);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

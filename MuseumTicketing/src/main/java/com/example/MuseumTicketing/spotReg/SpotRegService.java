@@ -44,6 +44,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
@@ -125,6 +127,8 @@ SpotRegService {
         Integer extraCharge= amountCalculation.calculateAdditionalCharges(); // additional charges
         // calculating grandTotal = totalUserGST charge + additionalCharge + totalTicket charge
         grandTotal = amountCalculation.calculateGrandTotal(totalUserGst,extraCharge,totalCharges);
+        BigDecimal roundedGrandTotal = BigDecimal.valueOf(grandTotal).setScale(0, RoundingMode.HALF_UP);
+        grandTotal=roundedGrandTotal.doubleValue();
         publicDetails.setTotalAmount(totalCharges);
         publicDetails.setTotalGstCharge(totalUserGst);
         publicDetails.setTotalAdditionalCharges(extraCharge);
@@ -200,6 +204,8 @@ SpotRegService {
                     //Grand total = total GST charge + total additional charge + total ticket charge
                     grandTotal = amountCalculation.calculateGrandTotal(totalUserGst,extraCharge,totalCharges);
 
+                    BigDecimal roundedGrandTotal = BigDecimal.valueOf(grandTotal).setScale(0,RoundingMode.HALF_UP);
+                    grandTotal= roundedGrandTotal.doubleValue();
                     institutionData.setTotalAmount(totalCharges);
                     institutionData.setPaymentMode(spotUserDto.getPaymentMode());
                     institutionData.setTotalGstCharge(totalUserGst);
@@ -233,7 +239,8 @@ SpotRegService {
 
                     //Grand total = total GST charge + total additional charge + total ticket charge
                     grandTotal = amountCalculation.calculateGrandTotal(totalUserGst,extraCharge,totalCharges);
-
+                    BigDecimal roundedGrandTotal = BigDecimal.valueOf(grandTotal).setScale(0,RoundingMode.HALF_UP);
+                    grandTotal= roundedGrandTotal.doubleValue();
                     institutionData.setTotalAmount(totalCharges);
                     institutionData.setPaymentMode(spotUserDto.getPaymentMode());
                     institutionData.setTotalGstCharge(totalUserGst);
@@ -291,7 +298,8 @@ SpotRegService {
 
         //grand total = GST + additionalCharge + ticketCharge
         grandTotal = amountCalculation.calculateGrandTotal(totalUserGst,extraCharge,totalCharges);
-
+        BigDecimal roundedGrandTotal = BigDecimal.valueOf(grandTotal).setScale(0,RoundingMode.HALF_UP);
+        grandTotal= roundedGrandTotal.doubleValue();
         foreignerData.setTotalAmount(totalCharges);
         foreignerData.setTotalGstCharge(totalUserGst);
         foreignerData.setTotalAdditionalCharges(extraCharge);
@@ -350,6 +358,8 @@ SpotRegService {
             Integer extraCharge= amountCalculation.calculateAdditionalCharges(); // additional charges
             // calculating grandTotal = totalUserGST charge + additionalCharge + totalTicket charge
             grandTotal = amountCalculation.calculateGrandTotal(totalUserGst,extraCharge,totalCharges);
+            BigDecimal roundedGrandTotal = BigDecimal.valueOf(grandTotal).setScale(0,RoundingMode.HALF_UP);
+            grandTotal= roundedGrandTotal.doubleValue();
             publicData.setTotalAmount(totalCharges);
             publicData.setTotalGstCharge(totalUserGst);
             publicData.setTotalAdditionalCharges(extraCharge);
@@ -434,7 +444,8 @@ SpotRegService {
 
                     //Grand total = total GST charge + total additional charge + total ticket charge
                     grandTotal = amountCalculation.calculateGrandTotal(totalUserGst,extraCharge,totalCharges);
-
+                    BigDecimal roundedGrandTotal = BigDecimal.valueOf(grandTotal).setScale(0,RoundingMode.HALF_UP);
+                    grandTotal= roundedGrandTotal.doubleValue();
                     institutionData.setTotalAmount(totalCharges);
                     institutionData.setTotalGstCharge(totalUserGst);
                     institutionData.setTotalAdditionalCharges(extraCharge);
@@ -479,8 +490,8 @@ SpotRegService {
 
             //grand total = GST + additionalCharge + ticketCharge
             grandTotal = amountCalculation.calculateGrandTotal(totalUserGst,extraCharge,totalCharges);
-
-
+            BigDecimal roundedGrandTotal = BigDecimal.valueOf(grandTotal).setScale(0,RoundingMode.HALF_UP);
+            grandTotal= roundedGrandTotal.doubleValue();
             foreignerData.setTotalAmount(totalCharges);
             foreignerData.setTotalGstCharge(totalUserGst);
             foreignerData.setTotalAdditionalCharges(extraCharge);
@@ -559,7 +570,7 @@ SpotRegService {
                        String name =paymentStatus.getStatusName();
                        PaymentMode paymentMode = paymentModeOptional.get();
                        String modeName = paymentMode.getPaymentType();
-                       if ("cash".equalsIgnoreCase(modeName) && "received".equalsIgnoreCase(name)){
+                       if ("cash".equalsIgnoreCase(modeName) || "QRCode".equalsIgnoreCase(modeName) && "received".equalsIgnoreCase(name)){
                            publicData.setTicketId(alphaNumeric.generateSpotRandomNumber());
                            publicData.setPaymentId(alphaNumeric.generateRandomNumber());
                            publicData.setCreatedTime(LocalTime.now());
@@ -616,7 +627,7 @@ SpotRegService {
                         String name =paymentStatus.getStatusName();
                         PaymentMode paymentMode = paymentModeOptional.get();
                         String modeName = paymentMode.getPaymentType();
-                        if ("cash".equalsIgnoreCase(modeName) && "received".equalsIgnoreCase(name)){
+                        if ("cash".equalsIgnoreCase(modeName) || "QRCode".equalsIgnoreCase(modeName) && "received".equalsIgnoreCase(name)){
                             institutionData.setTicketId(alphaNumeric.generateSpotRandomNumber());
                             institutionData.setPaymentId(alphaNumeric.generateRandomNumber());
                             institutionData.setCreatedTime(LocalTime.now());
@@ -679,7 +690,7 @@ SpotRegService {
                         String name =paymentStatus.getStatusName();
                         PaymentMode paymentMode = paymentModeOptional.get();
                         String modeName = paymentMode.getPaymentType();
-                        if ("cash".equalsIgnoreCase(modeName) && "received".equalsIgnoreCase(name)){
+                        if ("cash".equalsIgnoreCase(modeName) || "QRCode".equalsIgnoreCase(modeName) && "received".equalsIgnoreCase(name)){
                             foreignerData.setTicketId(alphaNumeric.generateSpotRandomNumber());
                             foreignerData.setPaymentId(alphaNumeric.generateRandomNumber());
                             foreignerData.setCreatedTime(LocalTime.now());
@@ -1563,12 +1574,13 @@ SpotRegService {
                 visitsCountDto.setForeignAdult(adultCount);
                 visitsCountDto.setForeignChild(childCount);
                 visitsCountDto.setForeignerTicketCount(count);
-                visitsCountDto.setTotalVisitsCount(totalCount);
+
 //                visitsCountDtoList.add(visitsCountDto);
 //                return new ResponseEntity<>(visitsCountDtoList,HttpStatus.OK);
 //            visitsCountDto.setForeignerVisitorsDtoList(foreignerVisitorsDtoList);
 //            visitsCountDtoList.add(visitsCountDto);
             }
+            visitsCountDto.setTotalVisitsCount(totalCount);
             visitsCountDtoList.add(visitsCountDto);
             return new ResponseEntity<>(visitsCountDtoList,HttpStatus.OK);
         }
@@ -2084,5 +2096,161 @@ SpotRegService {
             return new ResponseEntity<>("Category is not valid",HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    public ResponseEntity<List<VisitsCountDto>> getCountAndGrandTotalByPaymentMode(Integer paymentModeId,LocalDate dateDetails) {
+        List<PublicData>publicDataList = publicRepo.findByPaymentModeAndVisitDate(paymentModeId,dateDetails);
+        List<InstitutionData>institutionDataList=institutionDataRepo.findByPaymentModeAndVisitDate(paymentModeId,dateDetails);
+        List<ForeignerData>foreignerDataList=foreignerDataRepo.findByPaymentModeAndVisitDate(paymentModeId,dateDetails);
+        if (publicDataList.isEmpty() && institutionDataList.isEmpty()&& foreignerDataList.isEmpty()){
+            return new ResponseEntity<>(new ArrayList<>(),HttpStatus.NO_CONTENT);
+        }else {
+            List<VisitsCountDto> visitsCountDtoList = new ArrayList<>();
+            VisitsCountDto visitsCountDto = new VisitsCountDto();
+
+            Integer adultCount =0,childCount=0,seniorCitizenCount=0,count=0,totalCount=0,flag=0;
+            Double adultGrandTotals=0.0,childGrandTotals=0.0,seniorCitizenGrandTotal=0.0,overAllGrandTotal=0.0;
+            Double overAllIncome=0.0;
+
+            Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(paymentModeId);
+            if (paymentModeOptional.isPresent()){
+                PaymentMode paymentMode = paymentModeOptional.get();
+                String modeName= paymentMode.getPaymentType();
+                if ("cash".equalsIgnoreCase(modeName)){
+                    if (!publicDataList.isEmpty()){
+                        for (PublicData publicData:publicDataList){
+                            adultCount+=publicData.getAdult();
+                            childCount+=publicData.getChild();
+                            seniorCitizenCount+= publicData.getSeniorCitizen();
+                            adultGrandTotals+=publicData.getAdultGrandTotal();
+                            childGrandTotals+=publicData.getChildGrandTotal();
+                            seniorCitizenGrandTotal+=publicData.getSeniorCitizenGrandTotal();
+                            count++;
+                        }
+                        overAllGrandTotal+=adultGrandTotals+childGrandTotals+seniorCitizenGrandTotal;
+                        overAllIncome+=overAllGrandTotal;
+                        totalCount+=count;
+                        visitsCountDto.setAdultCount(adultCount);
+                        visitsCountDto.setChildCount(childCount);
+                        visitsCountDto.setSeniorCitizen(seniorCitizenCount);
+                        visitsCountDto.setPublicTicketCount(count);
+                        visitsCountDto.setAdultGrandTotal(adultGrandTotals);
+                        visitsCountDto.setChildGrandTotal(childGrandTotals);
+                        visitsCountDto.setSeniorCitizenGrandTotal(seniorCitizenGrandTotal);
+                        visitsCountDto.setPublicGrandTotal(overAllGrandTotal);
+                        adultCount=0;childCount=0;adultGrandTotals=0.0;childGrandTotals=0.0;count=0;overAllGrandTotal=0.0;
+                    }
+                    if (!institutionDataList.isEmpty()){
+                        for (InstitutionData institutionData:institutionDataList){
+                            adultCount+=institutionData.getTeacher();
+                            childCount+=institutionData.getStudent();
+                            adultGrandTotals+=institutionData.getTeacherTicketCharge();
+                            childGrandTotals+=institutionData.getPayableStudentCharge();
+                            count++;
+                        }
+                        overAllGrandTotal+=adultGrandTotals+childGrandTotals;
+                        overAllIncome+=overAllGrandTotal;
+                        totalCount+=count;
+                        visitsCountDto.setTeacherCount(adultCount);
+                        visitsCountDto.setStudentCount(count);
+                        visitsCountDto.setTeacherGrandTotal(adultGrandTotals);
+                        visitsCountDto.setStudentGrandTotal(childGrandTotals);
+                        visitsCountDto.setInstitutionTicketCount(count);
+                        visitsCountDto.setInstitutionGrandTotal(overAllGrandTotal);
+                        adultCount=0;childCount=0;adultGrandTotals=0.0;childGrandTotals=0.0;count=0;overAllGrandTotal=0.0;
+                    }
+                    if (!foreignerDataList.isEmpty()){
+                        for (ForeignerData foreignerData:foreignerDataList){
+                            adultCount+=foreignerData.getAdult();
+                            childCount+=foreignerData.getChild();
+                            adultGrandTotals+=foreignerData.getAdultGrandTotal();
+                            childGrandTotals+=foreignerData.getChildGrandTotal();
+                            count++;
+                        }
+                        overAllGrandTotal+=adultGrandTotals+childGrandTotals;
+                        overAllIncome+=overAllGrandTotal;
+                        totalCount+=count;
+                        visitsCountDto.setForeignAdult(adultCount);
+                        visitsCountDto.setForeignChild(childCount);
+                        visitsCountDto.setForeignerAdultGrandTotal(adultGrandTotals);
+                        visitsCountDto.setForeignerChildGrandTotal(childGrandTotals);
+                        visitsCountDto.setForeignerGrandTotal(overAllGrandTotal);
+                        visitsCountDto.setForeignerTicketCount(count);
+                    }
+                    visitsCountDto.setOverAllIncome(overAllIncome);
+                    visitsCountDto.setTotalVisitsCount(totalCount);
+                    visitsCountDtoList.add(visitsCountDto);
+                    return new ResponseEntity<>(visitsCountDtoList,HttpStatus.OK);
+                } else if ("QRCode".equalsIgnoreCase(modeName)) {
+                    if (!publicDataList.isEmpty()){
+                        for (PublicData publicData:publicDataList){
+                            adultCount+=publicData.getAdult();
+                            childCount+=publicData.getChild();
+                            seniorCitizenCount+= publicData.getSeniorCitizen();
+                            adultGrandTotals+=publicData.getAdultGrandTotal();
+                            childGrandTotals+=publicData.getChildGrandTotal();
+                            seniorCitizenGrandTotal+=publicData.getSeniorCitizenGrandTotal();
+                            count++;
+                        }
+                        overAllGrandTotal+=adultGrandTotals+childGrandTotals+seniorCitizenGrandTotal;
+                        overAllIncome+=overAllGrandTotal;
+                        totalCount+=count;
+                        visitsCountDto.setAdultCount(adultCount);
+                        visitsCountDto.setChildCount(childCount);
+                        visitsCountDto.setSeniorCitizen(seniorCitizenCount);
+                        visitsCountDto.setPublicTicketCount(count);
+                        visitsCountDto.setAdultGrandTotal(adultGrandTotals);
+                        visitsCountDto.setChildGrandTotal(childGrandTotals);
+                        visitsCountDto.setSeniorCitizenGrandTotal(seniorCitizenGrandTotal);
+                        visitsCountDto.setPublicGrandTotal(overAllGrandTotal);
+                        adultCount=0;childCount=0;adultGrandTotals=0.0;childGrandTotals=0.0;count=0;overAllGrandTotal=0.0;
+                    }
+                    if (!institutionDataList.isEmpty()){
+                        for (InstitutionData institutionData:institutionDataList){
+                            adultCount+=institutionData.getTeacher();
+                            childCount+=institutionData.getStudent();
+                            adultGrandTotals+=institutionData.getTeacherTicketCharge();
+                            childGrandTotals+=institutionData.getPayableStudentCharge();
+                            count++;
+                        }
+                        overAllGrandTotal+=adultGrandTotals+childGrandTotals;
+                        overAllIncome+=overAllGrandTotal;
+                        totalCount+=count;
+                        visitsCountDto.setTeacherCount(adultCount);
+                        visitsCountDto.setStudentCount(count);
+                        visitsCountDto.setTeacherGrandTotal(adultGrandTotals);
+                        visitsCountDto.setStudentGrandTotal(childGrandTotals);
+                        visitsCountDto.setInstitutionTicketCount(count);
+                        visitsCountDto.setInstitutionGrandTotal(overAllGrandTotal);
+                        adultCount=0;childCount=0;adultGrandTotals=0.0;childGrandTotals=0.0;count=0;overAllGrandTotal=0.0;
+                    }
+                    if (!foreignerDataList.isEmpty()){
+                        for (ForeignerData foreignerData:foreignerDataList){
+                            adultCount+=foreignerData.getAdult();
+                            childCount+=foreignerData.getChild();
+                            adultGrandTotals+=foreignerData.getAdultGrandTotal();
+                            childGrandTotals+=foreignerData.getChildGrandTotal();
+                            count++;
+                        }
+                        overAllGrandTotal+=adultGrandTotals+childGrandTotals;
+                        overAllIncome+=overAllGrandTotal;
+                        totalCount+=count;
+                        visitsCountDto.setForeignAdult(adultCount);
+                        visitsCountDto.setForeignChild(childCount);
+                        visitsCountDto.setForeignerAdultGrandTotal(adultGrandTotals);
+                        visitsCountDto.setForeignerChildGrandTotal(childGrandTotals);
+                        visitsCountDto.setForeignerGrandTotal(overAllGrandTotal);
+                        visitsCountDto.setForeignerTicketCount(count);
+                    }
+                    visitsCountDto.setOverAllIncome(overAllIncome);
+                    visitsCountDto.setTotalVisitsCount(totalCount);
+                    visitsCountDtoList.add(visitsCountDto);
+                    return new ResponseEntity<>(visitsCountDtoList,HttpStatus.OK);
+                }else {
+                    return new ResponseEntity<>(new ArrayList<>(),HttpStatus.NOT_FOUND);
+                }
+            }
+        }
+        return new ResponseEntity<>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
