@@ -21,4 +21,6 @@ public class SpotUpdateDto {
     private Integer teacher;
     private Integer teacherTypeId;
 
+    private Integer paymentModeId;
+
 }

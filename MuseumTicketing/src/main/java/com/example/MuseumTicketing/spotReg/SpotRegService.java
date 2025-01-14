@@ -327,7 +327,7 @@ SpotRegService {
             publicData.setAdult(spotUpdateDto.getAdult());
             publicData.setChild(spotUpdateDto.getChild());
             publicData.setSeniorCitizen(spotUpdateDto.getSeniorCitizen());
-
+            publicData.setPaymentMode(spotUpdateDto.getPaymentModeId());
             Double totalAdultCharge=0.0;    Double totalChildCharge=0.0;    Double totalSeniorCitizenCharge=0.0;
             Double grandTotal;
             Integer userCount,typeId;
@@ -370,6 +370,7 @@ SpotRegService {
             InstitutionData institutionData = institutionDataOptional.get();
             institutionData.setTeacher(spotUpdateDto.getTeacher());
             institutionData.setStudent(spotUpdateDto.getStudent());
+            institutionData.setPaymentMode(spotUpdateDto.getPaymentModeId());
             Double totalTeacherCharge=0.0;  Double totalStudentCharge=0.0;
             Double grandTotal;Integer userCount,typeId;
             if (spotUpdateDto.getTeacher()>0){    // calculating total teacher's ticket charge0
@@ -462,7 +463,7 @@ SpotRegService {
             ForeignerData foreignerData = foreignerDataOptional.get();
             foreignerData.setAdult(spotUpdateDto.getAdult());
             foreignerData.setChild(spotUpdateDto.getChild());
-
+            foreignerData.setPaymentMode(spotUpdateDto.getPaymentModeId());
             Double totalAdultCharge=0.0;    Double totalChildCharge=0.0;    Double grandTotal;
             Integer userCount,typeId;
             if (spotUpdateDto.getAdult()>0){      // calculating ticket charge of foreign adult ticket charge
