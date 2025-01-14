@@ -1404,14 +1404,15 @@ SpotRegService {
         return new ResponseEntity<>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    public ResponseEntity<?> CategoryBasedTotalRevenueByDate(LocalDate visitDate) {
+    public ResponseEntity<List<GetRevenueDetails>> CategoryBasedTotalRevenueByDate(LocalDate visitDate) {
         List<PublicData> publicDataList = publicRepo.findByVisitDate(visitDate);
         List<InstitutionData> institutionDataList = institutionDataRepo.findByVisitDate(visitDate);
         List<ForeignerData> foreignerDataList = foreignerDataRepo.findByVisitDate(visitDate);
         Double revenueAmount = 0.0,totalRevenue=0.0;
+        List<GetRevenueDetails> getRevenueDetailsList = new ArrayList<>();
         GetRevenueDetails getRevenueDetails = new GetRevenueDetails();
         if (publicDataList.isEmpty() && institutionDataList.isEmpty() && foreignerDataList.isEmpty()){
-            return new ResponseEntity<>("No data",HttpStatus.NO_CONTENT);
+            return new ResponseEntity<>(new ArrayList<>(),HttpStatus.NO_CONTENT);
         }else {
             if (!publicDataList.isEmpty()){
                 for (PublicData publicData : publicDataList){
@@ -1433,12 +1434,48 @@ SpotRegService {
                 }
                 totalRevenue+=revenueAmount;
                 getRevenueDetails.setForeignerRevenue(revenueAmount);
-                getRevenueDetails.setOverAllRevenue(totalRevenue);
             }
-            return new ResponseEntity<>(getRevenueDetails,HttpStatus.OK);
+            getRevenueDetails.setOverAllIncome(totalRevenue);
+            getRevenueDetailsList.add(getRevenueDetails);
+            return new ResponseEntity<>(getRevenueDetailsList,HttpStatus.OK);
         }
-
     }
+
+//    public ResponseEntity<?> CategoryBasedTotalRevenueByDate(LocalDate visitDate) {
+//        List<PublicData> publicDataList = publicRepo.findByVisitDate(visitDate);
+//        List<InstitutionData> institutionDataList = institutionDataRepo.findByVisitDate(visitDate);
+//        List<ForeignerData> foreignerDataList = foreignerDataRepo.findByVisitDate(visitDate);
+//        Double revenueAmount = 0.0,totalRevenue=0.0;
+//        GetRevenueDetails getRevenueDetails = new GetRevenueDetails();
+//        if (publicDataList.isEmpty() && institutionDataList.isEmpty() && foreignerDataList.isEmpty()){
+//            return new ResponseEntity<>("No data",HttpStatus.NO_CONTENT);
+//        }else {
+//            if (!publicDataList.isEmpty()){
+//                for (PublicData publicData : publicDataList){
+//                    revenueAmount+=publicData.getGrandTotal();
+//                }
+//                totalRevenue+=revenueAmount;
+//                getRevenueDetails.setPublicRevenue(revenueAmount);
+//            }
+//            if (!institutionDataList.isEmpty()){
+//                for (InstitutionData institutionData : institutionDataList){
+//                    revenueAmount+=institutionData.getGrandTotal();
+//                }
+//                totalRevenue+=revenueAmount;
+//                getRevenueDetails.setInstitutionRevenue(revenueAmount);
+//            }
+//            if (!foreignerDataList.isEmpty()){
+//                for (ForeignerData foreignerData :foreignerDataList){
+//                    revenueAmount+=foreignerData.getGrandTotal();
+//                }
+//                totalRevenue+=revenueAmount;
+//                getRevenueDetails.setForeignerRevenue(revenueAmount);
+//            }
+//            getRevenueDetails.setOverAllIncome(totalRevenue);
+//            return new ResponseEntity<>(getRevenueDetails,HttpStatus.OK);
+//        }
+//
+//    }
 
     public ResponseEntity<?> totalPublicVisitorsCountByDate(LocalDate vDate) {
         List<PublicData> publicDataList = publicRepo.findByVisitDate(vDate);
@@ -1686,9 +1723,10 @@ SpotRegService {
                 visitsCountDto.setForeignerChildGrandTotal(childGrandTotals);
                 visitsCountDto.setForeignerGrandTotal(overAllGrandTotal);
                 overAllIncome+=overAllGrandTotal;
-                visitsCountDto.setOverAllIncome(overAllIncome);
-                visitsCountDtoList.add(visitsCountDto);
+
             }
+            visitsCountDto.setOverAllIncome(overAllIncome);
+            visitsCountDtoList.add(visitsCountDto);
             return new ResponseEntity<>(visitsCountDtoList,HttpStatus.OK);
         }
 
@@ -2254,4 +2292,6 @@ SpotRegService {
         }
         return new ResponseEntity<>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+
 }

@@ -6,6 +6,7 @@ import com.example.MuseumTicketing.spotReg.category.category.CategoryRepo;
 import com.example.MuseumTicketing.spotReg.userData.SpotPaymentDto;
 import com.example.MuseumTicketing.spotReg.userData.SpotUpdateDto;
 import com.example.MuseumTicketing.spotReg.userData.SpotUserDto;
+import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.GetRevenueDetails;
 import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.GetUserData_;
 import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.count.VisitorsAmountDto;
 import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.count.VisitsCountDto;
@@ -143,13 +144,23 @@ public class SpotRegController {
         return new ResponseEntity<>(new ArrayList<>(),HttpStatus.NOT_FOUND);
     }
 
+//    @GetMapping(path = "/totalRevenueByDate")
+//    public ResponseEntity<?>CategoryBasedTotalRevenueByDate(@RequestParam LocalDate visitDate){
+//        try {
+//            return spotRegService.CategoryBasedTotalRevenueByDate(visitDate);
+//        }catch (Exception e){
+//            return errorService.handlerException(e);
+//        }
+//    }
+
     @GetMapping(path = "/totalRevenueByDate")
-    public ResponseEntity<?>CategoryBasedTotalRevenueByDate(@RequestParam LocalDate visitDate){
+    public ResponseEntity<List<GetRevenueDetails>>CategoryBasedTotalRevenueByDate(@RequestParam LocalDate visitDate){
         try {
             return spotRegService.CategoryBasedTotalRevenueByDate(visitDate);
         }catch (Exception e){
-            return errorService.handlerException(e);
+            e.printStackTrace();
         }
+        return new ResponseEntity<>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @GetMapping(path = "/visitorsCountByDate")
