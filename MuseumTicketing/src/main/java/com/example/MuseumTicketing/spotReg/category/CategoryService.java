@@ -111,7 +111,7 @@ public class CategoryService {
             String typeD = typeData.getType();
             Optional<TypeData> typeData1 = typeRepo.findByCategoryIdAndType(catId,typeD);
             if (typeData1.isPresent()){
-                return new ResponseEntity<>("Category Id :"+catId+" type Name :"+typeD+" is already exist",HttpStatus.CONFLICT);
+                return new ResponseEntity<>("Type Name :"+typeD+" is already exist",HttpStatus.CONFLICT);
             }else {
                 TypeData typeDataN = new TypeData();
                 Optional<CategoryData>categoryDataOptional=categoryRepo.findById(typeData.getCategoryId());
@@ -145,7 +145,7 @@ public class CategoryService {
             String typeD = typeData.getType();
             Optional<TypeData> typeData1 = typeRepo.findByCategoryIdAndType(catId,typeD);
             if (typeData1.isPresent()){
-                return new ResponseEntity<>("Category Id :"+catId+" type Name :"+typeD+" is already exist",HttpStatus.CONFLICT);
+                return new ResponseEntity<>("Type Name :"+typeD+" is already exist",HttpStatus.CONFLICT);
             }else {
                 Optional<TypeData>typeDataOptional=typeRepo.findById(id);
                 if (typeDataOptional.isPresent()){
@@ -269,7 +269,7 @@ public class CategoryService {
     public ResponseEntity<?> addPrice(PriceData priceData) {
         Optional<PriceData> priceDataOptional = priceDataRepo.findByCategoryIdAndTypeId(priceData.getCategoryId(), priceData.getTypeId());
         if (priceDataOptional.isPresent()){
-            return new ResponseEntity<>("CategoryId : "+priceData.getCategoryId()+" and TypeId : "+priceData.getTypeId()+" is already present",HttpStatus.CONFLICT);
+            return new ResponseEntity<>("This details is already present",HttpStatus.CONFLICT);
         }else {
             PriceData priceData1 = new PriceData();
             Optional<CategoryData>categoryDataOptional=categoryRepo.findById(priceData.getCategoryId());
@@ -323,7 +323,7 @@ public class CategoryService {
     public ResponseEntity<?> updatePriceData(Integer id, PriceData priceData) {
         Optional<PriceData> priceDataOptional1 = priceDataRepo.findByCategoryIdAndTypeId(priceData.getCategoryId(), priceData.getTypeId());
         if (priceDataOptional1.isPresent()){
-            return new ResponseEntity<>("CategoryId : "+priceData.getCategoryId()+" and TypeId : "+priceData.getTypeId()+" is already present",HttpStatus.CONFLICT);
+            return new ResponseEntity<>("This detail is already present",HttpStatus.CONFLICT);
         }else {
             Optional<PriceData>priceDataOptional=priceDataRepo.findById(id);
             if (priceDataOptional.isPresent()){
