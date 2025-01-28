@@ -739,6 +739,7 @@ SpotRegService {
         List<PublicData> publicDataList = publicRepo.findAll();
 
         if (!publicDataList.isEmpty()){
+            publicDataList.sort(Comparator.comparing(PublicData::getVisitDate).reversed());
 //            List<PublicDtoData> publicDtoDataList = new ArrayList<>();
             for (PublicData publicData : publicDataList){
                 if (publicData.getTicketId()!=null){
