@@ -739,7 +739,7 @@ SpotRegService {
         List<PublicData> publicDataList = publicRepo.findAll();
 
         if (!publicDataList.isEmpty()){
-            publicDataList.sort(Comparator.comparing(PublicData::getVisitDate).reversed());
+            publicDataList.sort(Comparator.comparing(PublicData::getId).reversed());
 //            List<PublicDtoData> publicDtoDataList = new ArrayList<>();
             for (PublicData publicData : publicDataList){
                 if (publicData.getTicketId()!=null){
@@ -788,7 +788,7 @@ SpotRegService {
         }
         List<InstitutionData> institutionDataList = institutionDataRepo.findAll();
         if (!institutionDataList.isEmpty()){
-            institutionDataList.sort(Comparator.comparing(InstitutionData::getVisitDate).reversed());
+            institutionDataList.sort(Comparator.comparing(InstitutionData::getId).reversed());
 //            List<InstitutionDtoData> institutionDtoDataList = new ArrayList<>();
             for (InstitutionData institutionData : institutionDataList){
                 if (institutionData.getTicketId()!=null){
@@ -837,7 +837,7 @@ SpotRegService {
         List<ForeignerData> foreignerDataList = foreignerDataRepo.findAll();
 //        List<ForeignerDtoData> foreignerDtoDataList = new ArrayList<>();
         if (!foreignerDataList.isEmpty()){
-            foreignerDataList.sort(Comparator.comparing(ForeignerData::getVisitDate).reversed());
+            foreignerDataList.sort(Comparator.comparing(ForeignerData::getId).reversed());
             for (ForeignerData foreignerData : foreignerDataList){
                 if (foreignerData.getTicketId()!=null){
                     AllUserDataDto allUserDataDto = new AllUserDataDto();
@@ -886,7 +886,7 @@ SpotRegService {
     public ResponseEntity<?> getAllPublic() {
         List<PublicData> publicDataList = publicRepo.findAll();
         List<PublicDtoData> publicDtoDataList = new ArrayList<>();
-        publicDtoDataList.sort(Comparator.comparing(PublicDtoData::getVisitDate).reversed());
+        publicDataList.sort(Comparator.comparing(PublicData::getId).reversed());
         if (!publicDataList.isEmpty()){
             for (PublicData publicData : publicDataList){
                 if (publicData.getTicketId()!=null){
@@ -934,7 +934,7 @@ SpotRegService {
     public ResponseEntity<?> getAllInstitution() {
         List<InstitutionData> institutionDataList = institutionDataRepo.findAll();
         List<InstitutionDtoData> institutionDtoDataList = new ArrayList<>();
-        institutionDtoDataList.sort(Comparator.comparing(InstitutionDtoData::getVisitDate).reversed());
+        institutionDataList.sort(Comparator.comparing(InstitutionData::getId).reversed());
         if (!institutionDataList.isEmpty()){
             for (InstitutionData institutionData : institutionDataList){
                 if (institutionData.getTicketId()!=null){
@@ -983,7 +983,7 @@ SpotRegService {
     public ResponseEntity<?> getAllForeigner() {
         List<ForeignerData> foreignerDataList = foreignerDataRepo.findAll();
         List<ForeignerDtoData> foreignerDtoDataList = new ArrayList<>();
-        foreignerDtoDataList.sort(Comparator.comparing(ForeignerDtoData::getVisitDate).reversed());
+        foreignerDataList.sort(Comparator.comparing(ForeignerData::getId).reversed());
         if (!foreignerDataList.isEmpty()){
             for (ForeignerData foreignerData : foreignerDataList){
                 if (foreignerData.getTicketId()!=null){
