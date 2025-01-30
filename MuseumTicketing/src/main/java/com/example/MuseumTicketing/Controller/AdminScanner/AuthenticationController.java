@@ -13,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/beta/api/auth")
+@RequestMapping("/api/auth")
 @CrossOrigin
 @RequiredArgsConstructor
 public class AuthenticationController {

@@ -19,7 +19,7 @@ import java.util.Optional;
 
 @RestController
 @CrossOrigin
-@RequestMapping(path = "/beta/api/slot")
+@RequestMapping(path = "/api/slot")
 public class SlotDetailsController {
     @Autowired
     private ErrorService errorService;

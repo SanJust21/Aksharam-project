@@ -24,7 +24,7 @@ import java.util.Comparator;
 import java.util.List;
 
 @RestController
-@RequestMapping("/beta/api/admin")
+@RequestMapping("/api/admin")
 @CrossOrigin
 @RequiredArgsConstructor
 public class AdminController {

@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/beta/api/scanner")
+@RequestMapping("/api/scanner")
 @CrossOrigin
 @RequiredArgsConstructor
 public class ScannerController {
