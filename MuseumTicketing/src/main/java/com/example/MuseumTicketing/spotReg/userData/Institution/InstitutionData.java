@@ -42,8 +42,23 @@ public class InstitutionData {
     @Column(name = "totalAdditionalCharges")
     private Integer totalAdditionalCharges;
 
+    @Column(name = "teacherTicketCharge")
+    private Double teacherTicketCharge;
+
+    @Column(name = "studentTicketCharge")
+    private Double studentTicketCharge;
+
+    @Column(name = "studentDiscount")
+    private Double studentDiscount;
+
+    @Column(name = "studentDiscountAmount")
+    private Double payableStudentCharge;
+
     @Column(name = "grandTotal")
     private Double grandTotal;
+
+    @Column(name = "discountAmount")
+    private Double discountAmount;
 
     @Column(name = "orderId")
     private String orderId;

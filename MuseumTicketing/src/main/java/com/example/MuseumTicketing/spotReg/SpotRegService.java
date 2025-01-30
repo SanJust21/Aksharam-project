@@ -1,6 +1,5 @@
 package com.example.MuseumTicketing.spotReg;
 
-import com.example.MuseumTicketing.DTO.AdminScanner.TotalIncomeDTO;
 import com.example.MuseumTicketing.Guide.util.AlphaNumeric;
 import com.example.MuseumTicketing.spotReg.bookingDetails.booking.BookingDetails;
 import com.example.MuseumTicketing.spotReg.bookingDetails.booking.BookingSpotRepo;
@@ -9,12 +8,16 @@ import com.example.MuseumTicketing.spotReg.bookingDetails.slotData.SpotSlotRepo;
 import com.example.MuseumTicketing.spotReg.category.additionCharge.AdditionChargeRepo;
 import com.example.MuseumTicketing.spotReg.category.category.CategoryData;
 import com.example.MuseumTicketing.spotReg.category.category.CategoryRepo;
+import com.example.MuseumTicketing.spotReg.category.discount.DiscountCount;
+import com.example.MuseumTicketing.spotReg.category.discount.DiscountCountRepo;
 import com.example.MuseumTicketing.spotReg.category.gst.GSTRepo;
 import com.example.MuseumTicketing.spotReg.category.paymentMode.PaymentMode;
 import com.example.MuseumTicketing.spotReg.category.paymentMode.PaymentModeRepo;
 import com.example.MuseumTicketing.spotReg.category.paymentStatus.PaymentStatus;
 import com.example.MuseumTicketing.spotReg.category.paymentStatus.PaymentStatusRepo;
+import com.example.MuseumTicketing.spotReg.category.price.PriceData;
 import com.example.MuseumTicketing.spotReg.category.price.PriceDataRepo;
+import com.example.MuseumTicketing.spotReg.category.type.TypeData;
 import com.example.MuseumTicketing.spotReg.category.type.TypeRepo;
 import com.example.MuseumTicketing.spotReg.userData.SpotPaymentDto;
 import com.example.MuseumTicketing.spotReg.userData.SpotUpdateDto;
@@ -31,6 +34,7 @@ import com.example.MuseumTicketing.spotReg.userData.foreigner.ForeignerData;
 import com.example.MuseumTicketing.spotReg.userData.foreigner.ForeignerDataRepo;
 import com.example.MuseumTicketing.spotReg.userData.publicUser.PublicData;
 import com.example.MuseumTicketing.spotReg.userData.publicUser.PublicRepo;
+import com.example.MuseumTicketing.spotReg.userData.TypeGrandTotalDto;
 import com.google.zxing.WriterException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,12 +42,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import software.amazon.awssdk.services.s3.endpoints.internal.Value;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.Month;
 import java.util.*;
 
 @Service
@@ -80,6 +84,10 @@ SpotRegService {
     private CategoryRepo categoryRepo;
     @Autowired
     private SpotQRcodeService spotQRcodeService;
+    @Autowired
+    private DiscountCountRepo discountCountRepo;
+
+    //public static final Integer studentDiscountId=1;
 
 
     public ResponseEntity<?> publicUserReg(SpotUserDto spotUserDto, Integer category) {
@@ -98,16 +106,19 @@ SpotRegService {
             //calculating total user charge using categoryId,userTypeId and no.ofUserCount.
             totalAdultCharge =amountCalculation.calculateTotalUserCharge(category,typeId,userCount);
         }
+        publicDetails.setAdultGrandTotal(totalAdultCharge);
         if (spotUserDto.getChild()>0){ //calculating total child ticket charge
             typeId=spotUserDto.getChildTypeId();
             userCount = spotUserDto.getChild();
             totalChildCharge = amountCalculation.calculateTotalUserCharge(category,typeId,userCount);
         }
+        publicDetails.setChildGrandTotal(totalChildCharge);
         if (spotUserDto.getSeniorCitizen()>0){ // calculating total senior citizen ticket charge.
             typeId = spotUserDto.getSeniorCitizenTypeId();
             userCount = spotUserDto.getSeniorCitizen();
             totalSeniorCitizenCharge = amountCalculation.calculateTotalUserCharge(category,typeId,userCount);
         }
+        publicDetails.setSeniorCitizenGrandTotal(totalSeniorCitizenCharge);
         //total ticket charge by total no.of adult + total no.of child + total no.of senior citizen
         Double totalCharges = totalAdultCharge+totalChildCharge+totalSeniorCitizenCharge;
         Double totalGstRate =0.0; Double totalUserGst;
@@ -116,6 +127,8 @@ SpotRegService {
         Integer extraCharge= amountCalculation.calculateAdditionalCharges(); // additional charges
         // calculating grandTotal = totalUserGST charge + additionalCharge + totalTicket charge
         grandTotal = amountCalculation.calculateGrandTotal(totalUserGst,extraCharge,totalCharges);
+        BigDecimal roundedGrandTotal = BigDecimal.valueOf(grandTotal).setScale(0, RoundingMode.HALF_UP);
+        grandTotal=roundedGrandTotal.doubleValue();
         publicDetails.setTotalAmount(totalCharges);
         publicDetails.setTotalGstCharge(totalUserGst);
         publicDetails.setTotalAdditionalCharges(extraCharge);
@@ -156,35 +169,99 @@ SpotRegService {
             //calculating total students ticket charge by categoryId, userTypeId and count
             totalStudentCharge = amountCalculation.calculateTotalUserCharge(category,typeId,userCount);
         }
-        // total ticket charge = total student ticket charge + total teachers ticket charge
-        Double totalCharges = totalStudentCharge+totalTeacherCharge;
 
-        //calculate total user GST charge
-        Double totalGstRate =amountCalculation.CalculateGST(),totalUserGst;
-        totalUserGst = totalGstRate*totalCharges;
+        //calculateStudent DiscountRate.
+        Double discountAmount=0.0,payableStudentCharge=0.0;
+//        Optional<DiscountCount> discountCountOptional = discountCountRepo.findById(studentDiscountId);
 
-        //calculating additional chagres
-        Integer extraCharge= amountCalculation.calculateAdditionalCharges();
+        //discount calculation for student
+        Optional<DiscountCount> discountCountOptional = discountCountRepo.findByCategoryIdAndTypeId(category,spotUserDto.getStudentTypeId());
+        if (discountCountOptional.isPresent()){
+            DiscountCount discountCount = discountCountOptional.get();
 
-        //Grand total = total GST charge + total additional charge + total ticket charge
-        grandTotal = amountCalculation.calculateGrandTotal(totalUserGst,extraCharge,totalCharges);
+                //check studentCount > discountCount of student
+                if (spotUserDto.getStudent()>discountCount.getDisCount()){
+                    Double disAmountNew=((double)spotUserDto.getDiscountRate()/100);
+                    log.info("discountAmount: "+disAmountNew);
+                    institutionData.setDiscountAmount(disAmountNew);
+                    discountAmount= totalStudentCharge*disAmountNew;
+                    log.info("discount less Result : "+discountAmount);
+                    institutionData.setStudentDiscount(discountAmount);
+                    payableStudentCharge = totalStudentCharge-discountAmount;
+                    institutionData.setStudentTicketCharge(totalStudentCharge);
+                    institutionData.setTeacherTicketCharge(totalTeacherCharge);
+                    institutionData.setPayableStudentCharge(payableStudentCharge);
 
-        institutionData.setTotalAmount(totalCharges);
-        institutionData.setPaymentMode(spotUserDto.getPaymentMode());
-        institutionData.setTotalGstCharge(totalUserGst);
-        institutionData.setTotalAdditionalCharges(extraCharge);
-        institutionData.setGrandTotal(grandTotal);
-        institutionData.setOrderId(alphaNumeric.generateRandomNumber());
-        Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(spotUserDto.getPaymentStatusId());
-        if (paymentStatusOptional.isPresent()){
-            PaymentStatus paymentStatus = paymentStatusOptional.get();
-            if ("Pending".equalsIgnoreCase(paymentStatus.getStatusName())){
-                institutionData.setPaymentStatusId(paymentStatus.getId());
-            }
+                    // total ticket charge = total student ticket charge + total teachers ticket charge
+                    Double totalCharges = payableStudentCharge+totalTeacherCharge;
+
+                    //calculate total user GST charge
+                    Double totalGstRate =amountCalculation.CalculateGST(),totalUserGst;
+                    totalUserGst = totalGstRate*totalCharges;
+
+                    //calculating additional chagres
+                    Integer extraCharge= amountCalculation.calculateAdditionalCharges();
+                    //Grand total = total GST charge + total additional charge + total ticket charge
+                    grandTotal = amountCalculation.calculateGrandTotal(totalUserGst,extraCharge,totalCharges);
+
+                    BigDecimal roundedGrandTotal = BigDecimal.valueOf(grandTotal).setScale(0,RoundingMode.HALF_UP);
+                    grandTotal= roundedGrandTotal.doubleValue();
+                    institutionData.setTotalAmount(totalCharges);
+                    institutionData.setPaymentMode(spotUserDto.getPaymentMode());
+                    institutionData.setTotalGstCharge(totalUserGst);
+                    institutionData.setTotalAdditionalCharges(extraCharge);
+                    institutionData.setGrandTotal(grandTotal);
+                    institutionData.setOrderId(alphaNumeric.generateRandomNumber());
+                    Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(spotUserDto.getPaymentStatusId());
+                    if (paymentStatusOptional.isPresent()){
+                        PaymentStatus paymentStatus = paymentStatusOptional.get();
+                        if ("Pending".equalsIgnoreCase(paymentStatus.getStatusName())){
+                            institutionData.setPaymentStatusId(paymentStatus.getId());
+                        }
+                    }
+                    log.info("Info institutionData : "+institutionData);
+                    institutionDataRepo.save(institutionData);
+                    return new ResponseEntity<>(institutionData,HttpStatus.OK);
+                }else {
+                    // total ticket charge = total student ticket charge + total teachers ticket charge
+                    Double totalCharges = totalStudentCharge+totalTeacherCharge;
+                    institutionData.setStudentTicketCharge(totalStudentCharge);
+                    institutionData.setTeacherTicketCharge(totalTeacherCharge);
+                    institutionData.setPayableStudentCharge(totalStudentCharge);
+                    institutionData.setDiscountAmount((double) spotUserDto.getDiscountRate());
+
+                    //calculate total user GST charge
+                    Double totalGstRate =amountCalculation.CalculateGST(),totalUserGst;
+                    totalUserGst = totalGstRate*totalCharges;
+
+                    //calculating additional chagres
+                    Integer extraCharge= amountCalculation.calculateAdditionalCharges();
+
+                    //Grand total = total GST charge + total additional charge + total ticket charge
+                    grandTotal = amountCalculation.calculateGrandTotal(totalUserGst,extraCharge,totalCharges);
+                    BigDecimal roundedGrandTotal = BigDecimal.valueOf(grandTotal).setScale(0,RoundingMode.HALF_UP);
+                    grandTotal= roundedGrandTotal.doubleValue();
+                    institutionData.setTotalAmount(totalCharges);
+                    institutionData.setPaymentMode(spotUserDto.getPaymentMode());
+                    institutionData.setTotalGstCharge(totalUserGst);
+                    institutionData.setTotalAdditionalCharges(extraCharge);
+                    institutionData.setGrandTotal(grandTotal);
+                    institutionData.setOrderId(alphaNumeric.generateRandomNumber());
+                    Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(spotUserDto.getPaymentStatusId());
+                    if (paymentStatusOptional.isPresent()){
+                        PaymentStatus paymentStatus = paymentStatusOptional.get();
+                        if ("Pending".equalsIgnoreCase(paymentStatus.getStatusName())){
+                            institutionData.setPaymentStatusId(paymentStatus.getId());
+                        }
+                    }
+                    log.info("Info institutionData : "+institutionData);
+                    institutionDataRepo.save(institutionData);
+                    return new ResponseEntity<>(institutionData,HttpStatus.OK);
+                }
+
+        }else {
+            return new ResponseEntity<>("studentDiscountId is not present in discount Table ",HttpStatus.NOT_FOUND);
         }
-        log.info("Info institutionData : "+institutionData);
-        institutionDataRepo.save(institutionData);
-        return new ResponseEntity<>(institutionData,HttpStatus.OK);
     }
 
     public ResponseEntity<?> ForeignerReg(SpotUserDto spotUserDto, Integer category) {
@@ -202,12 +279,14 @@ SpotRegService {
 
             totalAdultCharge=amountCalculation.calculateTotalUserCharge(category,typeId,userCount);
         }
+        foreignerData.setAdultGrandTotal(totalAdultCharge);
         if (spotUserDto.getChild()>0){      // calculating ticket charge of foreign child ticket charge
             typeId=spotUserDto.getChildTypeId();
             userCount = spotUserDto.getChild();
 
             totalChildCharge=amountCalculation.calculateTotalUserCharge(category,typeId,userCount);
         }
+        foreignerData.setChildGrandTotal(totalChildCharge);
         Double totalCharges=totalAdultCharge+totalChildCharge;      // total ticket charge = adult charge + child charge
 
         //calculating GST charge
@@ -219,7 +298,8 @@ SpotRegService {
 
         //grand total = GST + additionalCharge + ticketCharge
         grandTotal = amountCalculation.calculateGrandTotal(totalUserGst,extraCharge,totalCharges);
-
+        BigDecimal roundedGrandTotal = BigDecimal.valueOf(grandTotal).setScale(0,RoundingMode.HALF_UP);
+        grandTotal= roundedGrandTotal.doubleValue();
         foreignerData.setTotalAmount(totalCharges);
         foreignerData.setTotalGstCharge(totalUserGst);
         foreignerData.setTotalAdditionalCharges(extraCharge);
@@ -247,7 +327,7 @@ SpotRegService {
             publicData.setAdult(spotUpdateDto.getAdult());
             publicData.setChild(spotUpdateDto.getChild());
             publicData.setSeniorCitizen(spotUpdateDto.getSeniorCitizen());
-
+            publicData.setPaymentMode(spotUpdateDto.getPaymentModeId());
             Double totalAdultCharge=0.0;    Double totalChildCharge=0.0;    Double totalSeniorCitizenCharge=0.0;
             Double grandTotal;
             Integer userCount,typeId;
@@ -269,12 +349,17 @@ SpotRegService {
             }
             //total ticket charge by total no.of adult + total no.of child + total no.of senior citizen
             Double totalCharges = totalAdultCharge+totalChildCharge+totalSeniorCitizenCharge;
+            publicData.setAdultGrandTotal(totalAdultCharge);
+            publicData.setChildGrandTotal(totalChildCharge);
+            publicData.setSeniorCitizenGrandTotal(totalSeniorCitizenCharge);
             Double totalGstRate =0.0; Double totalUserGst;
             totalGstRate = amountCalculation.CalculateGST(); // calculating GST charge
             totalUserGst = totalGstRate*totalCharges;   // total user GST charge
             Integer extraCharge= amountCalculation.calculateAdditionalCharges(); // additional charges
             // calculating grandTotal = totalUserGST charge + additionalCharge + totalTicket charge
             grandTotal = amountCalculation.calculateGrandTotal(totalUserGst,extraCharge,totalCharges);
+            BigDecimal roundedGrandTotal = BigDecimal.valueOf(grandTotal).setScale(0,RoundingMode.HALF_UP);
+            grandTotal= roundedGrandTotal.doubleValue();
             publicData.setTotalAmount(totalCharges);
             publicData.setTotalGstCharge(totalUserGst);
             publicData.setTotalAdditionalCharges(extraCharge);
@@ -285,6 +370,7 @@ SpotRegService {
             InstitutionData institutionData = institutionDataOptional.get();
             institutionData.setTeacher(spotUpdateDto.getTeacher());
             institutionData.setStudent(spotUpdateDto.getStudent());
+            institutionData.setPaymentMode(spotUpdateDto.getPaymentModeId());
             Double totalTeacherCharge=0.0;  Double totalStudentCharge=0.0;
             Double grandTotal;Integer userCount,typeId;
             if (spotUpdateDto.getTeacher()>0){    // calculating total teacher's ticket charge0
@@ -299,30 +385,85 @@ SpotRegService {
                 //calculating total students ticket charge by categoryId, userTypeId and count
                 totalStudentCharge = amountCalculation.calculateTotalUserCharge(categoryId,typeId,userCount);
             }
-            // total ticket charge = total student ticket charge + total teachers ticket charge
-            Double totalCharges = totalStudentCharge+totalTeacherCharge;
 
-            //calculate total user GST charge
-            Double totalGstRate =amountCalculation.CalculateGST(),totalUserGst;
-            totalUserGst = totalGstRate*totalCharges;
+            //calculateStudent DiscountRate.
+            Double discountAmount=0.0,payableStudentCharge=0.0;
+            //discount calculation for student
+            Optional<DiscountCount> discountCountOptional = discountCountRepo.findByCategoryIdAndTypeId(categoryId,spotUpdateDto.getStudentTypeId());
+            if (discountCountOptional.isPresent()){
+                DiscountCount discountCount = discountCountOptional.get();
 
-            //calculating additional chagres
-            Integer extraCharge= amountCalculation.calculateAdditionalCharges();
+                //check studentCount > discountCount of student
+                if (spotUpdateDto.getStudent()>discountCount.getDisCount()){
+                    Double disAmountNew=((double)spotUpdateDto.getDiscountRate()/100);
+                    log.info("discountAmount: "+disAmountNew);
+                    institutionData.setDiscountAmount(disAmountNew);
+                    discountAmount= totalStudentCharge*disAmountNew;
+                    log.info("discount less Result : "+discountAmount);
+                    institutionData.setStudentDiscount(discountAmount);
+                    payableStudentCharge = totalStudentCharge-discountAmount;
+                    institutionData.setStudentTicketCharge(totalStudentCharge);
+                    institutionData.setTeacherTicketCharge(totalTeacherCharge);
+                    institutionData.setPayableStudentCharge(payableStudentCharge);
 
-            //Grand total = total GST charge + total additional charge + total ticket charge
-            grandTotal = amountCalculation.calculateGrandTotal(totalUserGst,extraCharge,totalCharges);
+                    // total ticket charge = total student ticket charge + total teachers ticket charge
+                    Double totalCharges = payableStudentCharge+totalTeacherCharge;
 
-            institutionData.setTotalAmount(totalCharges);
-            institutionData.setTotalGstCharge(totalUserGst);
-            institutionData.setTotalAdditionalCharges(extraCharge);
-            institutionData.setGrandTotal(grandTotal);
-            institutionDataRepo.save(institutionData);
-            return new ResponseEntity<>(institutionData,HttpStatus.OK);
+                    //calculate total user GST charge
+                    Double totalGstRate =amountCalculation.CalculateGST(),totalUserGst;
+                    totalUserGst = totalGstRate*totalCharges;
+
+                    //calculating additional chagres
+                    Integer extraCharge= amountCalculation.calculateAdditionalCharges();
+                    //Grand total = total GST charge + total additional charge + total ticket charge
+                    grandTotal = amountCalculation.calculateGrandTotal(totalUserGst,extraCharge,totalCharges);
+
+                    institutionData.setTotalAmount(totalCharges);
+
+                    institutionData.setTotalGstCharge(totalUserGst);
+                    institutionData.setTotalAdditionalCharges(extraCharge);
+                    institutionData.setGrandTotal(grandTotal);
+
+                    log.info("Info institutionData : "+institutionData);
+                    institutionDataRepo.save(institutionData);
+                    return new ResponseEntity<>(institutionData,HttpStatus.OK);
+                }else {
+
+                    // total ticket charge = total student ticket charge + total teachers ticket charge
+                    Double totalCharges = totalStudentCharge+totalTeacherCharge;
+                    institutionData.setStudentTicketCharge(totalStudentCharge);
+                    institutionData.setDiscountAmount((double)spotUpdateDto.getDiscountRate());
+                    institutionData.setPayableStudentCharge(totalStudentCharge);
+                    institutionData.setTeacherTicketCharge(totalTeacherCharge);
+
+                    //calculate total user GST charge
+                    Double totalGstRate =amountCalculation.CalculateGST(),totalUserGst;
+                    totalUserGst = totalGstRate*totalCharges;
+
+                    //calculating additional chagres
+                    Integer extraCharge= amountCalculation.calculateAdditionalCharges();
+
+                    //Grand total = total GST charge + total additional charge + total ticket charge
+                    grandTotal = amountCalculation.calculateGrandTotal(totalUserGst,extraCharge,totalCharges);
+                    BigDecimal roundedGrandTotal = BigDecimal.valueOf(grandTotal).setScale(0,RoundingMode.HALF_UP);
+                    grandTotal= roundedGrandTotal.doubleValue();
+                    institutionData.setTotalAmount(totalCharges);
+                    institutionData.setTotalGstCharge(totalUserGst);
+                    institutionData.setTotalAdditionalCharges(extraCharge);
+                    institutionData.setGrandTotal(grandTotal);
+                    institutionDataRepo.save(institutionData);
+                    return new ResponseEntity<>(institutionData,HttpStatus.OK);
+                }
+
+            }else {
+                return new ResponseEntity<>("No discount Details ",HttpStatus.NO_CONTENT);
+            }
+
         } else if (foreignerDataOptional.isPresent()) {
             ForeignerData foreignerData = foreignerDataOptional.get();
             foreignerData.setAdult(spotUpdateDto.getAdult());
             foreignerData.setChild(spotUpdateDto.getChild());
-
+            foreignerData.setPaymentMode(spotUpdateDto.getPaymentModeId());
             Double totalAdultCharge=0.0;    Double totalChildCharge=0.0;    Double grandTotal;
             Integer userCount,typeId;
             if (spotUpdateDto.getAdult()>0){      // calculating ticket charge of foreign adult ticket charge
@@ -339,6 +480,8 @@ SpotRegService {
             }
             Double totalCharges=totalAdultCharge+totalChildCharge;      // total ticket charge = adult charge + child charge
 
+            foreignerData.setAdultGrandTotal(totalAdultCharge);
+            foreignerData.setChildGrandTotal(totalChildCharge);
             //calculating GST charge
             Double totalGstRate =amountCalculation.CalculateGST(),totalUserGst;
             totalUserGst = totalGstRate*totalCharges;
@@ -348,7 +491,8 @@ SpotRegService {
 
             //grand total = GST + additionalCharge + ticketCharge
             grandTotal = amountCalculation.calculateGrandTotal(totalUserGst,extraCharge,totalCharges);
-
+            BigDecimal roundedGrandTotal = BigDecimal.valueOf(grandTotal).setScale(0,RoundingMode.HALF_UP);
+            grandTotal= roundedGrandTotal.doubleValue();
             foreignerData.setTotalAmount(totalCharges);
             foreignerData.setTotalGstCharge(totalUserGst);
             foreignerData.setTotalAdditionalCharges(extraCharge);
@@ -427,7 +571,7 @@ SpotRegService {
                        String name =paymentStatus.getStatusName();
                        PaymentMode paymentMode = paymentModeOptional.get();
                        String modeName = paymentMode.getPaymentType();
-                       if ("cash".equalsIgnoreCase(modeName) && "received".equalsIgnoreCase(name)){
+                       if ("cash".equalsIgnoreCase(modeName) || "QRCode".equalsIgnoreCase(modeName) && "received".equalsIgnoreCase(name)){
                            publicData.setTicketId(alphaNumeric.generateSpotRandomNumber());
                            publicData.setPaymentId(alphaNumeric.generateRandomNumber());
                            publicData.setCreatedTime(LocalTime.now());
@@ -484,7 +628,7 @@ SpotRegService {
                         String name =paymentStatus.getStatusName();
                         PaymentMode paymentMode = paymentModeOptional.get();
                         String modeName = paymentMode.getPaymentType();
-                        if ("cash".equalsIgnoreCase(modeName) && "received".equalsIgnoreCase(name)){
+                        if ("cash".equalsIgnoreCase(modeName) || "QRCode".equalsIgnoreCase(modeName) && "received".equalsIgnoreCase(name)){
                             institutionData.setTicketId(alphaNumeric.generateSpotRandomNumber());
                             institutionData.setPaymentId(alphaNumeric.generateRandomNumber());
                             institutionData.setCreatedTime(LocalTime.now());
@@ -504,6 +648,10 @@ SpotRegService {
                     spotBookingDto.setPhNumber(institutionData.getPhNumber());
                     spotBookingDto.setDistrict(institutionData.getDistrict());
                     spotBookingDto.setTeacherCount(institutionData.getTeacher());
+                    spotBookingDto.setTeacherTicketCharge(institutionData.getTeacherTicketCharge());
+                    spotBookingDto.setStudentTicketCharge(institutionData.getStudentTicketCharge());
+                    spotBookingDto.setPayableStudentCharge(institutionData.getPayableStudentCharge());
+                    spotBookingDto.setDiscountAmount(institutionData.getDiscountAmount());
                     spotBookingDto.setStudentCount(institutionData.getStudent());
                     spotBookingDto.setVisitDate(institutionData.getVisitDate());
                     Optional<BookingDetails> bookingDetails1 = bookingSpotRepo.findByBookDateAndSlotId(institutionData.getVisitDate(), institutionData.getSlotId());
@@ -543,7 +691,7 @@ SpotRegService {
                         String name =paymentStatus.getStatusName();
                         PaymentMode paymentMode = paymentModeOptional.get();
                         String modeName = paymentMode.getPaymentType();
-                        if ("cash".equalsIgnoreCase(modeName) && "received".equalsIgnoreCase(name)){
+                        if ("cash".equalsIgnoreCase(modeName) || "QRCode".equalsIgnoreCase(modeName) && "received".equalsIgnoreCase(name)){
                             foreignerData.setTicketId(alphaNumeric.generateSpotRandomNumber());
                             foreignerData.setPaymentId(alphaNumeric.generateRandomNumber());
                             foreignerData.setCreatedTime(LocalTime.now());
@@ -587,87 +735,101 @@ SpotRegService {
 
     public ResponseEntity<?> getAllUserDetails() {
         List<AllUserDataDto> allUserDataDtoList = new ArrayList<>();
+//        List<PublicData> publicDataList = publicRepo.findAll();
         List<PublicData> publicDataList = publicRepo.findAll();
 
         if (!publicDataList.isEmpty()){
+            publicDataList.sort(Comparator.comparing(PublicData::getId).reversed());
 //            List<PublicDtoData> publicDtoDataList = new ArrayList<>();
             for (PublicData publicData : publicDataList){
-                AllUserDataDto allUserDataDto = new AllUserDataDto();
-                allUserDataDto.setName(publicData.getName());
-                allUserDataDto.setPhNumber(publicData.getPhNumber());
-                allUserDataDto.setAdultCount(publicData.getAdult());
-                allUserDataDto.setChildCount(publicData.getChild());
-                allUserDataDto.setSeniorCitizenCount(publicData.getSeniorCitizen());
-                allUserDataDto.setOrderId(publicData.getOrderId());
-                allUserDataDto.setPaymentId(publicData.getPaymentId());
-                allUserDataDto.setTicketId(publicData.getTicketId());
+                if (publicData.getTicketId()!=null){
+                    AllUserDataDto allUserDataDto = new AllUserDataDto();
+                    allUserDataDto.setName(publicData.getName());
+                    allUserDataDto.setPhNumber(publicData.getPhNumber());
+                    allUserDataDto.setAdultCount(publicData.getAdult());
+                    allUserDataDto.setAdultCharge(publicData.getAdultGrandTotal());
+                    allUserDataDto.setChildCount(publicData.getChild());
+                    allUserDataDto.setChildCharge(publicData.getChildGrandTotal());
+                    allUserDataDto.setSeniorCitizenCount(publicData.getSeniorCitizen());
+                    allUserDataDto.setOrderId(publicData.getOrderId());
+                    allUserDataDto.setPaymentId(publicData.getPaymentId());
+                    allUserDataDto.setTicketId(publicData.getTicketId());
 
-                Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(publicData.getSlotId());
-                if (spotSlotOptional.isPresent()){
-                    SpotSlot spotSlot = spotSlotOptional.get();
-                    allUserDataDto.setVisitDate(publicData.getVisitDate());
-                    allUserDataDto.setSlotTime(spotSlot.getSlotStartTime());
+                    Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(publicData.getSlotId());
+                    if (spotSlotOptional.isPresent()){
+                        SpotSlot spotSlot = spotSlotOptional.get();
+                        allUserDataDto.setVisitDate(publicData.getVisitDate());
+                        allUserDataDto.setSlotTime(spotSlot.getSlotStartTime());
+                    }
+                    allUserDataDto.setGrandTotal(publicData.getGrandTotal());
+                    Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(publicData.getPaymentMode());
+                    if (paymentModeOptional.isPresent()){
+                        PaymentMode paymentMode = paymentModeOptional.get();
+                        allUserDataDto.setPaymentModeName(paymentMode.getPaymentType());
+                    }
+                    Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(publicData.getPaymentStatusId());
+                    if (paymentStatusOptional.isPresent()){
+                        PaymentStatus paymentStatus = paymentStatusOptional.get();
+                        allUserDataDto.setPaymentStatusName(paymentStatus.getStatusName());
+                    }
+                    allUserDataDto.setTicketId(publicData.getTicketId());
+                    allUserDataDto.setOrderId(publicData.getOrderId());
+                    allUserDataDto.setPaymentId(publicData.getPaymentId());
+                    allUserDataDto.setGeneratedTime(publicData.getCreatedTime());
+                    allUserDataDto.setCreatedBy(publicData.getCreatedBy());
+                    allUserDataDto.setVisitStatus(publicData.isVisitStatus());
+                    allUserDataDto.setCategoryName("Public");
+                    allUserDataDtoList.add(allUserDataDto);
                 }
-                allUserDataDto.setGrandTotal(publicData.getGrandTotal());
-                Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(publicData.getPaymentMode());
-                if (paymentModeOptional.isPresent()){
-                    PaymentMode paymentMode = paymentModeOptional.get();
-                    allUserDataDto.setPaymentModeName(paymentMode.getPaymentType());
-                }
-                Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(publicData.getPaymentStatusId());
-                if (paymentStatusOptional.isPresent()){
-                    PaymentStatus paymentStatus = paymentStatusOptional.get();
-                    allUserDataDto.setPaymentStatusName(paymentStatus.getStatusName());
-                }
-                allUserDataDto.setTicketId(publicData.getTicketId());
-                allUserDataDto.setOrderId(publicData.getOrderId());
-                allUserDataDto.setPaymentId(publicData.getPaymentId());
-                allUserDataDto.setGeneratedTime(publicData.getCreatedTime());
-                allUserDataDto.setCreatedBy(publicData.getCreatedBy());
-                allUserDataDto.setVisitStatus(publicData.isVisitStatus());
-                allUserDataDto.setCategoryName("Public");
-                allUserDataDtoList.add(allUserDataDto);
+
             }
 //            allUserDataDto.setPublicDtoDataList(publicDtoDataList);
             //allUserDataDtoList.add(allUserDataDto);
         }
         List<InstitutionData> institutionDataList = institutionDataRepo.findAll();
         if (!institutionDataList.isEmpty()){
-
+            institutionDataList.sort(Comparator.comparing(InstitutionData::getId).reversed());
 //            List<InstitutionDtoData> institutionDtoDataList = new ArrayList<>();
             for (InstitutionData institutionData : institutionDataList){
-                AllUserDataDto allUserDataDto = new AllUserDataDto();
-                allUserDataDto.setName(institutionData.getName());
-                allUserDataDto.setPhNumber(institutionData.getPhNumber());
-                allUserDataDto.setDistrict(institutionData.getDistrict());
-                allUserDataDto.setTeacherCount(institutionData.getTeacher());
-                allUserDataDto.setStudentCount(institutionData.getStudent());
-                allUserDataDto.setGrandTotal(institutionData.getGrandTotal());
-                Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(institutionData.getPaymentMode());
-                if (paymentModeOptional.isPresent()){
-                    PaymentMode paymentMode = paymentModeOptional.get();
-                    allUserDataDto.setPaymentModeName(paymentMode.getPaymentType());
-                }
-                Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(institutionData.getPaymentStatusId());
-                if (paymentStatusOptional.isPresent()){
-                    PaymentStatus paymentStatus = paymentStatusOptional.get();
-                    allUserDataDto.setPaymentStatusName(paymentStatus.getStatusName());
-                }
-                allUserDataDto.setVisitDate(institutionData.getVisitDate());
-                Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(institutionData.getSlotId());
-                if (spotSlotOptional.isPresent()){
-                    SpotSlot spotSlot = spotSlotOptional.get();
+                if (institutionData.getTicketId()!=null){
+                    AllUserDataDto allUserDataDto = new AllUserDataDto();
+                    allUserDataDto.setName(institutionData.getName());
+                    allUserDataDto.setPhNumber(institutionData.getPhNumber());
+                    allUserDataDto.setDistrict(institutionData.getDistrict());
+                    allUserDataDto.setTeacherCount(institutionData.getTeacher());
+                    allUserDataDto.setTeacherCharge(institutionData.getTeacherTicketCharge());
+                    allUserDataDto.setStudentCount(institutionData.getStudent());
+                    allUserDataDto.setStudentCharge(institutionData.getStudentTicketCharge());
+                    allUserDataDto.setStudentDiscount(institutionData.getStudentDiscount());
+                    allUserDataDto.setPayableStudentCharge(institutionData.getPayableStudentCharge());
+                    allUserDataDto.setDiscountAmount(institutionData.getDiscountAmount());
+                    allUserDataDto.setGrandTotal(institutionData.getGrandTotal());
+                    Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(institutionData.getPaymentMode());
+                    if (paymentModeOptional.isPresent()){
+                        PaymentMode paymentMode = paymentModeOptional.get();
+                        allUserDataDto.setPaymentModeName(paymentMode.getPaymentType());
+                    }
+                    Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(institutionData.getPaymentStatusId());
+                    if (paymentStatusOptional.isPresent()){
+                        PaymentStatus paymentStatus = paymentStatusOptional.get();
+                        allUserDataDto.setPaymentStatusName(paymentStatus.getStatusName());
+                    }
                     allUserDataDto.setVisitDate(institutionData.getVisitDate());
-                    allUserDataDto.setSlotTime(spotSlot.getSlotStartTime());
+                    Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(institutionData.getSlotId());
+                    if (spotSlotOptional.isPresent()){
+                        SpotSlot spotSlot = spotSlotOptional.get();
+                        allUserDataDto.setVisitDate(institutionData.getVisitDate());
+                        allUserDataDto.setSlotTime(spotSlot.getSlotStartTime());
+                    }
+                    allUserDataDto.setTicketId(institutionData.getTicketId());
+                    allUserDataDto.setOrderId(institutionData.getOrderId());
+                    allUserDataDto.setPaymentId(institutionData.getPaymentId());
+                    allUserDataDto.setCreatedBy(institutionData.getCreatedBy());
+                    allUserDataDto.setGeneratedTime(institutionData.getCreatedTime());
+                    allUserDataDto.setVisitStatus(institutionData.isVisitStatus());
+                    allUserDataDto.setCategoryName("Institution");
+                    allUserDataDtoList.add(allUserDataDto);
                 }
-                allUserDataDto.setTicketId(institutionData.getTicketId());
-                allUserDataDto.setOrderId(institutionData.getOrderId());
-                allUserDataDto.setPaymentId(institutionData.getPaymentId());
-                allUserDataDto.setCreatedBy(institutionData.getCreatedBy());
-                allUserDataDto.setGeneratedTime(institutionData.getCreatedTime());
-                allUserDataDto.setVisitStatus(institutionData.isVisitStatus());
-                allUserDataDto.setCategoryName("Institution");
-                allUserDataDtoList.add(allUserDataDto);
             }
             //allUserDataDto.setInstitutionDtoDataList(institutionDtoDataList);
             //allUserDataDtoList.add(allUserDataDto);
@@ -675,39 +837,44 @@ SpotRegService {
         List<ForeignerData> foreignerDataList = foreignerDataRepo.findAll();
 //        List<ForeignerDtoData> foreignerDtoDataList = new ArrayList<>();
         if (!foreignerDataList.isEmpty()){
+            foreignerDataList.sort(Comparator.comparing(ForeignerData::getId).reversed());
             for (ForeignerData foreignerData : foreignerDataList){
-                AllUserDataDto allUserDataDto = new AllUserDataDto();
-                allUserDataDto.setName(foreignerData.getName());
-                allUserDataDto.setPhNumber(foreignerData.getPhNumber());
-                allUserDataDto.setAdultCount(foreignerData.getAdult());
-                allUserDataDto.setChildCount(foreignerData.getChild());
-
-                allUserDataDto.setVisitDate(foreignerData.getVisitDate());
-                Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(foreignerData.getSlotId());
-                if (spotSlotOptional.isPresent()){
-                    SpotSlot spotSlot = spotSlotOptional.get();
+                if (foreignerData.getTicketId()!=null){
+                    AllUserDataDto allUserDataDto = new AllUserDataDto();
+                    allUserDataDto.setName(foreignerData.getName());
+                    allUserDataDto.setPhNumber(foreignerData.getPhNumber());
+                    allUserDataDto.setAdultCount(foreignerData.getAdult());
+                    allUserDataDto.setAdultCharge(foreignerData.getAdultGrandTotal());
+                    allUserDataDto.setChildCount(foreignerData.getChild());
+                    allUserDataDto.setChildCharge(foreignerData.getChildGrandTotal());
                     allUserDataDto.setVisitDate(foreignerData.getVisitDate());
-                    allUserDataDto.setSlotTime(spotSlot.getSlotStartTime());
+                    Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(foreignerData.getSlotId());
+                    if (spotSlotOptional.isPresent()){
+                        SpotSlot spotSlot = spotSlotOptional.get();
+                        allUserDataDto.setVisitDate(foreignerData.getVisitDate());
+                        allUserDataDto.setSlotTime(spotSlot.getSlotStartTime());
+                    }
+                    allUserDataDto.setGrandTotal(foreignerData.getGrandTotal());
+                    Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(foreignerData.getPaymentMode());
+                    if (paymentModeOptional.isPresent()){
+                        PaymentMode paymentMode = paymentModeOptional.get();
+                        allUserDataDto.setPaymentModeName(paymentMode.getPaymentType());
+                    }
+                    Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(foreignerData.getPaymentStatusId());
+                    if (paymentStatusOptional.isPresent()){
+                        PaymentStatus paymentStatus = paymentStatusOptional.get();
+                        allUserDataDto.setPaymentStatusName(paymentStatus.getStatusName());
+                    }
+                    allUserDataDto.setTicketId(foreignerData.getTicketId());
+                    allUserDataDto.setOrderId(foreignerData.getOrderId());
+                    allUserDataDto.setPaymentId(foreignerData.getPaymentId());
+                    allUserDataDto.setGeneratedTime(foreignerData.getCreatedTime());
+                    allUserDataDto.setCreatedBy(foreignerData.getCreatedBy());
+                    allUserDataDto.setVisitStatus(foreignerData.isVisitStatus());
+                    allUserDataDto.setCategoryName("Foreigner");
+                    allUserDataDtoList.add(allUserDataDto);
                 }
-                allUserDataDto.setGrandTotal(foreignerData.getGrandTotal());
-                Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(foreignerData.getPaymentMode());
-                if (paymentModeOptional.isPresent()){
-                    PaymentMode paymentMode = paymentModeOptional.get();
-                    allUserDataDto.setPaymentModeName(paymentMode.getPaymentType());
-                }
-                Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(foreignerData.getPaymentStatusId());
-                if (paymentStatusOptional.isPresent()){
-                    PaymentStatus paymentStatus = paymentStatusOptional.get();
-                    allUserDataDto.setPaymentStatusName(paymentStatus.getStatusName());
-                }
-                allUserDataDto.setTicketId(foreignerData.getTicketId());
-                allUserDataDto.setOrderId(foreignerData.getOrderId());
-                allUserDataDto.setPaymentId(foreignerData.getPaymentId());
-                allUserDataDto.setGeneratedTime(foreignerData.getCreatedTime());
-                allUserDataDto.setCreatedBy(foreignerData.getCreatedBy());
-                allUserDataDto.setVisitStatus(foreignerData.isVisitStatus());
-                allUserDataDto.setCategoryName("Foreigner");
-                allUserDataDtoList.add(allUserDataDto);
+
             }
 //            allUserDataDto.setForeignerDtoDataList(foreignerDtoDataList);
 //            allUserDataDtoList.add(allUserDataDto);
@@ -719,39 +886,45 @@ SpotRegService {
     public ResponseEntity<?> getAllPublic() {
         List<PublicData> publicDataList = publicRepo.findAll();
         List<PublicDtoData> publicDtoDataList = new ArrayList<>();
+        publicDataList.sort(Comparator.comparing(PublicData::getId).reversed());
         if (!publicDataList.isEmpty()){
             for (PublicData publicData : publicDataList){
-                PublicDtoData publicDtoData = new PublicDtoData();
-                publicDtoData.setName(publicData.getName());
-                publicDtoData.setPhNumber(publicData.getPhNumber());
-                publicDtoData.setAdultCount(publicData.getAdult());
-                publicDtoData.setChildCount(publicData.getChild());
-                publicDtoData.setSeniorCitizenCount(publicData.getSeniorCitizen());
-                publicDtoData.setVisitDate(publicData.getVisitDate());
-                Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(publicData.getSlotId());
-                if (spotSlotOptional.isPresent()){
-                    SpotSlot spotSlot = spotSlotOptional.get();
-                    publicDtoData.setSlotTime(spotSlot.getSlotStartTime());
+                if (publicData.getTicketId()!=null){
+                    PublicDtoData publicDtoData = new PublicDtoData();
+                    publicDtoData.setName(publicData.getName());
+                    publicDtoData.setPhNumber(publicData.getPhNumber());
+                    publicDtoData.setAdultCount(publicData.getAdult());
+                    publicDtoData.setAdultCharge(publicData.getAdultGrandTotal());
+                    publicDtoData.setChildCharge(publicData.getChildGrandTotal());
+                    publicDtoData.setChildCount(publicData.getChild());
+                    publicDtoData.setSeniorCitizenCount(publicData.getSeniorCitizen());
+                    publicDtoData.setVisitDate(publicData.getVisitDate());
+                    Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(publicData.getSlotId());
+                    if (spotSlotOptional.isPresent()){
+                        SpotSlot spotSlot = spotSlotOptional.get();
+                        publicDtoData.setSlotTime(spotSlot.getSlotStartTime());
+                    }
+                    publicDtoData.setGrandTotal(publicData.getGrandTotal());
+                    Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(publicData.getPaymentMode());
+                    if (paymentModeOptional.isPresent()){
+                        PaymentMode paymentMode = paymentModeOptional.get();
+                        publicDtoData.setPaymentModeName(paymentMode.getPaymentType());
+                    }
+                    Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(publicData.getPaymentStatusId());
+                    if (paymentStatusOptional.isPresent()){
+                        PaymentStatus paymentStatus = paymentStatusOptional.get();
+                        publicDtoData.setPaymentStatusName(paymentStatus.getStatusName());
+                    }
+                    publicDtoData.setTicketId(publicData.getTicketId());
+                    publicDtoData.setOrderId(publicData.getOrderId());
+                    publicDtoData.setPaymentId(publicData.getPaymentId());
+                    publicDtoData.setGeneratedTime(publicData.getCreatedTime());
+                    publicDtoData.setCreatedBy(publicData.getCreatedBy());
+                    publicDtoData.setVisitStatus(publicData.isVisitStatus());
+                    publicDtoData.setCategoryName("Public");
+                    publicDtoDataList.add(publicDtoData);
                 }
-                publicDtoData.setGrandTotal(publicData.getGrandTotal());
-                Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(publicData.getPaymentMode());
-                if (paymentModeOptional.isPresent()){
-                    PaymentMode paymentMode = paymentModeOptional.get();
-                    publicDtoData.setPaymentModeName(paymentMode.getPaymentType());
-                }
-                Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(publicData.getPaymentStatusId());
-                if (paymentStatusOptional.isPresent()){
-                    PaymentStatus paymentStatus = paymentStatusOptional.get();
-                    publicDtoData.setPaymentStatusName(paymentStatus.getStatusName());
-                }
-                publicDtoData.setTicketId(publicData.getTicketId());
-                publicDtoData.setOrderId(publicData.getOrderId());
-                publicDtoData.setPaymentId(publicData.getPaymentId());
-                publicDtoData.setGeneratedTime(publicData.getCreatedTime());
-                publicDtoData.setCreatedBy(publicData.getCreatedBy());
-                publicDtoData.setVisitStatus(publicData.isVisitStatus());
-                publicDtoData.setCategoryName("Public");
-                publicDtoDataList.add(publicDtoData);
+
             }
 
         }
@@ -761,39 +934,47 @@ SpotRegService {
     public ResponseEntity<?> getAllInstitution() {
         List<InstitutionData> institutionDataList = institutionDataRepo.findAll();
         List<InstitutionDtoData> institutionDtoDataList = new ArrayList<>();
+        institutionDataList.sort(Comparator.comparing(InstitutionData::getId).reversed());
         if (!institutionDataList.isEmpty()){
             for (InstitutionData institutionData : institutionDataList){
-                InstitutionDtoData institutionDtoData = new InstitutionDtoData();
-                institutionDtoData.setName(institutionData.getName());
-                institutionDtoData.setPhNumber(institutionData.getPhNumber());
-                institutionDtoData.setDistrict(institutionData.getDistrict());
-                institutionDtoData.setTeacherCount(institutionData.getTeacher());
-                institutionDtoData.setStudentCount(institutionData.getStudent());
-                institutionDtoData.setGrandTotal(institutionData.getGrandTotal());
-                Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(institutionData.getPaymentMode());
-                if (paymentModeOptional.isPresent()){
-                    PaymentMode paymentMode = paymentModeOptional.get();
-                    institutionDtoData.setPaymentModeName(paymentMode.getPaymentType());
+                if (institutionData.getTicketId()!=null){
+                    InstitutionDtoData institutionDtoData = new InstitutionDtoData();
+                    institutionDtoData.setName(institutionData.getName());
+                    institutionDtoData.setPhNumber(institutionData.getPhNumber());
+                    institutionDtoData.setDistrict(institutionData.getDistrict());
+                    institutionDtoData.setTeacherCount(institutionData.getTeacher());
+                    institutionDtoData.setTeacherCharge(institutionData.getTeacherTicketCharge());
+                    institutionDtoData.setStudentCount(institutionData.getStudent());
+                    institutionDtoData.setStudentCharge(institutionData.getStudentTicketCharge());
+                    institutionDtoData.setStudentDiscount(institutionData.getStudentDiscount());
+                    institutionDtoData.setPayableStudentCharge(institutionData.getPayableStudentCharge());
+                    institutionData.setDiscountAmount(institutionData.getDiscountAmount());
+                    institutionDtoData.setGrandTotal(institutionData.getGrandTotal());
+                    Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(institutionData.getPaymentMode());
+                    if (paymentModeOptional.isPresent()){
+                        PaymentMode paymentMode = paymentModeOptional.get();
+                        institutionDtoData.setPaymentModeName(paymentMode.getPaymentType());
+                    }
+                    Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(institutionData.getPaymentStatusId());
+                    if (paymentStatusOptional.isPresent()){
+                        PaymentStatus paymentStatus = paymentStatusOptional.get();
+                        institutionDtoData.setPaymentStatusName(paymentStatus.getStatusName());
+                    }
+                    institutionDtoData.setVisitDate(institutionData.getVisitDate());
+                    Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(institutionData.getSlotId());
+                    if (spotSlotOptional.isPresent()){
+                        SpotSlot spotSlot = spotSlotOptional.get();
+                        institutionDtoData.setSlotTime(spotSlot.getSlotStartTime());
+                    }
+                    institutionDtoData.setTicketId(institutionData.getTicketId());
+                    institutionDtoData.setOrderId(institutionData.getOrderId());
+                    institutionDtoData.setPaymentId(institutionData.getPaymentId());
+                    institutionDtoData.setCreatedBy(institutionData.getCreatedBy());
+                    institutionDtoData.setGeneratedTime(institutionData.getCreatedTime());
+                    institutionDtoData.setVisitorsStatus(institutionData.isVisitStatus());
+                    institutionDtoData.setCategoryName("Institution");
+                    institutionDtoDataList.add(institutionDtoData);
                 }
-                Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(institutionData.getPaymentStatusId());
-                if (paymentStatusOptional.isPresent()){
-                    PaymentStatus paymentStatus = paymentStatusOptional.get();
-                    institutionDtoData.setPaymentStatusName(paymentStatus.getStatusName());
-                }
-                institutionDtoData.setVisitDate(institutionData.getVisitDate());
-                Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(institutionData.getSlotId());
-                if (spotSlotOptional.isPresent()){
-                    SpotSlot spotSlot = spotSlotOptional.get();
-                    institutionDtoData.setSlotTime(spotSlot.getSlotStartTime());
-                }
-                institutionDtoData.setTicketId(institutionData.getTicketId());
-                institutionDtoData.setOrderId(institutionData.getOrderId());
-                institutionDtoData.setPaymentId(institutionData.getPaymentId());
-                institutionDtoData.setCreatedBy(institutionData.getCreatedBy());
-                institutionDtoData.setGeneratedTime(institutionData.getCreatedTime());
-                institutionDtoData.setVisitorsStatus(institutionData.isVisitStatus());
-                institutionDtoData.setCategoryName("Institution");
-                institutionDtoDataList.add(institutionDtoData);
             }
         }
         return new ResponseEntity<>(institutionDtoDataList,HttpStatus.OK);
@@ -802,39 +983,44 @@ SpotRegService {
     public ResponseEntity<?> getAllForeigner() {
         List<ForeignerData> foreignerDataList = foreignerDataRepo.findAll();
         List<ForeignerDtoData> foreignerDtoDataList = new ArrayList<>();
+        foreignerDataList.sort(Comparator.comparing(ForeignerData::getId).reversed());
         if (!foreignerDataList.isEmpty()){
             for (ForeignerData foreignerData : foreignerDataList){
-                ForeignerDtoData foreignerDtoData = new ForeignerDtoData();
-                foreignerDtoData.setName(foreignerData.getName());
-                foreignerDtoData.setPhNumber(foreignerData.getPhNumber());
-                foreignerDtoData.setAdultCount(foreignerData.getAdult());
-                foreignerDtoData.setChildCount(foreignerData.getChild());
+                if (foreignerData.getTicketId()!=null){
+                    ForeignerDtoData foreignerDtoData = new ForeignerDtoData();
+                    foreignerDtoData.setName(foreignerData.getName());
+                    foreignerDtoData.setPhNumber(foreignerData.getPhNumber());
+                    foreignerDtoData.setAdultCount(foreignerData.getAdult());
+                    foreignerDtoData.setAdultCharge(foreignerData.getAdultGrandTotal());
+                    foreignerDtoData.setChildCharge(foreignerData.getChildGrandTotal());
+                    foreignerDtoData.setChildCount(foreignerData.getChild());
 
-                foreignerDtoData.setVisitDate(foreignerData.getVisitDate());
-                Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(foreignerData.getSlotId());
-                if (spotSlotOptional.isPresent()){
-                    SpotSlot spotSlot = spotSlotOptional.get();
-                    foreignerDtoData.setSlotTime(spotSlot.getSlotStartTime());
+                    foreignerDtoData.setVisitDate(foreignerData.getVisitDate());
+                    Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(foreignerData.getSlotId());
+                    if (spotSlotOptional.isPresent()){
+                        SpotSlot spotSlot = spotSlotOptional.get();
+                        foreignerDtoData.setSlotTime(spotSlot.getSlotStartTime());
+                    }
+                    foreignerDtoData.setGrandTotal(foreignerData.getGrandTotal());
+                    Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(foreignerData.getPaymentMode());
+                    if (paymentModeOptional.isPresent()){
+                        PaymentMode paymentMode = paymentModeOptional.get();
+                        foreignerDtoData.setPaymentModeName(paymentMode.getPaymentType());
+                    }
+                    Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(foreignerData.getPaymentStatusId());
+                    if (paymentStatusOptional.isPresent()){
+                        PaymentStatus paymentStatus = paymentStatusOptional.get();
+                        foreignerDtoData.setPaymentStatusName(paymentStatus.getStatusName());
+                    }
+                    foreignerDtoData.setTicketId(foreignerData.getTicketId());
+                    foreignerDtoData.setOrderId(foreignerData.getOrderId());
+                    foreignerDtoData.setPaymentId(foreignerData.getPaymentId());
+                    foreignerDtoData.setGeneratedTime(foreignerData.getCreatedTime());
+                    foreignerDtoData.setCreatedBy(foreignerData.getCreatedBy());
+                    foreignerDtoData.setVisitorsStatus(foreignerData.isVisitStatus());
+                    foreignerDtoData.setCategoryName("Foreigner");
+                    foreignerDtoDataList.add(foreignerDtoData);
                 }
-                foreignerDtoData.setGrandTotal(foreignerData.getGrandTotal());
-                Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(foreignerData.getPaymentMode());
-                if (paymentModeOptional.isPresent()){
-                    PaymentMode paymentMode = paymentModeOptional.get();
-                    foreignerDtoData.setPaymentModeName(paymentMode.getPaymentType());
-                }
-                Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(foreignerData.getPaymentStatusId());
-                if (paymentStatusOptional.isPresent()){
-                    PaymentStatus paymentStatus = paymentStatusOptional.get();
-                    foreignerDtoData.setPaymentStatusName(paymentStatus.getStatusName());
-                }
-                foreignerDtoData.setTicketId(foreignerData.getTicketId());
-                foreignerDtoData.setOrderId(foreignerData.getOrderId());
-                foreignerDtoData.setPaymentId(foreignerData.getPaymentId());
-                foreignerDtoData.setGeneratedTime(foreignerData.getCreatedTime());
-                foreignerDtoData.setCreatedBy(foreignerData.getCreatedBy());
-                foreignerDtoData.setVisitorsStatus(foreignerData.isVisitStatus());
-                foreignerDtoData.setCategoryName("Foreigner");
-                foreignerDtoDataList.add(foreignerDtoData);
             }
 
         }
@@ -851,32 +1037,36 @@ SpotRegService {
                 List<PublicData> publicDataList = publicRepo.findByVisitDate(visitDate);
                 if (!publicDataList.isEmpty()){
                     for (PublicData publicData : publicDataList){
-                        GetUserData_ getUserData = new GetUserData_();
-                        getUserData.setName(publicData.getName());
-                        getUserData.setPhNumber(publicData.getPhNumber());
-                        getUserData.setAdult(publicData.getAdult());
-                        getUserData.setChild(publicData.getChild());
-                        getUserData.setSeniorCitizen(publicData.getSeniorCitizen());
-                        getUserData.setGrandTotal(publicData.getGrandTotal());
-                        Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(publicData.getPaymentMode());
-                        if (paymentModeOptional.isPresent()){
-                            PaymentMode paymentMode = paymentModeOptional.get();
-                            getUserData.setPaymentModeName(paymentMode.getPaymentType());
+                        if (publicData.getTicketId()!=null){
+                            GetUserData_ getUserData = new GetUserData_();
+                            getUserData.setName(publicData.getName());
+                            getUserData.setPhNumber(publicData.getPhNumber());
+                            getUserData.setAdult(publicData.getAdult());
+                            getUserData.setAdultCharge(publicData.getAdultGrandTotal());
+                            getUserData.setChild(publicData.getChild());
+                            getUserData.setChildCharge(publicData.getChildGrandTotal());
+                            getUserData.setSeniorCitizen(publicData.getSeniorCitizen());
+                            getUserData.setGrandTotal(publicData.getGrandTotal());
+                            Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(publicData.getPaymentMode());
+                            if (paymentModeOptional.isPresent()){
+                                PaymentMode paymentMode = paymentModeOptional.get();
+                                getUserData.setPaymentModeName(paymentMode.getPaymentType());
+                            }
+                            Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(publicData.getPaymentStatusId());
+                            if (paymentStatusOptional.isPresent()){
+                                PaymentStatus paymentStatus = paymentStatusOptional.get();
+                                getUserData.setPaymentStatus(paymentStatus.getStatusName());
+                            }
+                            getUserData.setTicketId(publicData.getTicketId());
+                            getUserData.setGeneratedTime(publicData.getCreatedTime());
+                            Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(publicData.getSlotId());
+                            if (spotSlotOptional.isPresent()){
+                                SpotSlot spotSlot = spotSlotOptional.get();
+                                getUserData.setSlotTime(spotSlot.getSlotStartTime());
+                            }
+                            getUserData.setCreatedBy(publicData.getCreatedBy());//
+                            getUserDataList.add(getUserData);
                         }
-                        Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(publicData.getPaymentStatusId());
-                        if (paymentStatusOptional.isPresent()){
-                            PaymentStatus paymentStatus = paymentStatusOptional.get();
-                            getUserData.setPaymentStatus(paymentStatus.getStatusName());
-                        }
-                        getUserData.setTicketId(publicData.getTicketId());
-                        getUserData.setGeneratedTime(publicData.getCreatedTime());
-                        Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(publicData.getSlotId());
-                        if (spotSlotOptional.isPresent()){
-                            SpotSlot spotSlot = spotSlotOptional.get();
-                            getUserData.setSlotTime(spotSlot.getSlotStartTime());
-                        }
-                        getUserData.setCreatedBy(publicData.getCreatedBy());//
-                        getUserDataList.add(getUserData);
                     }
 
                     return new ResponseEntity<>(getUserDataList,HttpStatus.OK);
@@ -885,35 +1075,42 @@ SpotRegService {
                 List<InstitutionData> institutionDataList = institutionDataRepo.findByVisitDate(visitDate);
                 if (!institutionDataList.isEmpty()){
                     for (InstitutionData institutionData : institutionDataList){
-                        GetUserData_ getUserData = new GetUserData_();
-                        getUserData.setName(institutionData.getName());
-                        getUserData.setPhNumber(institutionData.getPhNumber());
-                        getUserData.setDistrict(institutionData.getDistrict());
-                        getUserData.setTeacher(institutionData.getTeacher());
-                        getUserData.setStudent(institutionData.getStudent());
-                        getUserData.setGrandTotal(institutionData.getGrandTotal());
-                        Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(institutionData.getPaymentMode());
-                        if (paymentModeOptional.isPresent()){
-                            PaymentMode paymentMode = paymentModeOptional.get();
-                            getUserData.setPaymentModeName(paymentMode.getPaymentType());
-                        }
-                        Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(institutionData.getPaymentStatusId());
-                        if (paymentStatusOptional.isPresent()){
-                            PaymentStatus paymentStatus = paymentStatusOptional.get();
-                            getUserData.setPaymentStatus(paymentStatus.getStatusName());
-                        }
-                        getUserData.setTicketId(institutionData.getTicketId());
-                        getUserData.setGeneratedTime(institutionData.getCreatedTime());
-                        Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(institutionData.getSlotId());
-                        if (spotSlotOptional.isPresent()){
-                            SpotSlot spotSlot = spotSlotOptional.get();
-                            getUserData.setSlotTime(spotSlot.getSlotStartTime());
-                        }
-                        getUserData.setCreatedBy(institutionData.getCreatedBy());
+                        if (institutionData.getTicketId()!=null){
+                            GetUserData_ getUserData = new GetUserData_();
+                            getUserData.setName(institutionData.getName());
+                            getUserData.setPhNumber(institutionData.getPhNumber());
+                            getUserData.setDistrict(institutionData.getDistrict());
+                            getUserData.setTeacher(institutionData.getTeacher());
+                            getUserData.setTeacherCharge(institutionData.getTeacherTicketCharge());
+                            getUserData.setStudent(institutionData.getStudent());
+                            getUserData.setStudentCharge(institutionData.getStudentTicketCharge());
+                            getUserData.setStudentDiscount(institutionData.getStudentDiscount());
+                            getUserData.setPayableStudentCharge(institutionData.getPayableStudentCharge());
+                            getUserData.setDiscountAmount(institutionData.getDiscountAmount());
+                            getUserData.setGrandTotal(institutionData.getGrandTotal());
+                            Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(institutionData.getPaymentMode());
+                            if (paymentModeOptional.isPresent()){
+                                PaymentMode paymentMode = paymentModeOptional.get();
+                                getUserData.setPaymentModeName(paymentMode.getPaymentType());
+                            }
+                            Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(institutionData.getPaymentStatusId());
+                            if (paymentStatusOptional.isPresent()){
+                                PaymentStatus paymentStatus = paymentStatusOptional.get();
+                                getUserData.setPaymentStatus(paymentStatus.getStatusName());
+                            }
+                            getUserData.setTicketId(institutionData.getTicketId());
+                            getUserData.setGeneratedTime(institutionData.getCreatedTime());
+                            Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(institutionData.getSlotId());
+                            if (spotSlotOptional.isPresent()){
+                                SpotSlot spotSlot = spotSlotOptional.get();
+                                getUserData.setSlotTime(spotSlot.getSlotStartTime());
+                            }
+                            getUserData.setCreatedBy(institutionData.getCreatedBy());
 //                        getUserData.setAdult(0);
 //                        getUserData.setChild(0);
 //                        getUserData.setSeniorCitizen(0);
-                        getUserDataList.add(getUserData);
+                            getUserDataList.add(getUserData);
+                        }
                     }
                     return new ResponseEntity<>(getUserDataList,HttpStatus.OK);
                 }
@@ -921,35 +1118,39 @@ SpotRegService {
                 List<ForeignerData> foreignerDataList = foreignerDataRepo.findByVisitDate(visitDate);
                 if (!foreignerDataList.isEmpty()){
                     for (ForeignerData foreignerData : foreignerDataList){
-                        GetUserData_ getUserData = new GetUserData_();
-                        getUserData.setName(foreignerData.getName());
-                        getUserData.setPhNumber(foreignerData.getPhNumber());
-                        getUserData.setAdult(foreignerData.getAdult());
-                        getUserData.setChild(foreignerData.getChild());
-                        getUserData.setGrandTotal(foreignerData.getGrandTotal());
-                        Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(foreignerData.getPaymentMode());
-                        if (paymentModeOptional.isPresent()){
-                            PaymentMode paymentMode = paymentModeOptional.get();
-                            getUserData.setPaymentModeName(paymentMode.getPaymentType());
-                        }
-                        Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(foreignerData.getPaymentStatusId());
-                        if (paymentStatusOptional.isPresent()){
-                            PaymentStatus paymentStatus = paymentStatusOptional.get();
-                            getUserData.setPaymentStatus(paymentStatus.getStatusName());
-                        }
-                        getUserData.setTicketId(foreignerData.getTicketId());
-                        getUserData.setGeneratedTime(foreignerData.getCreatedTime());
-                        Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(foreignerData.getSlotId());
-                        if (spotSlotOptional.isPresent()){
-                            SpotSlot spotSlot = spotSlotOptional.get();
-                            getUserData.setSlotTime(spotSlot.getSlotStartTime());
-                        }
-                        getUserData.setCreatedBy(foreignerData.getCreatedBy());
+                        if (foreignerData.getTicketId()!=null){
+                            GetUserData_ getUserData = new GetUserData_();
+                            getUserData.setName(foreignerData.getName());
+                            getUserData.setPhNumber(foreignerData.getPhNumber());
+                            getUserData.setAdult(foreignerData.getAdult());
+                            getUserData.setAdultCharge(foreignerData.getAdultGrandTotal());
+                            getUserData.setChild(foreignerData.getChild());
+                            getUserData.setChildCharge(foreignerData.getChildGrandTotal());
+                            getUserData.setGrandTotal(foreignerData.getGrandTotal());
+                            Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(foreignerData.getPaymentMode());
+                            if (paymentModeOptional.isPresent()){
+                                PaymentMode paymentMode = paymentModeOptional.get();
+                                getUserData.setPaymentModeName(paymentMode.getPaymentType());
+                            }
+                            Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(foreignerData.getPaymentStatusId());
+                            if (paymentStatusOptional.isPresent()){
+                                PaymentStatus paymentStatus = paymentStatusOptional.get();
+                                getUserData.setPaymentStatus(paymentStatus.getStatusName());
+                            }
+                            getUserData.setTicketId(foreignerData.getTicketId());
+                            getUserData.setGeneratedTime(foreignerData.getCreatedTime());
+                            Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(foreignerData.getSlotId());
+                            if (spotSlotOptional.isPresent()){
+                                SpotSlot spotSlot = spotSlotOptional.get();
+                                getUserData.setSlotTime(spotSlot.getSlotStartTime());
+                            }
+                            getUserData.setCreatedBy(foreignerData.getCreatedBy());
 //                        getUserData.setSeniorCitizen(0);
 //                        getUserData.setTeacher(0);
 //                        getUserData.setStudent(0);
 //                        getUserData.setDistrict("NoData");
-                        getUserDataList.add(getUserData);
+                            getUserDataList.add(getUserData);
+                        }
                     }
                     return new ResponseEntity<>(getUserDataList,HttpStatus.OK);
                 }
@@ -970,41 +1171,45 @@ SpotRegService {
 //                List<PublicDtoData> publicDtoDataList = new ArrayList<>();
                 if (!publicDataList.isEmpty()){
                     for (PublicData publicData : publicDataList){
-                        AllUserDataDto allUserDataDto = new AllUserDataDto();
-                        allUserDataDto.setName(publicData.getName());
-                        allUserDataDto.setPhNumber(publicData.getPhNumber());
-                        allUserDataDto.setAdultCount(publicData.getAdult());
-                        allUserDataDto.setChildCount(publicData.getChild());
-                        allUserDataDto.setSeniorCitizenCount(publicData.getSeniorCitizen());
-                        allUserDataDto.setOrderId(publicData.getOrderId());
+                        if (publicData.getTicketId()!=null){
+                            AllUserDataDto allUserDataDto = new AllUserDataDto();
+                            allUserDataDto.setName(publicData.getName());
+                            allUserDataDto.setPhNumber(publicData.getPhNumber());
+                            allUserDataDto.setAdultCount(publicData.getAdult());
+                            allUserDataDto.setAdultCharge(publicData.getAdultGrandTotal());
+                            allUserDataDto.setChildCount(publicData.getChild());
+                            allUserDataDto.setChildCharge(publicData.getChildGrandTotal());
+                            allUserDataDto.setSeniorCitizenCount(publicData.getSeniorCitizen());
+                            allUserDataDto.setOrderId(publicData.getOrderId());
 
-                        Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(publicData.getPaymentMode());
-                        if (paymentModeOptional.isPresent()){
-                            PaymentMode paymentMode = paymentModeOptional.get();
-                            allUserDataDto.setPaymentModeName(paymentMode.getPaymentType());
+                            Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(publicData.getPaymentMode());
+                            if (paymentModeOptional.isPresent()){
+                                PaymentMode paymentMode = paymentModeOptional.get();
+                                allUserDataDto.setPaymentModeName(paymentMode.getPaymentType());
+                            }
+
+                            Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(publicData.getPaymentStatusId());
+                            if (paymentStatusOptional.isPresent()){
+                                PaymentStatus paymentStatus = paymentStatusOptional.get();
+                                allUserDataDto.setPaymentStatusName(paymentStatus.getStatusName());
+                            }
+
+                            allUserDataDto.setVisitDate(publicData.getVisitDate());
+
+                            Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(publicData.getSlotId());
+                            if (spotSlotOptional.isPresent()){
+                                SpotSlot spotSlot = spotSlotOptional.get();
+                                allUserDataDto.setSlotTime(spotSlot.getSlotStartTime());
+                            }
+
+                            allUserDataDto.setGrandTotal(publicData.getGrandTotal());
+                            allUserDataDto.setTicketId(publicData.getTicketId());
+                            allUserDataDto.setPaymentId(publicData.getPaymentId());
+                            allUserDataDto.setGeneratedTime(publicData.getCreatedTime());
+                            allUserDataDto.setCreatedBy(publicData.getCreatedBy());
+
+                            allUserDataDtoList.add(allUserDataDto);
                         }
-
-                        Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(publicData.getPaymentStatusId());
-                        if (paymentStatusOptional.isPresent()){
-                            PaymentStatus paymentStatus = paymentStatusOptional.get();
-                            allUserDataDto.setPaymentStatusName(paymentStatus.getStatusName());
-                        }
-
-                        allUserDataDto.setVisitDate(publicData.getVisitDate());
-
-                        Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(publicData.getSlotId());
-                        if (spotSlotOptional.isPresent()){
-                            SpotSlot spotSlot = spotSlotOptional.get();
-                            allUserDataDto.setSlotTime(spotSlot.getSlotStartTime());
-                        }
-
-                        allUserDataDto.setGrandTotal(publicData.getGrandTotal());
-                        allUserDataDto.setTicketId(publicData.getTicketId());
-                        allUserDataDto.setPaymentId(publicData.getPaymentId());
-                        allUserDataDto.setGeneratedTime(publicData.getCreatedTime());
-                        allUserDataDto.setCreatedBy(publicData.getCreatedBy());
-
-                        allUserDataDtoList.add(allUserDataDto);
                     }
 //                    allUserDataDto.setPublicDtoDataList(publicDtoDataList);
 //                    allUserDataDtoList.add(allUserDataDto);
@@ -1016,37 +1221,44 @@ SpotRegService {
                 List<InstitutionData> institutionDataList = institutionDataRepo.findByVisitDateBetween(startDate,endDate);
                 if (!institutionDataList.isEmpty()){
                     for (InstitutionData institutionData : institutionDataList){
-                        AllUserDataDto allUserDataDto = new AllUserDataDto();
-                        allUserDataDto.setName(institutionData.getName());
-                        allUserDataDto.setPhNumber(institutionData.getPhNumber());
-                        allUserDataDto.setDistrict(institutionData.getDistrict());
-                        allUserDataDto.setTeacherCount(institutionData.getTeacher());
-                        allUserDataDto.setStudentCount(institutionData.getStudent());
-                        allUserDataDto.setOrderId(institutionData.getOrderId());
-                        allUserDataDto.setGrandTotal(institutionData.getGrandTotal());
-                        Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(institutionData.getPaymentMode());
-                        if (paymentModeOptional.isPresent()){
-                            PaymentMode paymentMode = paymentModeOptional.get();
-                            allUserDataDto.setPaymentModeName(paymentMode.getPaymentType());
-                        }
-                        Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(institutionData.getPaymentStatusId());
-                        if (paymentStatusOptional.isPresent()){
-                            PaymentStatus paymentStatus = paymentStatusOptional.get();
-                            allUserDataDto.setPaymentStatusName(paymentStatus.getStatusName());
-                        }
-                        allUserDataDto.setVisitDate(institutionData.getVisitDate());
-                        Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(institutionData.getSlotId());
-                        if (spotSlotOptional.isPresent()){
-                            SpotSlot spotSlot = spotSlotOptional.get();
-                            allUserDataDto.setSlotTime(spotSlot.getSlotStartTime());
-                        }
-                        allUserDataDto.setTicketId(institutionData.getTicketId());
-                        allUserDataDto.setOrderId(institutionData.getOrderId());
-                        allUserDataDto.setPaymentId(institutionData.getPaymentId());
-                        allUserDataDto.setCreatedBy(institutionData.getCreatedBy());
-                        allUserDataDto.setGeneratedTime(institutionData.getCreatedTime());
+                       if (institutionData.getTicketId()!=null){
+                           AllUserDataDto allUserDataDto = new AllUserDataDto();
+                           allUserDataDto.setName(institutionData.getName());
+                           allUserDataDto.setPhNumber(institutionData.getPhNumber());
+                           allUserDataDto.setDistrict(institutionData.getDistrict());
+                           allUserDataDto.setTeacherCount(institutionData.getTeacher());
+                           allUserDataDto.setTeacherCharge(institutionData.getTeacherTicketCharge());
+                           allUserDataDto.setStudentCount(institutionData.getStudent());
+                           allUserDataDto.setStudentCharge(institutionData.getStudentTicketCharge());
+                           allUserDataDto.setStudentDiscount(institutionData.getStudentDiscount());
+                           allUserDataDto.setPayableStudentCharge(institutionData.getPayableStudentCharge());
+                           allUserDataDto.setDiscountAmount(institutionData.getDiscountAmount());
+                           allUserDataDto.setOrderId(institutionData.getOrderId());
+                           allUserDataDto.setGrandTotal(institutionData.getGrandTotal());
+                           Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(institutionData.getPaymentMode());
+                           if (paymentModeOptional.isPresent()){
+                               PaymentMode paymentMode = paymentModeOptional.get();
+                               allUserDataDto.setPaymentModeName(paymentMode.getPaymentType());
+                           }
+                           Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(institutionData.getPaymentStatusId());
+                           if (paymentStatusOptional.isPresent()){
+                               PaymentStatus paymentStatus = paymentStatusOptional.get();
+                               allUserDataDto.setPaymentStatusName(paymentStatus.getStatusName());
+                           }
+                           allUserDataDto.setVisitDate(institutionData.getVisitDate());
+                           Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(institutionData.getSlotId());
+                           if (spotSlotOptional.isPresent()){
+                               SpotSlot spotSlot = spotSlotOptional.get();
+                               allUserDataDto.setSlotTime(spotSlot.getSlotStartTime());
+                           }
+                           allUserDataDto.setTicketId(institutionData.getTicketId());
+                           allUserDataDto.setOrderId(institutionData.getOrderId());
+                           allUserDataDto.setPaymentId(institutionData.getPaymentId());
+                           allUserDataDto.setCreatedBy(institutionData.getCreatedBy());
+                           allUserDataDto.setGeneratedTime(institutionData.getCreatedTime());
 //                        institutionDtoDataList.add(institutionDtoData);
-                        allUserDataDtoList.add(allUserDataDto);
+                           allUserDataDtoList.add(allUserDataDto);
+                       }
                     }
 //                    allUserDataDto.setInstitutionDtoDataList(institutionDtoDataList);
 //                    allUserDataDtoList.add(allUserDataDto);
@@ -1058,12 +1270,146 @@ SpotRegService {
                 List<ForeignerData> foreignerDataList = foreignerDataRepo.findByVisitDateBetween(startDate,endDate);
                 if (!foreignerDataList.isEmpty()){
                     for (ForeignerData foreignerData : foreignerDataList){
+                        if (foreignerData.getTicketId()!=null){
+                            AllUserDataDto allUserDataDto = new AllUserDataDto();
+                            allUserDataDto.setName(foreignerData.getName());
+                            allUserDataDto.setPhNumber(foreignerData.getPhNumber());
+                            allUserDataDto.setAdultCount(foreignerData.getAdult());
+                            allUserDataDto.setAdultCharge(foreignerData.getAdultGrandTotal());
+                            allUserDataDto.setChildCount(foreignerData.getChild());
+                            allUserDataDto.setChildCharge(foreignerData.getChildGrandTotal());
+                            allUserDataDto.setVisitDate(foreignerData.getVisitDate());
+                            Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(foreignerData.getSlotId());
+                            if (spotSlotOptional.isPresent()){
+                                SpotSlot spotSlot = spotSlotOptional.get();
+                                allUserDataDto.setSlotTime(spotSlot.getSlotStartTime());
+                            }
+                            allUserDataDto.setGrandTotal(foreignerData.getGrandTotal());
+                            Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(foreignerData.getPaymentMode());
+                            if (paymentModeOptional.isPresent()){
+                                PaymentMode paymentMode = paymentModeOptional.get();
+                                allUserDataDto.setPaymentModeName(paymentMode.getPaymentType());
+                            }
+                            Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(foreignerData.getPaymentStatusId());
+                            if (paymentStatusOptional.isPresent()){
+                                PaymentStatus paymentStatus = paymentStatusOptional.get();
+                                allUserDataDto.setPaymentStatusName(paymentStatus.getStatusName());
+                            }
+                            allUserDataDto.setTicketId(foreignerData.getTicketId());
+                            allUserDataDto.setOrderId(foreignerData.getOrderId());
+                            allUserDataDto.setPaymentId(foreignerData.getPaymentId());
+                            allUserDataDto.setGeneratedTime(foreignerData.getCreatedTime());
+                            allUserDataDto.setCreatedBy(foreignerData.getCreatedBy());
+                            allUserDataDtoList.add(allUserDataDto);
+                        }
+                    }
+//                    allUserDataDto.setForeignerDtoDataList(foreignerDtoDataList);
+//                    allUserDataDtoList.add(allUserDataDto);
+                    return new ResponseEntity<>(allUserDataDtoList,HttpStatus.OK);
+                }
+            }else {
+                return new ResponseEntity<>(new ArrayList<>(),HttpStatus.NO_CONTENT);
+            }
+        }else {
+
+            List<PublicData> publicDataList = publicRepo.findAll();
+            if (!publicDataList.isEmpty()){
+//                List<PublicDtoData> publicDtoDataList = new ArrayList<>();
+                for (PublicData publicData : publicDataList){
+                   if (publicData.getTicketId()!=null){
+                       AllUserDataDto allUserDataDto = new AllUserDataDto();
+                       allUserDataDto.setName(publicData.getName());
+                       allUserDataDto.setPhNumber(publicData.getPhNumber());
+                       allUserDataDto.setAdultCount(publicData.getAdult());
+                       allUserDataDto.setAdultCharge(publicData.getAdultGrandTotal());
+                       allUserDataDto.setChildCount(publicData.getChild());
+                       allUserDataDto.setChildCharge(publicData.getChildGrandTotal());
+                       allUserDataDto.setSeniorCitizenCount(publicData.getSeniorCitizen());
+                       allUserDataDto.setOrderId(publicData.getOrderId());
+                       allUserDataDto.setPaymentId(publicData.getPaymentId());
+                       allUserDataDto.setTicketId(publicData.getTicketId());
+
+                       Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(publicData.getSlotId());
+                       if (spotSlotOptional.isPresent()){
+                           SpotSlot spotSlot = spotSlotOptional.get();
+                           allUserDataDto.setSlotTime(spotSlot.getSlotStartTime());
+                       }
+                       allUserDataDto.setGrandTotal(publicData.getGrandTotal());
+                       Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(publicData.getPaymentMode());
+                       if (paymentModeOptional.isPresent()){
+                           PaymentMode paymentMode = paymentModeOptional.get();
+                           allUserDataDto.setPaymentModeName(paymentMode.getPaymentType());
+                       }
+                       Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(publicData.getPaymentStatusId());
+                       if (paymentStatusOptional.isPresent()){
+                           PaymentStatus paymentStatus = paymentStatusOptional.get();
+                           allUserDataDto.setPaymentStatusName(paymentStatus.getStatusName());
+                       }
+                       allUserDataDto.setTicketId(publicData.getTicketId());
+                       allUserDataDto.setOrderId(publicData.getOrderId());
+                       allUserDataDto.setPaymentId(publicData.getPaymentId());
+                       allUserDataDto.setGeneratedTime(publicData.getCreatedTime());
+                       allUserDataDto.setCreatedBy(publicData.getCreatedBy());
+                       allUserDataDtoList.add(allUserDataDto);
+                   }
+                }
+//                allUserDataDto.setPublicDtoDataList(publicDtoDataList);
+
+            }
+            List<InstitutionData> institutionDataList = institutionDataRepo.findAll();
+            if (!institutionDataList.isEmpty()){
+//                List<InstitutionDtoData> institutionDtoDataList = new ArrayList<>();
+                for (InstitutionData institutionData : institutionDataList){
+                   if (institutionData.getTicketId()!=null){
+                       AllUserDataDto allUserDataDto = new AllUserDataDto();
+                       allUserDataDto.setName(institutionData.getName());
+                       allUserDataDto.setPhNumber(institutionData.getPhNumber());
+                       allUserDataDto.setDistrict(institutionData.getDistrict());
+                       allUserDataDto.setTeacherCount(institutionData.getTeacher());
+                       allUserDataDto.setTeacherCharge(institutionData.getTeacherTicketCharge());
+                       allUserDataDto.setStudentCount(institutionData.getStudent());
+                       allUserDataDto.setStudentCharge(institutionData.getStudentTicketCharge());
+                       allUserDataDto.setStudentDiscount(institutionData.getStudentDiscount());
+                       allUserDataDto.setPayableStudentCharge(institutionData.getPayableStudentCharge());
+                       allUserDataDto.setDiscountAmount(institutionData.getDiscountAmount());
+                       allUserDataDto.setGrandTotal(institutionData.getGrandTotal());
+                       Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(institutionData.getPaymentMode());
+                       if (paymentModeOptional.isPresent()){
+                           PaymentMode paymentMode = paymentModeOptional.get();
+                           allUserDataDto.setPaymentModeName(paymentMode.getPaymentType());
+                       }
+                       Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(institutionData.getPaymentStatusId());
+                       if (paymentStatusOptional.isPresent()){
+                           PaymentStatus paymentStatus = paymentStatusOptional.get();
+                           allUserDataDto.setPaymentStatusName(paymentStatus.getStatusName());
+                       }
+                       allUserDataDto.setVisitDate(institutionData.getVisitDate());
+                       Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(institutionData.getSlotId());
+                       if (spotSlotOptional.isPresent()){
+                           SpotSlot spotSlot = spotSlotOptional.get();
+                           allUserDataDto.setSlotTime(spotSlot.getSlotStartTime());
+                       }
+                       allUserDataDto.setTicketId(institutionData.getTicketId());
+                       allUserDataDto.setOrderId(institutionData.getOrderId());
+                       allUserDataDto.setPaymentId(institutionData.getPaymentId());
+                       allUserDataDto.setCreatedBy(institutionData.getCreatedBy());
+                       allUserDataDto.setGeneratedTime(institutionData.getCreatedTime());
+                       allUserDataDtoList.add(allUserDataDto);
+                   }
+                }
+            }
+            List<ForeignerData> foreignerDataList = foreignerDataRepo.findAll();
+//            List<ForeignerDtoData> foreignerDtoDataList = new ArrayList<>();
+            if (!foreignerDataList.isEmpty()){
+                for (ForeignerData foreignerData : foreignerDataList){
+                    if (foreignerData.getTicketId()!=null){
                         AllUserDataDto allUserDataDto = new AllUserDataDto();
                         allUserDataDto.setName(foreignerData.getName());
                         allUserDataDto.setPhNumber(foreignerData.getPhNumber());
                         allUserDataDto.setAdultCount(foreignerData.getAdult());
+                        allUserDataDto.setAdultCharge(foreignerData.getAdultGrandTotal());
                         allUserDataDto.setChildCount(foreignerData.getChild());
-
+                        allUserDataDto.setChildCharge(foreignerData.getChildGrandTotal());
                         allUserDataDto.setVisitDate(foreignerData.getVisitDate());
                         Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(foreignerData.getSlotId());
                         if (spotSlotOptional.isPresent()){
@@ -1083,126 +1429,11 @@ SpotRegService {
                         }
                         allUserDataDto.setTicketId(foreignerData.getTicketId());
                         allUserDataDto.setOrderId(foreignerData.getOrderId());
-                        allUserDataDto.setPaymentId(foreignerData.getPaymentId());
+                        allUserDataDto.setPaymentId(allUserDataDto.getPaymentId());
                         allUserDataDto.setGeneratedTime(foreignerData.getCreatedTime());
                         allUserDataDto.setCreatedBy(foreignerData.getCreatedBy());
                         allUserDataDtoList.add(allUserDataDto);
                     }
-//                    allUserDataDto.setForeignerDtoDataList(foreignerDtoDataList);
-//                    allUserDataDtoList.add(allUserDataDto);
-                    return new ResponseEntity<>(allUserDataDtoList,HttpStatus.OK);
-                }
-            }
-        }else {
-
-            List<PublicData> publicDataList = publicRepo.findAll();
-            if (!publicDataList.isEmpty()){
-//                List<PublicDtoData> publicDtoDataList = new ArrayList<>();
-                for (PublicData publicData : publicDataList){
-                    AllUserDataDto allUserDataDto = new AllUserDataDto();
-                    allUserDataDto.setName(publicData.getName());
-                    allUserDataDto.setPhNumber(publicData.getPhNumber());
-                    allUserDataDto.setAdultCount(publicData.getAdult());
-                    allUserDataDto.setChildCount(publicData.getChild());
-                    allUserDataDto.setSeniorCitizenCount(publicData.getSeniorCitizen());
-                    allUserDataDto.setOrderId(publicData.getOrderId());
-                    allUserDataDto.setPaymentId(publicData.getPaymentId());
-                    allUserDataDto.setTicketId(publicData.getTicketId());
-
-                    Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(publicData.getSlotId());
-                    if (spotSlotOptional.isPresent()){
-                        SpotSlot spotSlot = spotSlotOptional.get();
-                        allUserDataDto.setSlotTime(spotSlot.getSlotStartTime());
-                    }
-                    allUserDataDto.setGrandTotal(publicData.getGrandTotal());
-                    Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(publicData.getPaymentMode());
-                    if (paymentModeOptional.isPresent()){
-                        PaymentMode paymentMode = paymentModeOptional.get();
-                        allUserDataDto.setPaymentModeName(paymentMode.getPaymentType());
-                    }
-                    Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(publicData.getPaymentStatusId());
-                    if (paymentStatusOptional.isPresent()){
-                        PaymentStatus paymentStatus = paymentStatusOptional.get();
-                        allUserDataDto.setPaymentStatusName(paymentStatus.getStatusName());
-                    }
-                    allUserDataDto.setTicketId(publicData.getTicketId());
-                    allUserDataDto.setOrderId(publicData.getOrderId());
-                    allUserDataDto.setPaymentId(publicData.getPaymentId());
-                    allUserDataDto.setGeneratedTime(publicData.getCreatedTime());
-                    allUserDataDto.setCreatedBy(publicData.getCreatedBy());
-                    allUserDataDtoList.add(allUserDataDto);
-                }
-//                allUserDataDto.setPublicDtoDataList(publicDtoDataList);
-
-            }
-            List<InstitutionData> institutionDataList = institutionDataRepo.findAll();
-            if (!institutionDataList.isEmpty()){
-//                List<InstitutionDtoData> institutionDtoDataList = new ArrayList<>();
-                for (InstitutionData institutionData : institutionDataList){
-                    AllUserDataDto allUserDataDto = new AllUserDataDto();
-                    allUserDataDto.setName(institutionData.getName());
-                    allUserDataDto.setPhNumber(institutionData.getPhNumber());
-                    allUserDataDto.setDistrict(institutionData.getDistrict());
-                    allUserDataDto.setTeacherCount(institutionData.getTeacher());
-                    allUserDataDto.setStudentCount(institutionData.getStudent());
-                    allUserDataDto.setGrandTotal(institutionData.getGrandTotal());
-                    Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(institutionData.getPaymentMode());
-                    if (paymentModeOptional.isPresent()){
-                        PaymentMode paymentMode = paymentModeOptional.get();
-                        allUserDataDto.setPaymentModeName(paymentMode.getPaymentType());
-                    }
-                    Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(institutionData.getPaymentStatusId());
-                    if (paymentStatusOptional.isPresent()){
-                        PaymentStatus paymentStatus = paymentStatusOptional.get();
-                        allUserDataDto.setPaymentStatusName(paymentStatus.getStatusName());
-                    }
-                    allUserDataDto.setVisitDate(institutionData.getVisitDate());
-                    Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(institutionData.getSlotId());
-                    if (spotSlotOptional.isPresent()){
-                        SpotSlot spotSlot = spotSlotOptional.get();
-                        allUserDataDto.setSlotTime(spotSlot.getSlotStartTime());
-                    }
-                    allUserDataDto.setTicketId(institutionData.getTicketId());
-                    allUserDataDto.setOrderId(institutionData.getOrderId());
-                    allUserDataDto.setPaymentId(institutionData.getPaymentId());
-                    allUserDataDto.setCreatedBy(institutionData.getCreatedBy());
-                    allUserDataDto.setGeneratedTime(institutionData.getCreatedTime());
-                    allUserDataDtoList.add(allUserDataDto);
-                }
-            }
-            List<ForeignerData> foreignerDataList = foreignerDataRepo.findAll();
-//            List<ForeignerDtoData> foreignerDtoDataList = new ArrayList<>();
-            if (!foreignerDataList.isEmpty()){
-                for (ForeignerData foreignerData : foreignerDataList){
-                    AllUserDataDto allUserDataDto = new AllUserDataDto();
-                    allUserDataDto.setName(foreignerData.getName());
-                    allUserDataDto.setPhNumber(foreignerData.getPhNumber());
-                    allUserDataDto.setAdultCount(foreignerData.getAdult());
-                    allUserDataDto.setChildCount(foreignerData.getChild());
-
-                    allUserDataDto.setVisitDate(foreignerData.getVisitDate());
-                    Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(foreignerData.getSlotId());
-                    if (spotSlotOptional.isPresent()){
-                        SpotSlot spotSlot = spotSlotOptional.get();
-                        allUserDataDto.setSlotTime(spotSlot.getSlotStartTime());
-                    }
-                    allUserDataDto.setGrandTotal(foreignerData.getGrandTotal());
-                    Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(foreignerData.getPaymentMode());
-                    if (paymentModeOptional.isPresent()){
-                        PaymentMode paymentMode = paymentModeOptional.get();
-                        allUserDataDto.setPaymentModeName(paymentMode.getPaymentType());
-                    }
-                    Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(foreignerData.getPaymentStatusId());
-                    if (paymentStatusOptional.isPresent()){
-                        PaymentStatus paymentStatus = paymentStatusOptional.get();
-                        allUserDataDto.setPaymentStatusName(paymentStatus.getStatusName());
-                    }
-                    allUserDataDto.setTicketId(foreignerData.getTicketId());
-                    allUserDataDto.setOrderId(foreignerData.getOrderId());
-                    allUserDataDto.setPaymentId(allUserDataDto.getPaymentId());
-                    allUserDataDto.setGeneratedTime(foreignerData.getCreatedTime());
-                    allUserDataDto.setCreatedBy(foreignerData.getCreatedBy());
-                    allUserDataDtoList.add(allUserDataDto);
                 }
 //                allUserDataDto.setForeignerDtoDataList(foreignerDtoDataList);
 //                allUserDataDtoList.add(allUserDataDto);
@@ -1212,96 +1443,163 @@ SpotRegService {
         return new ResponseEntity<>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    public ResponseEntity<?> CategoryBasedTotalRevenueByDate(LocalDate visitDate) {
+    public ResponseEntity<List<GetRevenueDetails>> CategoryBasedTotalRevenueByDate(LocalDate visitDate) {
         List<PublicData> publicDataList = publicRepo.findByVisitDate(visitDate);
         List<InstitutionData> institutionDataList = institutionDataRepo.findByVisitDate(visitDate);
         List<ForeignerData> foreignerDataList = foreignerDataRepo.findByVisitDate(visitDate);
         Double revenueAmount = 0.0,totalRevenue=0.0;
+        List<GetRevenueDetails> getRevenueDetailsList = new ArrayList<>();
         GetRevenueDetails getRevenueDetails = new GetRevenueDetails();
-        if (!publicDataList.isEmpty()){
-            for (PublicData publicData : publicDataList){
-                revenueAmount+=publicData.getGrandTotal();
+        if (publicDataList.isEmpty() && institutionDataList.isEmpty() && foreignerDataList.isEmpty()){
+            return new ResponseEntity<>(new ArrayList<>(),HttpStatus.NO_CONTENT);
+        }else {
+            if (!publicDataList.isEmpty()){
+                for (PublicData publicData : publicDataList){
+                    if (publicData.getTicketId()!=null){
+                        revenueAmount+=publicData.getGrandTotal();
+                    }
+                }
+                totalRevenue+=revenueAmount;
+                getRevenueDetails.setPublicRevenue(revenueAmount);
             }
-            totalRevenue+=revenueAmount;
-            getRevenueDetails.setPublicRevenue(revenueAmount);
-        }
-        if (!institutionDataList.isEmpty()){
-            for (InstitutionData institutionData : institutionDataList){
-                revenueAmount+=institutionData.getGrandTotal();
+            if (!institutionDataList.isEmpty()){
+                for (InstitutionData institutionData : institutionDataList){
+                    if (institutionData.getTicketId()!=null){
+                        revenueAmount+=institutionData.getGrandTotal();
+                    }
+                }
+                totalRevenue+=revenueAmount;
+                getRevenueDetails.setInstitutionRevenue(revenueAmount);
             }
-            totalRevenue+=revenueAmount;
-            getRevenueDetails.setInstitutionRevenue(revenueAmount);
-        }
-        if (!foreignerDataList.isEmpty()){
-            for (ForeignerData foreignerData :foreignerDataList){
-                revenueAmount+=foreignerData.getGrandTotal();
+            if (!foreignerDataList.isEmpty()){
+                for (ForeignerData foreignerData :foreignerDataList){
+                    if (foreignerData.getTicketId()!=null){
+                        revenueAmount+=foreignerData.getGrandTotal();
+                    }
+                }
+                totalRevenue+=revenueAmount;
+                getRevenueDetails.setForeignerRevenue(revenueAmount);
             }
-            totalRevenue+=revenueAmount;
-            getRevenueDetails.setForeignerRevenue(revenueAmount);
-            getRevenueDetails.setOverAllRevenue(totalRevenue);
+            getRevenueDetails.setOverAllIncome(totalRevenue);
+            getRevenueDetailsList.add(getRevenueDetails);
+            return new ResponseEntity<>(getRevenueDetailsList,HttpStatus.OK);
         }
-        return new ResponseEntity<>(getRevenueDetails,HttpStatus.OK);
     }
+
+//    public ResponseEntity<?> CategoryBasedTotalRevenueByDate(LocalDate visitDate) {
+//        List<PublicData> publicDataList = publicRepo.findByVisitDate(visitDate);
+//        List<InstitutionData> institutionDataList = institutionDataRepo.findByVisitDate(visitDate);
+//        List<ForeignerData> foreignerDataList = foreignerDataRepo.findByVisitDate(visitDate);
+//        Double revenueAmount = 0.0,totalRevenue=0.0;
+//        GetRevenueDetails getRevenueDetails = new GetRevenueDetails();
+//        if (publicDataList.isEmpty() && institutionDataList.isEmpty() && foreignerDataList.isEmpty()){
+//            return new ResponseEntity<>("No data",HttpStatus.NO_CONTENT);
+//        }else {
+//            if (!publicDataList.isEmpty()){
+//                for (PublicData publicData : publicDataList){
+//                    revenueAmount+=publicData.getGrandTotal();
+//                }
+//                totalRevenue+=revenueAmount;
+//                getRevenueDetails.setPublicRevenue(revenueAmount);
+//            }
+//            if (!institutionDataList.isEmpty()){
+//                for (InstitutionData institutionData : institutionDataList){
+//                    revenueAmount+=institutionData.getGrandTotal();
+//                }
+//                totalRevenue+=revenueAmount;
+//                getRevenueDetails.setInstitutionRevenue(revenueAmount);
+//            }
+//            if (!foreignerDataList.isEmpty()){
+//                for (ForeignerData foreignerData :foreignerDataList){
+//                    revenueAmount+=foreignerData.getGrandTotal();
+//                }
+//                totalRevenue+=revenueAmount;
+//                getRevenueDetails.setForeignerRevenue(revenueAmount);
+//            }
+//            getRevenueDetails.setOverAllIncome(totalRevenue);
+//            return new ResponseEntity<>(getRevenueDetails,HttpStatus.OK);
+//        }
+//
+//    }
 
     public ResponseEntity<?> totalPublicVisitorsCountByDate(LocalDate vDate) {
         List<PublicData> publicDataList = publicRepo.findByVisitDate(vDate);
         Integer adultCount =0,childCount=0,seniorCitizenCount=0,count=0;
         List<PublicVisitorsDto> publicVisitorsDtoList = new ArrayList<>();
-        if (!publicDataList.isEmpty()){
+        if (publicDataList.isEmpty()){
+            return new ResponseEntity<>("No Data",HttpStatus.NO_CONTENT);
+        }else {
+            if (!publicDataList.isEmpty()){
 
-            PublicVisitorsDto publicVisitorsDto = new PublicVisitorsDto();
-            for (PublicData publicData : publicDataList){
-                adultCount+=publicData.getAdult();
-                childCount+=publicData.getChild();
-                seniorCitizenCount+=publicData.getSeniorCitizen();
-                count++;
+                PublicVisitorsDto publicVisitorsDto = new PublicVisitorsDto();
+                for (PublicData publicData : publicDataList){
+                    if (publicData.getTicketId()!=null){
+                        adultCount+=publicData.getAdult();
+                        childCount+=publicData.getChild();
+                        seniorCitizenCount+=publicData.getSeniorCitizen();
+                        count++;
+                    }
+                }
+                publicVisitorsDto.setAdultCount(adultCount);
+                publicVisitorsDto.setChildCount(childCount);
+                publicVisitorsDto.setSeniorCitizen(seniorCitizenCount);
+                publicVisitorsDto.setPublicTicketCount(count);
+                publicVisitorsDtoList.add(publicVisitorsDto);
             }
-            publicVisitorsDto.setAdultCount(adultCount);
-            publicVisitorsDto.setChildCount(childCount);
-            publicVisitorsDto.setSeniorCitizen(seniorCitizenCount);
-            publicVisitorsDto.setPublicTicketCount(count);
-            publicVisitorsDtoList.add(publicVisitorsDto);
+            return new ResponseEntity<>(publicVisitorsDtoList,HttpStatus.OK);
         }
-        return new ResponseEntity<>(publicVisitorsDtoList,HttpStatus.OK);
     }
 
     public ResponseEntity<?> totalInstitutionVisitorsCountByDate(LocalDate vDate) {
         List<InstitutionData> institutionDataList = institutionDataRepo.findByVisitDate(vDate);
         Integer teacherCount =0,studentCount=0,count=0;
         List<InstitutionVisitorsDto> institutionVisitorsDtoList = new ArrayList<>();
-        if (!institutionDataList.isEmpty()){
-            InstitutionVisitorsDto institutionVisitorsDto = new InstitutionVisitorsDto();
-            for (InstitutionData institutionData : institutionDataList){
-                teacherCount+=institutionData.getTeacher();
-                studentCount+=institutionData.getStudent();
-                count++;
+        if (institutionDataList.isEmpty()){
+            return new ResponseEntity<>("No Data",HttpStatus.NO_CONTENT);
+        }else {
+            if (!institutionDataList.isEmpty()){
+                InstitutionVisitorsDto institutionVisitorsDto = new InstitutionVisitorsDto();
+                for (InstitutionData institutionData : institutionDataList){
+                    if (institutionData.getTicketId()!=null){
+                        teacherCount+=institutionData.getTeacher();
+                        studentCount+=institutionData.getStudent();
+                        count++;
+                    }
+                }
+                institutionVisitorsDto.setInstitutionTicketCount(count);
+                institutionVisitorsDto.setTeacherCount(teacherCount);
+                institutionVisitorsDto.setStudnetCount(studentCount);
+                institutionVisitorsDtoList.add(institutionVisitorsDto);
             }
-            institutionVisitorsDto.setInstitutionTicketCount(count);
-            institutionVisitorsDto.setTeacherCount(teacherCount);
-            institutionVisitorsDto.setStudnetCount(studentCount);
-            institutionVisitorsDtoList.add(institutionVisitorsDto);
+            return new ResponseEntity<>(institutionVisitorsDtoList,HttpStatus.OK);
         }
-        return new ResponseEntity<>(institutionVisitorsDtoList,HttpStatus.OK);
+
     }
 
     public ResponseEntity<?> totalForeignerVisitorsCountByDate(LocalDate vDate) {
         List<ForeignerData> foreignerDataList = foreignerDataRepo.findByVisitDate(vDate);
         Integer adultCount =0,childCount=0,count=0;
         List<ForeignerVisitorsDto> foreignerVisitorsDtoList = new ArrayList<>();
-        if (!foreignerDataList.isEmpty()){
-            ForeignerVisitorsDto foreignerVisitorsDto = new ForeignerVisitorsDto();
-            for (ForeignerData foreignerData : foreignerDataList){
-                adultCount+=foreignerData.getAdult();
-                childCount+=foreignerData.getChild();
-                count++;
+        if (foreignerDataList.isEmpty()){
+            return new ResponseEntity<>("No data",HttpStatus.NO_CONTENT);
+        }else {
+            if (!foreignerDataList.isEmpty()){
+                ForeignerVisitorsDto foreignerVisitorsDto = new ForeignerVisitorsDto();
+                for (ForeignerData foreignerData : foreignerDataList){
+                    if (foreignerData.getTicketId()!=null){
+                        adultCount+=foreignerData.getAdult();
+                        childCount+=foreignerData.getChild();
+                        count++;
+                    }
+                }
+                foreignerVisitorsDto.setForeignerTicketCount(count);
+                foreignerVisitorsDto.setForeignAdult(adultCount);
+                foreignerVisitorsDto.setForeignChild(childCount);
+                foreignerVisitorsDtoList.add(foreignerVisitorsDto);
+                return new ResponseEntity<>(foreignerVisitorsDto,HttpStatus.OK);
             }
-            foreignerVisitorsDto.setForeignerTicketCount(count);
-            foreignerVisitorsDto.setForeignAdult(adultCount);
-            foreignerVisitorsDto.setForeignChild(childCount);
-            foreignerVisitorsDtoList.add(foreignerVisitorsDto);
-            return new ResponseEntity<>(foreignerVisitorsDto,HttpStatus.OK);
+            return new ResponseEntity<>("Something went wrong",HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>("Something went wrong",HttpStatus.BAD_REQUEST);
     }
 
     public ResponseEntity<?> totalVisitorSCountByDate(LocalDate vDate) {
@@ -1313,63 +1611,75 @@ SpotRegService {
         VisitsCountDto visitsCountDto = new VisitsCountDto();
 
         Integer adultCount =0,childCount=0,seniorCitizenCount=0,count=0,totalCount=0;
-
-        if (!publicDataList.isEmpty()){
+        if (publicDataList.isEmpty()&&institutionDataList.isEmpty()&& foreignerDataList.isEmpty()){
+            return new ResponseEntity<>("No data",HttpStatus.NO_CONTENT);
+        }else {
+            if (!publicDataList.isEmpty()){
 //            List<PublicVisitorsDto> publicVisitorsDtoList = new ArrayList<>();
 //            PublicVisitorsDto publicVisitorsDto = new PublicVisitorsDto();
 
-            for (PublicData publicData : publicDataList){
-                adultCount+=publicData.getAdult();
-                childCount+=publicData.getChild();
-                seniorCitizenCount+=publicData.getSeniorCitizen();
-                count++;
-            }
-            totalCount+=count;
-            visitsCountDto.setAdultCount(adultCount);
-            visitsCountDto.setChildCount(childCount);
-            visitsCountDto.setSeniorCitizen(seniorCitizenCount);
-            visitsCountDto.setPublicTicketCount(count);
-            //visitsCountDtoList.add(visitsCountDto);
+                for (PublicData publicData : publicDataList){
+                    if (publicData.getTicketId()!=null){
+                        adultCount+=publicData.getAdult();
+                        childCount+=publicData.getChild();
+                        seniorCitizenCount+=publicData.getSeniorCitizen();
+                        count++;
+                    }
+                }
+                totalCount+=count;
+                visitsCountDto.setAdultCount(adultCount);
+                visitsCountDto.setChildCount(childCount);
+                visitsCountDto.setSeniorCitizen(seniorCitizenCount);
+                visitsCountDto.setPublicTicketCount(count);
+                //visitsCountDtoList.add(visitsCountDto);
 //            visitsCountDto.setPublicVisitorsDtoList(publicVisitorsDtoList);
-            count=0;adultCount=0;childCount=0;
-        }
-        if (!institutionDataList.isEmpty()){
-            List<InstitutionVisitorsDto> institutionVisitorsDtoList = new ArrayList<>();
+                count=0;adultCount=0;childCount=0;
+            }
+            if (!institutionDataList.isEmpty()){
+                List<InstitutionVisitorsDto> institutionVisitorsDtoList = new ArrayList<>();
 //            InstitutionVisitorsDto institutionVisitorsDto = new InstitutionVisitorsDto();
 //            VisitsCountDto visitsCountDto = new VisitsCountDto();
-            for (InstitutionData institutionData:institutionDataList){
-                adultCount+=institutionData.getTeacher();
-                childCount+=institutionData.getStudent();
-                count++;
-            }
-            totalCount+=count;
-            visitsCountDto.setTeacherCount(adultCount);
-            visitsCountDto.setStudentCount(childCount);
-            visitsCountDto.setInstitutionTicketCount(count);
-            //visitsCountDtoList.add(visitsCountDto);
+                for (InstitutionData institutionData:institutionDataList){
+                    if (institutionData.getTicketId()!=null){
+                        adultCount+=institutionData.getTeacher();
+                        childCount+=institutionData.getStudent();
+                        count++;
+                    }
+                }
+                totalCount+=count;
+                visitsCountDto.setTeacherCount(adultCount);
+                visitsCountDto.setStudentCount(childCount);
+                visitsCountDto.setInstitutionTicketCount(count);
+                //visitsCountDtoList.add(visitsCountDto);
 //            visitsCountDto.setInstitutionVisitorsDtoList(institutionVisitorsDtoList);
-            count=0;adultCount=0;childCount=0;
-        }
-        if (!foreignerDataList.isEmpty()){
-            List<ForeignerVisitorsDto> foreignerVisitorsDtoList = new ArrayList<>();
+                count=0;adultCount=0;childCount=0;
+            }
+            if (!foreignerDataList.isEmpty()){
+                List<ForeignerVisitorsDto> foreignerVisitorsDtoList = new ArrayList<>();
 //            ForeignerVisitorsDto foreignerVisitorsDto = new ForeignerVisitorsDto();
 //            VisitsCountDto visitsCountDto = new VisitsCountDto();
-            for (ForeignerData foreignerData:foreignerDataList){
-                adultCount+=foreignerData.getAdult();
-                childCount+=foreignerData.getChild();
-                count++;
+                for (ForeignerData foreignerData:foreignerDataList){
+                    if (foreignerData.getTicketId()!=null){
+                        adultCount+=foreignerData.getAdult();
+                        childCount+=foreignerData.getChild();
+                        count++;
+                    }
+                }
+                totalCount+=count;
+                visitsCountDto.setForeignAdult(adultCount);
+                visitsCountDto.setForeignChild(childCount);
+                visitsCountDto.setForeignerTicketCount(count);
+
+//                visitsCountDtoList.add(visitsCountDto);
+//                return new ResponseEntity<>(visitsCountDtoList,HttpStatus.OK);
+//            visitsCountDto.setForeignerVisitorsDtoList(foreignerVisitorsDtoList);
+//            visitsCountDtoList.add(visitsCountDto);
             }
-            totalCount+=count;
-            visitsCountDto.setForeignAdult(adultCount);
-            visitsCountDto.setForeignChild(childCount);
-            visitsCountDto.setForeignerTicketCount(count);
             visitsCountDto.setTotalVisitsCount(totalCount);
             visitsCountDtoList.add(visitsCountDto);
             return new ResponseEntity<>(visitsCountDtoList,HttpStatus.OK);
-//            visitsCountDto.setForeignerVisitorsDtoList(foreignerVisitorsDtoList);
-//            visitsCountDtoList.add(visitsCountDto);
         }
-        return new ResponseEntity<>(null,HttpStatus.BAD_REQUEST);
+//        return new ResponseEntity<>(null,HttpStatus.BAD_REQUEST);
     }
 
     public ResponseEntity<List<VisitsCountDto>> visitorsCountByDateRange(LocalDate startDate, LocalDate endDate) {
@@ -1379,58 +1689,105 @@ SpotRegService {
 
         List<VisitsCountDto> visitsCountDtoList = new ArrayList<>();
         VisitsCountDto visitsCountDto = new VisitsCountDto();
-        Integer adultCount =0,childCount=0,seniorCitizenCount=0,count=0,totalCount=0;
+        Integer adultCount =0,childCount=0,seniorCitizenCount=0,count=0,totalCount=0,flag=0,discountNumber=0;
         //VisitsCountDto visitsCountDto = new VisitsCountDto();
-        if (!publicDataList.isEmpty()){
+        Double adultGrandTotals=0.0,childGrandTotals=0.0,seniorCitizenGrandTotal=0.0,overAllGrandTotal=0.0,discountPercentage=0.0;
+        Double overAllIncome=0.0;
+
+        if (publicDataList.isEmpty() && institutionDataList.isEmpty() && foreignerDataList.isEmpty()){
+            return new ResponseEntity<>(new ArrayList<>(),HttpStatus.NO_CONTENT);
+        }else {
+            if (!publicDataList.isEmpty()){
 //            List<PublicVisitorsDto> publicVisitorsDtoList = new ArrayList<>();
 
 //            PublicVisitorsDto publicVisitorsDto = new PublicVisitorsDto();
-            for (PublicData publicData : publicDataList){
-                adultCount+=publicData.getAdult();
-                childCount+=publicData.getChild();
-                seniorCitizenCount+=publicData.getSeniorCitizen();
-                count++;
-            }
-            totalCount+=count;
-            visitsCountDto.setPublicTicketCount(count);
-            visitsCountDto.setAdultCount(adultCount);
-            visitsCountDto.setChildCount(childCount);
-            visitsCountDto.setSeniorCitizen(seniorCitizenCount);
-            //visitsCountDtoList.add(visitsCountDto);
+                for (PublicData publicData : publicDataList){
+                    if (publicData.getTicketId()!=null){
+                        adultCount+=publicData.getAdult();
+                        childCount+=publicData.getChild();
+                        seniorCitizenCount+=publicData.getSeniorCitizen();
+                        count++;
+                        adultGrandTotals += publicData.getAdultGrandTotal();
+                        childGrandTotals += publicData.getChildGrandTotal();
+                        seniorCitizenGrandTotal +=publicData.getSeniorCitizenGrandTotal();
+                    }
+                }
+                overAllGrandTotal+=adultGrandTotals+childGrandTotals+seniorCitizenGrandTotal;
+                totalCount+=count;
+                visitsCountDto.setPublicTicketCount(count);
+                visitsCountDto.setAdultCount(adultCount);
+                visitsCountDto.setChildCount(childCount);
+                visitsCountDto.setSeniorCitizen(seniorCitizenCount);
+                visitsCountDto.setPublicGrandTotal(overAllGrandTotal);
+                visitsCountDto.setAdultGrandTotal(adultGrandTotals);
+                visitsCountDto.setChildGrandTotal(childGrandTotals);
+                visitsCountDto.setSeniorCitizenGrandTotal(seniorCitizenGrandTotal);
+                overAllIncome+=overAllGrandTotal;
+                //visitsCountDtoList.add(visitsCountDto);
 //            visitsCountDto.setPublicVisitorsDtoList(publicVisitorsDtoList);
-            adultCount=0;childCount=0;count=0;
-        }
-        if (!institutionDataList.isEmpty()){
-            List<InstitutionVisitorsDto> institutionVisitorsDtoList = new ArrayList<>();
-//            InstitutionVisitorsDto institutionVisitorsDto = new InstitutionVisitorsDto();
-            for (InstitutionData institutionData : institutionDataList){
-                adultCount+=institutionData.getTeacher();
-                childCount+=institutionData.getStudent();
-                count++;
+                adultCount=0;childCount=0;count=0;adultGrandTotals=0.0;childGrandTotals=0.0;overAllGrandTotal=0.0;
             }
-            totalCount+=count;
-            visitsCountDto.setTeacherCount(adultCount);
-            visitsCountDto.setStudentCount(childCount);
-            visitsCountDto.setInstitutionTicketCount(count);
-            //visitsCountDtoList.add(visitsCountDto);
-            adultCount=0;childCount=0;count=0;
-        }
-        if (!foreignerDataList.isEmpty()){
+            if (!institutionDataList.isEmpty()){
+                List<InstitutionVisitorsDto> institutionVisitorsDtoList = new ArrayList<>();
+//            InstitutionVisitorsDto institutionVisitorsDto = new InstitutionVisitorsDto();
+                for (InstitutionData institutionData : institutionDataList){
+                    if (institutionData.getTicketId()!=null){
+                        adultCount+=institutionData.getTeacher();
+                        childCount+=institutionData.getStudent();
+                        count++;
+
+                        Double disAmount = institutionData.getDiscountAmount()*100;
+                        if (flag<disAmount){
+                            discountNumber++;
+                            discountPercentage+=disAmount;
+                        }
+                        adultGrandTotals+=institutionData.getTeacherTicketCharge();
+                        childGrandTotals+=institutionData.getPayableStudentCharge();
+                    }
+                }
+                totalCount+=count;
+                overAllGrandTotal=adultGrandTotals+childGrandTotals;
+                visitsCountDto.setTeacherCount(adultCount);
+                visitsCountDto.setStudentCount(childCount);
+                visitsCountDto.setInstitutionTicketCount(count);
+                visitsCountDto.setInstitutionGrandTotal(overAllGrandTotal);
+                visitsCountDto.setTeacherGrandTotal(adultGrandTotals);
+                visitsCountDto.setStudentGrandTotal(childGrandTotals);
+                visitsCountDto.setNo_Of_Discount(discountNumber);
+                visitsCountDto.setOverAllDiscountPercentage(discountPercentage);
+                overAllIncome+=overAllGrandTotal;
+                //visitsCountDtoList.add(visitsCountDto);
+                adultCount=0;childCount=0;count=0;adultGrandTotals=0.0;childGrandTotals=0.0;overAllGrandTotal=0.0;
+            }
+            if (!foreignerDataList.isEmpty()){
 
 //            ForeignerVisitorsDto foreignerVisitorsDto = new ForeignerVisitorsDto();
-            for (ForeignerData foreignerData : foreignerDataList){
-                adultCount+= foreignerData.getAdult();
-                childCount+= foreignerData.getChild();
-                count++;
+                for (ForeignerData foreignerData : foreignerDataList){
+                    if (foreignerData.getTicketId()!=null){
+                        adultCount+= foreignerData.getAdult();
+                        childCount+= foreignerData.getChild();
+                        count++;
+                        adultGrandTotals+=foreignerData.getAdultGrandTotal();
+                        childGrandTotals+=foreignerData.getChildGrandTotal();
+                    }
+                }
+                totalCount+=count;
+                overAllGrandTotal+=adultGrandTotals+childGrandTotals;
+                visitsCountDto.setForeignerTicketCount(count);
+                visitsCountDto.setForeignAdult(adultCount);
+                visitsCountDto.setForeignChild(childCount);
+                visitsCountDto.setTotalVisitsCount(totalCount);
+                visitsCountDto.setForeignerAdultGrandTotal(adultGrandTotals);
+                visitsCountDto.setForeignerChildGrandTotal(childGrandTotals);
+                visitsCountDto.setForeignerGrandTotal(overAllGrandTotal);
+                overAllIncome+=overAllGrandTotal;
+
             }
-            totalCount+=count;
-            visitsCountDto.setForeignerTicketCount(count);
-            visitsCountDto.setForeignAdult(adultCount);
-            visitsCountDto.setForeignChild(childCount);
-            visitsCountDto.setTotalVisitsCount(totalCount);
+            visitsCountDto.setOverAllIncome(overAllIncome);
             visitsCountDtoList.add(visitsCountDto);
+            return new ResponseEntity<>(visitsCountDtoList,HttpStatus.OK);
         }
-        return new ResponseEntity<>(visitsCountDtoList,HttpStatus.OK);
+
     }
 
     public ResponseEntity<List<VisitorsAmountDto>> visitsIncomeAndTotalCountUpToNow(Integer categoryId) {
@@ -1444,14 +1801,16 @@ SpotRegService {
                 List<PublicData> publicDataList = publicRepo.findAll();
                 if (!publicDataList.isEmpty()){
                     for (PublicData publicData:publicDataList){
-                        Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(publicData.getPaymentStatusId());
-                        if (paymentStatusOptional.isPresent()){
-                            PaymentStatus paymentStatus = paymentStatusOptional.get();
-                            if ("Received".equalsIgnoreCase(paymentStatus.getStatusName())){
-                                incomeData+=publicData.getGrandTotal();
-                                ticketCount+=(publicData.getAdult()+publicData.getChild()+publicData.getSeniorCitizen());
-                            }
-                        }
+                       if (publicData.getTicketId()!=null){
+                           Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(publicData.getPaymentStatusId());
+                           if (paymentStatusOptional.isPresent()){
+                               PaymentStatus paymentStatus = paymentStatusOptional.get();
+                               if ("Received".equalsIgnoreCase(paymentStatus.getStatusName())){
+                                   incomeData+=publicData.getGrandTotal();
+                                   ticketCount+=(publicData.getAdult()+publicData.getChild()+publicData.getSeniorCitizen());
+                               }
+                           }
+                       }
                     }
                     visitorsAmountDto.setPublicIncome(incomeData);
                     visitorsAmountDto.setPublicTicketCount(ticketCount);
@@ -1462,14 +1821,16 @@ SpotRegService {
                 List<InstitutionData> institutionDataList = institutionDataRepo.findAll();
                 if (!institutionDataList.isEmpty()){
                     for (InstitutionData institutionData : institutionDataList){
-                        Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(institutionData.getPaymentStatusId());
-                        if (paymentStatusOptional.isPresent()){
-                            PaymentStatus paymentStatus = paymentStatusOptional.get();
-                            if ("Received".equalsIgnoreCase(paymentStatus.getStatusName())){
-                                incomeData+=institutionData.getGrandTotal();
-                                ticketCount+=(institutionData.getTeacher()+institutionData.getStudent());
-                            }
-                        }
+                       if (institutionData.getTicketId()!=null){
+                           Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(institutionData.getPaymentStatusId());
+                           if (paymentStatusOptional.isPresent()){
+                               PaymentStatus paymentStatus = paymentStatusOptional.get();
+                               if ("Received".equalsIgnoreCase(paymentStatus.getStatusName())){
+                                   incomeData+=institutionData.getGrandTotal();
+                                   ticketCount+=(institutionData.getTeacher()+institutionData.getStudent());
+                               }
+                           }
+                       }
                     }
                     visitorsAmountDto.setInstitutionIncome(incomeData);
                     visitorsAmountDto.setInstitutionTicketCount(ticketCount);
@@ -1480,12 +1841,14 @@ SpotRegService {
                 List<ForeignerData> foreignerDataList = foreignerDataRepo.findAll();
                 if (!foreignerDataList.isEmpty()){
                     for (ForeignerData foreignerData:foreignerDataList){
-                        Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(foreignerData.getPaymentStatusId());
-                        if (paymentStatusOptional.isPresent()){
-                            PaymentStatus paymentStatus = paymentStatusOptional.get();
-                            if ("Received".equalsIgnoreCase(paymentStatus.getStatusName())){
-                                incomeData+=foreignerData.getGrandTotal();
-                                ticketCount+=(foreignerData.getAdult()+foreignerData.getChild());
+                        if (foreignerData.getTicketId()!=null){
+                            Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(foreignerData.getPaymentStatusId());
+                            if (paymentStatusOptional.isPresent()){
+                                PaymentStatus paymentStatus = paymentStatusOptional.get();
+                                if ("Received".equalsIgnoreCase(paymentStatus.getStatusName())){
+                                    incomeData+=foreignerData.getGrandTotal();
+                                    ticketCount+=(foreignerData.getAdult()+foreignerData.getChild());
+                                }
                             }
                         }
                     }
@@ -1500,14 +1863,16 @@ SpotRegService {
             List<PublicData> publicDataList = publicRepo.findAll();
             if (!publicDataList.isEmpty()){
                 for (PublicData publicData:publicDataList){
-                    Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(publicData.getPaymentStatusId());
-                    if (paymentStatusOptional.isPresent()){
-                        PaymentStatus paymentStatus = paymentStatusOptional.get();
-                        if ("Received".equalsIgnoreCase(paymentStatus.getStatusName())){
-                            incomeData+=publicData.getGrandTotal();
-                            ticketCount+=(publicData.getAdult()+publicData.getChild()+publicData.getSeniorCitizen());
-                        }
-                    }
+                   if (publicData.getTicketId()!=null){
+                       Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(publicData.getPaymentStatusId());
+                       if (paymentStatusOptional.isPresent()){
+                           PaymentStatus paymentStatus = paymentStatusOptional.get();
+                           if ("Received".equalsIgnoreCase(paymentStatus.getStatusName())){
+                               incomeData+=publicData.getGrandTotal();
+                               ticketCount+=(publicData.getAdult()+publicData.getChild()+publicData.getSeniorCitizen());
+                           }
+                       }
+                   }
                 }
                 visitorsAmountDto.setPublicIncome(incomeData);
                 visitorsAmountDto.setPublicTicketCount(ticketCount);
@@ -1517,12 +1882,14 @@ SpotRegService {
             List<InstitutionData> institutionDataList = institutionDataRepo.findAll();
             if (!institutionDataList.isEmpty()){
                 for (InstitutionData institutionData : institutionDataList){
-                    Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(institutionData.getPaymentStatusId());
-                    if (paymentStatusOptional.isPresent()){
-                        PaymentStatus paymentStatus = paymentStatusOptional.get();
-                        if ("Received".equalsIgnoreCase(paymentStatus.getStatusName())){
-                            incomeData+=institutionData.getGrandTotal();
-                            ticketCount+=(institutionData.getTeacher()+institutionData.getStudent());
+                    if (institutionData.getTicketId()!=null){
+                        Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(institutionData.getPaymentStatusId());
+                        if (paymentStatusOptional.isPresent()){
+                            PaymentStatus paymentStatus = paymentStatusOptional.get();
+                            if ("Received".equalsIgnoreCase(paymentStatus.getStatusName())){
+                                incomeData+=institutionData.getGrandTotal();
+                                ticketCount+=(institutionData.getTeacher()+institutionData.getStudent());
+                            }
                         }
                     }
                 }
@@ -1534,12 +1901,14 @@ SpotRegService {
             List<ForeignerData> foreignerDataList = foreignerDataRepo.findAll();
             if (!foreignerDataList.isEmpty()){
                 for (ForeignerData foreignerData:foreignerDataList){
-                    Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(foreignerData.getPaymentStatusId());
-                    if (paymentStatusOptional.isPresent()){
-                        PaymentStatus paymentStatus = paymentStatusOptional.get();
-                        if ("Received".equalsIgnoreCase(paymentStatus.getStatusName())){
-                            incomeData+=foreignerData.getGrandTotal();
-                            ticketCount+=(foreignerData.getAdult()+foreignerData.getChild());
+                    if (foreignerData.getTicketId()!=null){
+                        Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(foreignerData.getPaymentStatusId());
+                        if (paymentStatusOptional.isPresent()){
+                            PaymentStatus paymentStatus = paymentStatusOptional.get();
+                            if ("Received".equalsIgnoreCase(paymentStatus.getStatusName())){
+                                incomeData+=foreignerData.getGrandTotal();
+                                ticketCount+=(foreignerData.getAdult()+foreignerData.getChild());
+                            }
                         }
                     }
                 }
@@ -1688,4 +2057,323 @@ SpotRegService {
     private String getMonthName(int month) {
         return java.time.Month.of(month).name();
     }
+
+    public ResponseEntity<?> updateTypeGrandTotal(Integer categoryId, TypeGrandTotalDto totalDto) {
+        Optional<CategoryData> categoryDataOptional = categoryRepo.findById(categoryId);
+        if (categoryDataOptional.isPresent()){
+            CategoryData categoryData = categoryDataOptional.get();
+            if ("Public".equalsIgnoreCase(categoryData.getCategory())){
+                Optional<PublicData> publicDataOptional = publicRepo.findById(totalDto.getTableId());
+                if (publicDataOptional.isPresent()){
+                    PublicData publicData = publicDataOptional.get();
+                    List<TypeData> typeDataList = typeRepo.findByCategoryId(categoryId);
+                    if (!typeDataList.isEmpty()){
+                        for (TypeData typeData:typeDataList){
+                            if ("Adult".equalsIgnoreCase(typeData.getType())){
+                                Optional<PriceData> priceDataOptional = priceDataRepo.findByCategoryIdAndTypeId(categoryId,typeData.getId());
+                                if (priceDataOptional.isPresent()){
+                                    PriceData priceData = priceDataOptional.get();
+                                    Double adultCharge = priceData.getPrice() * publicData.getAdult();
+
+                                    Double defaultCharge =0.0;
+                                    if (adultCharge.equals(totalDto.getAdultGrandTotal())) {
+                                        publicData.setAdultGrandTotal(adultCharge);
+                                        publicData.setSeniorCitizenGrandTotal(0.0);
+
+                                    }else {
+                                        publicData.setAdultGrandTotal(adultCharge);
+                                        publicData.setSeniorCitizenGrandTotal(defaultCharge);
+                                    }
+                                }
+
+                            }
+                            if ("Child".equalsIgnoreCase(typeData.getType())){
+                                Optional<PriceData> priceDataOptional1 = priceDataRepo.findByCategoryIdAndTypeId(categoryId,typeData.getId());
+                                if (priceDataOptional1.isPresent()){
+                                    PriceData priceData = priceDataOptional1.get();
+                                    Double childCharge = priceData.getPrice() * publicData.getChild();
+                                    if (childCharge.equals(totalDto.getChildGrandTotal())){
+                                        publicData.setChildGrandTotal(childCharge);
+                                        publicRepo.save(publicData);
+                                        return new ResponseEntity<>(publicData,HttpStatus.OK);
+                                    }else {
+                                        publicData.setChildGrandTotal(childCharge);
+                                        publicRepo.save(publicData);
+                                        return new ResponseEntity<>(publicData,HttpStatus.ACCEPTED);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                }else {
+                    return new ResponseEntity<>("Table Id : "+totalDto.getTableId()+"  is not valid",HttpStatus.BAD_REQUEST);
+                }
+            } else if ("institution".equalsIgnoreCase(categoryData.getCategory())) {
+                Optional<InstitutionData> institutionDataOptional = institutionDataRepo.findById(totalDto.getTableId());
+                if (institutionDataOptional.isPresent()){
+                    InstitutionData institutionData = institutionDataOptional.get();
+                    List<TypeData> typeDataList = typeRepo.findByCategoryId(categoryId);
+                    if (!typeDataList.isEmpty()){
+                        for (TypeData typeData:typeDataList){
+                            Double defaultCharge =0.0;
+                            if ("Teacher".equalsIgnoreCase(typeData.getType())){
+                                Optional<PriceData> priceDataOptional = priceDataRepo.findByCategoryIdAndTypeId(categoryId,typeData.getId());
+                                if (priceDataOptional.isPresent()){
+                                    PriceData priceData = priceDataOptional.get();
+                                    Double teacherTicketCharge = priceData.getPrice() * institutionData.getTeacher();
+                                    if (teacherTicketCharge .equals(totalDto.getTeacherGrandTotal())){
+                                        institutionData.setTeacherTicketCharge(teacherTicketCharge);
+                                    }else {
+                                        institutionData.setTeacherTicketCharge(teacherTicketCharge);
+                                    }
+                                }
+                            }
+                            if ("Student".equalsIgnoreCase(typeData.getType())){
+                                Optional<PriceData> priceDataOptional1 = priceDataRepo.findByCategoryIdAndTypeId(categoryId,typeData.getId());
+                                if (priceDataOptional1.isPresent()){
+                                    PriceData priceData1 = priceDataOptional1.get();
+                                    Double studentTicketCharge = priceData1.getPrice() * institutionData.getStudent();
+                                    if (studentTicketCharge .equals(totalDto.getStudentGrandTotal())){
+                                        institutionData.setStudentTicketCharge(studentTicketCharge);
+                                        institutionData.setPayableStudentCharge(defaultCharge);
+                                        institutionData.setDiscountAmount(defaultCharge);
+                                        institutionData.setStudentDiscount(defaultCharge);
+                                        institutionDataRepo.save(institutionData);
+                                        return new ResponseEntity<>(institutionData,HttpStatus.OK);
+                                    }else {
+                                        institutionData.setStudentTicketCharge(studentTicketCharge);
+                                        institutionData.setPayableStudentCharge(defaultCharge);
+                                        institutionData.setDiscountAmount(defaultCharge);
+                                        institutionData.setStudentDiscount(defaultCharge);
+                                        institutionDataRepo.save(institutionData);
+                                        return new ResponseEntity<>(institutionData,HttpStatus.ACCEPTED);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }else {
+                    return new ResponseEntity<>("Table Id : "+totalDto.getTableId()+"  is not valid",HttpStatus.BAD_REQUEST);
+                }
+            } else if ("foreigner".equalsIgnoreCase(categoryData.getCategory())) {
+                    Optional<ForeignerData> foreignerDataOptional = foreignerDataRepo.findById(totalDto.getTableId());
+                    if (foreignerDataOptional.isPresent()){
+                        ForeignerData foreignerData = foreignerDataOptional.get();
+                        List<TypeData> typeDataList = typeRepo.findByCategoryId(categoryId);
+                        if (!typeDataList.isEmpty()){
+                            for (TypeData typeData:typeDataList){
+                                if ("Adult".equalsIgnoreCase(typeData.getType())){
+                                    Optional<PriceData> priceDataOptional = priceDataRepo.findByCategoryIdAndTypeId(categoryId,typeData.getId());
+                                    if (priceDataOptional.isPresent()){
+                                        PriceData priceData = priceDataOptional.get();
+                                        Double adultCharge = priceData.getPrice() * foreignerData.getAdult();
+                                        if (adultCharge.equals(totalDto.getAdultGrandTotal())) {
+                                            foreignerData.setAdultGrandTotal(adultCharge);
+                                        }else {
+                                            foreignerData.setAdultGrandTotal(adultCharge);
+                                        }
+                                    }
+                                }
+                                if ("Child".equalsIgnoreCase(typeData.getType())){
+                                    Optional<PriceData> priceDataOptional = priceDataRepo.findByCategoryIdAndTypeId(categoryId,typeData.getId());
+                                    if (priceDataOptional.isPresent()){
+                                        PriceData priceData = priceDataOptional.get();
+                                        Double childCharge = priceData.getPrice() * foreignerData.getChild();
+                                        if (childCharge.equals(totalDto.getChildGrandTotal())){
+                                            foreignerData.setChildGrandTotal(childCharge);
+                                            foreignerDataRepo.save(foreignerData);
+                                            return new ResponseEntity<>(foreignerData,HttpStatus.OK);
+                                        }else {
+                                            foreignerData.setChildGrandTotal(childCharge);
+                                            foreignerDataRepo.save(foreignerData);
+                                            return new ResponseEntity<>(foreignerData,HttpStatus.ACCEPTED);
+                                        }
+
+                                    }
+                                }
+                            }
+                        }
+
+                    }else {
+                        return new ResponseEntity<>("Table Id : "+totalDto.getTableId()+"  is not valid",HttpStatus.BAD_REQUEST);
+                    }
+            }else {
+                return new ResponseEntity<>("Category  : "+categoryId+" is not valid",HttpStatus.NO_CONTENT);
+            }
+        }else {
+            return new ResponseEntity<>("Category is not valid",HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>("Something went wrong",HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    public ResponseEntity<List<VisitsCountDto>> getCountAndGrandTotalByPaymentMode(Integer paymentModeId,LocalDate dateDetails) {
+        List<PublicData>publicDataList = publicRepo.findByPaymentModeAndVisitDate(paymentModeId,dateDetails);
+        List<InstitutionData>institutionDataList=institutionDataRepo.findByPaymentModeAndVisitDate(paymentModeId,dateDetails);
+        List<ForeignerData>foreignerDataList=foreignerDataRepo.findByPaymentModeAndVisitDate(paymentModeId,dateDetails);
+        if (publicDataList.isEmpty() && institutionDataList.isEmpty()&& foreignerDataList.isEmpty()){
+            return new ResponseEntity<>(new ArrayList<>(),HttpStatus.NO_CONTENT);
+        }else {
+            List<VisitsCountDto> visitsCountDtoList = new ArrayList<>();
+            VisitsCountDto visitsCountDto = new VisitsCountDto();
+
+            Integer adultCount =0,childCount=0,seniorCitizenCount=0,count=0,totalCount=0,flag=0;
+            Double adultGrandTotals=0.0,childGrandTotals=0.0,seniorCitizenGrandTotal=0.0,overAllGrandTotal=0.0;
+            Double overAllIncome=0.0;
+
+            Optional<PaymentMode> paymentModeOptional = paymentModeRepo.findById(paymentModeId);
+            if (paymentModeOptional.isPresent()){
+                PaymentMode paymentMode = paymentModeOptional.get();
+                String modeName= paymentMode.getPaymentType();
+                if ("cash".equalsIgnoreCase(modeName)){
+                    if (!publicDataList.isEmpty()){
+                        for (PublicData publicData:publicDataList){
+                            if (publicData.getTicketId()!=null){
+                                adultCount+=publicData.getAdult();
+                                childCount+=publicData.getChild();
+                                seniorCitizenCount+= publicData.getSeniorCitizen();
+                                adultGrandTotals+=publicData.getAdultGrandTotal();
+                                childGrandTotals+=publicData.getChildGrandTotal();
+                                seniorCitizenGrandTotal+=publicData.getSeniorCitizenGrandTotal();
+                                count++;
+                            }
+                        }
+                        overAllGrandTotal+=adultGrandTotals+childGrandTotals+seniorCitizenGrandTotal;
+                        overAllIncome+=overAllGrandTotal;
+                        totalCount+=count;
+                        visitsCountDto.setAdultCount(adultCount);
+                        visitsCountDto.setChildCount(childCount);
+                        visitsCountDto.setSeniorCitizen(seniorCitizenCount);
+                        visitsCountDto.setPublicTicketCount(count);
+                        visitsCountDto.setAdultGrandTotal(adultGrandTotals);
+                        visitsCountDto.setChildGrandTotal(childGrandTotals);
+                        visitsCountDto.setSeniorCitizenGrandTotal(seniorCitizenGrandTotal);
+                        visitsCountDto.setPublicGrandTotal(overAllGrandTotal);
+                        adultCount=0;childCount=0;adultGrandTotals=0.0;childGrandTotals=0.0;count=0;overAllGrandTotal=0.0;
+                    }
+                    if (!institutionDataList.isEmpty()){
+                        for (InstitutionData institutionData:institutionDataList){
+                            if (institutionData.getTicketId()!=null){
+                                adultCount+=institutionData.getTeacher();
+                                childCount+=institutionData.getStudent();
+                                adultGrandTotals+=institutionData.getTeacherTicketCharge();
+                                childGrandTotals+=institutionData.getPayableStudentCharge();
+                                count++;
+                            }
+                        }
+                        overAllGrandTotal+=adultGrandTotals+childGrandTotals;
+                        overAllIncome+=overAllGrandTotal;
+                        totalCount+=count;
+                        visitsCountDto.setTeacherCount(adultCount);
+                        visitsCountDto.setStudentCount(count);
+                        visitsCountDto.setTeacherGrandTotal(adultGrandTotals);
+                        visitsCountDto.setStudentGrandTotal(childGrandTotals);
+                        visitsCountDto.setInstitutionTicketCount(count);
+                        visitsCountDto.setInstitutionGrandTotal(overAllGrandTotal);
+                        adultCount=0;childCount=0;adultGrandTotals=0.0;childGrandTotals=0.0;count=0;overAllGrandTotal=0.0;
+                    }
+                    if (!foreignerDataList.isEmpty()){
+                        for (ForeignerData foreignerData:foreignerDataList){
+                            if (foreignerData.getTicketId()!=null){
+                                adultCount+=foreignerData.getAdult();
+                                childCount+=foreignerData.getChild();
+                                adultGrandTotals+=foreignerData.getAdultGrandTotal();
+                                childGrandTotals+=foreignerData.getChildGrandTotal();
+                                count++;
+                            }
+                        }
+                        overAllGrandTotal+=adultGrandTotals+childGrandTotals;
+                        overAllIncome+=overAllGrandTotal;
+                        totalCount+=count;
+                        visitsCountDto.setForeignAdult(adultCount);
+                        visitsCountDto.setForeignChild(childCount);
+                        visitsCountDto.setForeignerAdultGrandTotal(adultGrandTotals);
+                        visitsCountDto.setForeignerChildGrandTotal(childGrandTotals);
+                        visitsCountDto.setForeignerGrandTotal(overAllGrandTotal);
+                        visitsCountDto.setForeignerTicketCount(count);
+                    }
+                    visitsCountDto.setOverAllIncome(overAllIncome);
+                    visitsCountDto.setTotalVisitsCount(totalCount);
+                    visitsCountDtoList.add(visitsCountDto);
+                    return new ResponseEntity<>(visitsCountDtoList,HttpStatus.OK);
+                } else if ("QRCode".equalsIgnoreCase(modeName)) {
+                    if (!publicDataList.isEmpty()){
+                        for (PublicData publicData:publicDataList){
+                            if (publicData.getTicketId()!=null){
+                                adultCount+=publicData.getAdult();
+                                childCount+=publicData.getChild();
+                                seniorCitizenCount+= publicData.getSeniorCitizen();
+                                adultGrandTotals+=publicData.getAdultGrandTotal();
+                                childGrandTotals+=publicData.getChildGrandTotal();
+                                seniorCitizenGrandTotal+=publicData.getSeniorCitizenGrandTotal();
+                                count++;
+                            }
+                        }
+                        overAllGrandTotal+=adultGrandTotals+childGrandTotals+seniorCitizenGrandTotal;
+                        overAllIncome+=overAllGrandTotal;
+                        totalCount+=count;
+                        visitsCountDto.setAdultCount(adultCount);
+                        visitsCountDto.setChildCount(childCount);
+                        visitsCountDto.setSeniorCitizen(seniorCitizenCount);
+                        visitsCountDto.setPublicTicketCount(count);
+                        visitsCountDto.setAdultGrandTotal(adultGrandTotals);
+                        visitsCountDto.setChildGrandTotal(childGrandTotals);
+                        visitsCountDto.setSeniorCitizenGrandTotal(seniorCitizenGrandTotal);
+                        visitsCountDto.setPublicGrandTotal(overAllGrandTotal);
+                        adultCount=0;childCount=0;adultGrandTotals=0.0;childGrandTotals=0.0;count=0;overAllGrandTotal=0.0;
+                    }
+                    if (!institutionDataList.isEmpty()){
+                        for (InstitutionData institutionData:institutionDataList){
+                            if (institutionData.getTicketId()!=null){
+                                adultCount+=institutionData.getTeacher();
+                                childCount+=institutionData.getStudent();
+                                adultGrandTotals+=institutionData.getTeacherTicketCharge();
+                                childGrandTotals+=institutionData.getPayableStudentCharge();
+                                count++;
+                            }
+                        }
+                        overAllGrandTotal+=adultGrandTotals+childGrandTotals;
+                        overAllIncome+=overAllGrandTotal;
+                        totalCount+=count;
+                        visitsCountDto.setTeacherCount(adultCount);
+                        visitsCountDto.setStudentCount(count);
+                        visitsCountDto.setTeacherGrandTotal(adultGrandTotals);
+                        visitsCountDto.setStudentGrandTotal(childGrandTotals);
+                        visitsCountDto.setInstitutionTicketCount(count);
+                        visitsCountDto.setInstitutionGrandTotal(overAllGrandTotal);
+                        adultCount=0;childCount=0;adultGrandTotals=0.0;childGrandTotals=0.0;count=0;overAllGrandTotal=0.0;
+                    }
+                    if (!foreignerDataList.isEmpty()){
+                        for (ForeignerData foreignerData:foreignerDataList){
+                            if (foreignerData.getTicketId()!=null){
+                                adultCount+=foreignerData.getAdult();
+                                childCount+=foreignerData.getChild();
+                                adultGrandTotals+=foreignerData.getAdultGrandTotal();
+                                childGrandTotals+=foreignerData.getChildGrandTotal();
+                                count++;
+                            }
+                        }
+                        overAllGrandTotal+=adultGrandTotals+childGrandTotals;
+                        overAllIncome+=overAllGrandTotal;
+                        totalCount+=count;
+                        visitsCountDto.setForeignAdult(adultCount);
+                        visitsCountDto.setForeignChild(childCount);
+                        visitsCountDto.setForeignerAdultGrandTotal(adultGrandTotals);
+                        visitsCountDto.setForeignerChildGrandTotal(childGrandTotals);
+                        visitsCountDto.setForeignerGrandTotal(overAllGrandTotal);
+                        visitsCountDto.setForeignerTicketCount(count);
+                    }
+                    visitsCountDto.setOverAllIncome(overAllIncome);
+                    visitsCountDto.setTotalVisitsCount(totalCount);
+                    visitsCountDtoList.add(visitsCountDto);
+                    return new ResponseEntity<>(visitsCountDtoList,HttpStatus.OK);
+                }else {
+                    return new ResponseEntity<>(new ArrayList<>(),HttpStatus.NOT_FOUND);
+                }
+            }
+        }
+        return new ResponseEntity<>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+
 }

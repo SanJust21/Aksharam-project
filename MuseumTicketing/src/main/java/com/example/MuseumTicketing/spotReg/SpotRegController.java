@@ -1,17 +1,17 @@
 package com.example.MuseumTicketing.spotReg;
 
-import com.example.MuseumTicketing.DTO.AdminScanner.TotalIncomeDTO;
 import com.example.MuseumTicketing.Guide.util.ErrorService;
 import com.example.MuseumTicketing.spotReg.category.category.CategoryData;
 import com.example.MuseumTicketing.spotReg.category.category.CategoryRepo;
 import com.example.MuseumTicketing.spotReg.userData.SpotPaymentDto;
 import com.example.MuseumTicketing.spotReg.userData.SpotUpdateDto;
 import com.example.MuseumTicketing.spotReg.userData.SpotUserDto;
+import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.GetRevenueDetails;
 import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.GetUserData_;
-import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.SlotIdDto;
 import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.count.VisitorsAmountDto;
 import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.count.VisitsCountDto;
 import com.example.MuseumTicketing.spotReg.userData.dashboardDTO.usesrDetails.AllUserDataDto;
+import com.example.MuseumTicketing.spotReg.userData.TypeGrandTotalDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping(path = "api/spotData")
+@RequestMapping(path = "/beta/api/spotData")
 @CrossOrigin
 @Slf4j
 public class SpotRegController {
@@ -144,13 +144,23 @@ public class SpotRegController {
         return new ResponseEntity<>(new ArrayList<>(),HttpStatus.NOT_FOUND);
     }
 
+//    @GetMapping(path = "/totalRevenueByDate")
+//    public ResponseEntity<?>CategoryBasedTotalRevenueByDate(@RequestParam LocalDate visitDate){
+//        try {
+//            return spotRegService.CategoryBasedTotalRevenueByDate(visitDate);
+//        }catch (Exception e){
+//            return errorService.handlerException(e);
+//        }
+//    }
+
     @GetMapping(path = "/totalRevenueByDate")
-    public ResponseEntity<?>CategoryBasedTotalRevenueByDate(@RequestParam LocalDate visitDate){
+    public ResponseEntity<List<GetRevenueDetails>>CategoryBasedTotalRevenueByDate(@RequestParam LocalDate visitDate){
         try {
             return spotRegService.CategoryBasedTotalRevenueByDate(visitDate);
         }catch (Exception e){
-            return errorService.handlerException(e);
+            e.printStackTrace();
         }
+        return new ResponseEntity<>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @GetMapping(path = "/visitorsCountByDate")
@@ -174,6 +184,7 @@ public class SpotRegController {
         }
     }
 
+    //visitors count and grand total from a range of date
     @GetMapping(path = "/visitorsCountByRangeOfDate")
     public ResponseEntity<List<VisitsCountDto>> visitorsCountByDateRange(@RequestParam LocalDate startDate, @RequestParam LocalDate endDate){
         try {
@@ -202,5 +213,26 @@ public class SpotRegController {
             e.printStackTrace();
         }
         return null;
+    }
+
+    //userData grandTotalTypeCalculation using tableId
+    @PutMapping(path = "/updateTypeGrandTotal")
+    public ResponseEntity<?>updateTypeGrandTotal(@RequestParam Integer categoryId, @RequestBody TypeGrandTotalDto totalDto){
+        try {
+            return spotRegService.updateTypeGrandTotal(categoryId,totalDto);
+        }catch (Exception e){
+            return errorService.handlerException(e);
+        }
+    }
+
+    //getCountAndGrandTotalByPaymentMode
+    @GetMapping(path = "/getCountAndGrandTotalByPaymentMode")
+    public ResponseEntity<List<VisitsCountDto>>getCountAndGrandTotalByPaymentMode(@RequestParam Integer paymentModeId,@RequestParam LocalDate dateDetails){
+        try {
+            return spotRegService.getCountAndGrandTotalByPaymentMode(paymentModeId,dateDetails);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

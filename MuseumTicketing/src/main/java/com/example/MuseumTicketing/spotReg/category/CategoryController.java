@@ -3,6 +3,9 @@ package com.example.MuseumTicketing.spotReg.category;
 import com.example.MuseumTicketing.Guide.util.ErrorService;
 import com.example.MuseumTicketing.spotReg.category.additionCharge.AdditionCharge;
 import com.example.MuseumTicketing.spotReg.category.category.CategoryData;
+import com.example.MuseumTicketing.spotReg.category.discount.DiscountCount;
+import com.example.MuseumTicketing.spotReg.category.discount.DiscountCountDto;
+import com.example.MuseumTicketing.spotReg.category.discount.GetDiscountDto;
 import com.example.MuseumTicketing.spotReg.category.district.DistrictData;
 import com.example.MuseumTicketing.spotReg.category.gst.GSTData;
 import com.example.MuseumTicketing.spotReg.category.paymentMode.PaymentMode;
@@ -19,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping(path = "api/category")
+@RequestMapping(path = "/beta/api/category")
 @CrossOrigin
 public class CategoryController {
     @Autowired
@@ -333,6 +336,43 @@ public class CategoryController {
             e.printStackTrace();
         }
         return new ResponseEntity<>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @PostMapping(path = "/addDiscount")
+    public ResponseEntity<?>addDiscountCount(@RequestBody DiscountCount discountCount){
+        try {
+            return categoryService.addDiscountCount(discountCount);
+        }catch (Exception e){
+            return errorService.handlerException(e);
+        }
+    }
+
+    @GetMapping(path = "/getDiscountCount")
+    public ResponseEntity<List<GetDiscountDto>>getDiscountCount(){
+        try {
+            return categoryService.getDiscountCount();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @PutMapping(path = "/updateDiscountCount")
+    public ResponseEntity<?>updateDiscountCount(@RequestParam Integer id, @RequestBody DiscountCountDto countDto){
+        try {
+           return categoryService.updateDiscountCount(id,countDto);
+        }catch (Exception e){
+            return errorService.handlerException(e);
+        }
+    }
+
+    @DeleteMapping(path = "/deleteDiscount")
+    public ResponseEntity<?>deleteDiscount(@RequestParam Integer id){
+        try {
+            return categoryService.deleteDiscountById(id);
+        }catch (Exception e){
+           return errorService.handlerException(e);
+        }
     }
 
 }

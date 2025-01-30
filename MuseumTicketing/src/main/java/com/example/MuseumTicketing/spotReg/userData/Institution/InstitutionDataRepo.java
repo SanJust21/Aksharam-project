@@ -21,4 +21,6 @@ public interface InstitutionDataRepo extends JpaRepository<InstitutionData,Long>
             "SUM(ind.countOfPeople)AS totalCountOfPeople " +
             "FROM InstitutionData ind WHERE YEAR(ind.visitDate) = :year GROUP BY MONTH(ind.visitDate) ORDER BY month")
     List<Object[]> findMonthlyDataByYear(@Param("year") int year);
+
+    List<InstitutionData> findByPaymentModeAndVisitDate(Integer paymentModeId, LocalDate dateDetails);
 }

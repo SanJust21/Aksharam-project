@@ -21,4 +21,6 @@ public interface ForeignerDataRepo extends JpaRepository<ForeignerData,Long> {
             "SUM(fd.countOfPeople)AS totalCountOfPeople " +
             "FROM ForeignerData fd WHERE YEAR(fd.visitDate) = :year GROUP BY MONTH(fd.visitDate) ORDER BY month")
     List<Object[]> findMonthlyDataByYear(@Param("year") int year);
+
+    List<ForeignerData> findByPaymentModeAndVisitDate(Integer paymentModeId, LocalDate dateDetails);
 }

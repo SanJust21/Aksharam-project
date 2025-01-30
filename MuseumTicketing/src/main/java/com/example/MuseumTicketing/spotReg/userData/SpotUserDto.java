@@ -26,14 +26,13 @@ public class SpotUserDto {
     private Integer seniorCitizen;
     private Integer seniorCitizenTypeId;
 
+    private Integer discountRate;
+
     private Integer student;
     private Integer studentTypeId;
 
     private Integer teacher;
     private Integer teacherTypeId;
     private Integer paymentStatusId;
-
-
-
 
 }

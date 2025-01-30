@@ -16,17 +16,24 @@ public class GetUserData_ {
 
 
     private Integer adult;
+    private Double adultCharge;
 
 
     private Integer child;
+    private Double childCharge;
 
     private Integer seniorCitizen;
+    private Double seniorCitizenCharge;
 
 
     private Integer Student;
-
+    private Double studentCharge;
+    private Double studentDiscount;
+    private Double payableStudentCharge;
+    private Double discountAmount;
 
     private Integer teacher;
+    private Double teacherCharge;
 
     private Double totalRevenue;
 

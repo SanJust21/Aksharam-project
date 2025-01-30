@@ -12,6 +12,9 @@ public class ForeignerDtoData {
     private Integer adultCount;
     private Integer childCount;
 
+    private Double adultCharge;
+    private Double childCharge;
+
     private LocalDate visitDate;
     private LocalTime slotTime;
     private Double grandTotal;
