@@ -1206,6 +1206,7 @@ SpotRegService {
                             allUserDataDto.setTicketId(publicData.getTicketId());
                             allUserDataDto.setPaymentId(publicData.getPaymentId());
                             allUserDataDto.setGeneratedTime(publicData.getCreatedTime());
+                            allUserDataDto.setCategoryName("Public");
                             allUserDataDto.setCreatedBy(publicData.getCreatedBy());
 
                             allUserDataDtoList.add(allUserDataDto);
@@ -1256,6 +1257,7 @@ SpotRegService {
                            allUserDataDto.setPaymentId(institutionData.getPaymentId());
                            allUserDataDto.setCreatedBy(institutionData.getCreatedBy());
                            allUserDataDto.setGeneratedTime(institutionData.getCreatedTime());
+                           allUserDataDto.setCategoryName("Institution");
 //                        institutionDtoDataList.add(institutionDtoData);
                            allUserDataDtoList.add(allUserDataDto);
                        }
@@ -1300,6 +1302,7 @@ SpotRegService {
                             allUserDataDto.setPaymentId(foreignerData.getPaymentId());
                             allUserDataDto.setGeneratedTime(foreignerData.getCreatedTime());
                             allUserDataDto.setCreatedBy(foreignerData.getCreatedBy());
+                            allUserDataDto.setCategoryName("Foreigner");
                             allUserDataDtoList.add(allUserDataDto);
                         }
                     }
@@ -1350,6 +1353,7 @@ SpotRegService {
                        allUserDataDto.setPaymentId(publicData.getPaymentId());
                        allUserDataDto.setGeneratedTime(publicData.getCreatedTime());
                        allUserDataDto.setCreatedBy(publicData.getCreatedBy());
+                       allUserDataDto.setCategoryName("Public");
                        allUserDataDtoList.add(allUserDataDto);
                    }
                 }
@@ -1394,6 +1398,7 @@ SpotRegService {
                        allUserDataDto.setPaymentId(institutionData.getPaymentId());
                        allUserDataDto.setCreatedBy(institutionData.getCreatedBy());
                        allUserDataDto.setGeneratedTime(institutionData.getCreatedTime());
+                       allUserDataDto.setCategoryName("Institution");
                        allUserDataDtoList.add(allUserDataDto);
                    }
                 }
@@ -1432,6 +1437,7 @@ SpotRegService {
                         allUserDataDto.setPaymentId(allUserDataDto.getPaymentId());
                         allUserDataDto.setGeneratedTime(foreignerData.getCreatedTime());
                         allUserDataDto.setCreatedBy(foreignerData.getCreatedBy());
+                        allUserDataDto.setCategoryName("Foreigner");
                         allUserDataDtoList.add(allUserDataDto);
                     }
                 }
