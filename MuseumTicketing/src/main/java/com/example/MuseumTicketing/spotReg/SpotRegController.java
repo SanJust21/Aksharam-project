@@ -135,9 +135,20 @@ public class SpotRegController {
 
     @GetMapping(path = "/getUserDetailsByRangeOfDate")
     public ResponseEntity<List<AllUserDataDto>> getUserDetailsByRangeOfDate(@RequestParam LocalDate startDate, @RequestParam LocalDate endDate,
-                                                                            @RequestParam Integer categoryId){
+                                                                            @RequestParam Integer categoryId,@RequestParam(defaultValue = "3") Integer paymentModeId){
         try {
-            return spotRegService.getUserDetailsByRangeOfDate(startDate,endDate,categoryId);
+            Optional<CategoryData> categoryDataOptional = categoryRepo.findById(categoryId);
+            String name = categoryDataOptional.map(CategoryData::getCategory).orElse(null);
+            if ("Public".equalsIgnoreCase(name)){
+                return spotRegService.getPublicUserDetailsByRangeOfDate(startDate,endDate,paymentModeId);
+            }
+            if ("Institution".equalsIgnoreCase(name)){
+                return spotRegService.getInstitutionUserDetailsByRangeOfDate(startDate,endDate,paymentModeId);
+            }
+            if ("Foreigner".equalsIgnoreCase(name)){
+                return spotRegService.getForeignerUserDetailsByRangeOfDate(startDate,endDate,paymentModeId);
+            }
+            return spotRegService.getUserDetailsByRangeOfDate(startDate,endDate,paymentModeId);
         }catch (Exception e){
             e.printStackTrace();
         }
