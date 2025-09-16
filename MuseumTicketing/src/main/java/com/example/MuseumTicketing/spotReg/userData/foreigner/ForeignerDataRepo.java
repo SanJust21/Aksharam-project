@@ -23,4 +23,6 @@ public interface ForeignerDataRepo extends JpaRepository<ForeignerData,Long> {
     List<Object[]> findMonthlyDataByYear(@Param("year") int year);
 
     List<ForeignerData> findByPaymentModeAndVisitDate(Integer paymentModeId, LocalDate dateDetails);
+
+    List<ForeignerData> findByVisitDateBetweenAndPaymentMode(LocalDate startDate, LocalDate endDate, Integer paymentId);
 }

@@ -23,4 +23,6 @@ public interface InstitutionDataRepo extends JpaRepository<InstitutionData,Long>
     List<Object[]> findMonthlyDataByYear(@Param("year") int year);
 
     List<InstitutionData> findByPaymentModeAndVisitDate(Integer paymentModeId, LocalDate dateDetails);
+
+    List<InstitutionData> findByVisitDateBetweenAndPaymentMode(LocalDate startDate, LocalDate endDate, Integer paymentModeId);
 }
