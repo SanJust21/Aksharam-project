@@ -1541,7 +1541,7 @@ SpotRegService {
             if (userDataDtoList.isEmpty()){
                 return new ResponseEntity<>(new ArrayList<>(),HttpStatus.NO_CONTENT);
             }
-            return new ResponseEntity<>(new ArrayList<>(),HttpStatus.OK);
+            return new ResponseEntity<>(userDataDtoList,HttpStatus.OK);
         }
         if ("QR Code".equalsIgnoreCase(paymentName)){
             List<AllUserDataDto> userDataDtoList = getUserDetailsByPaymentMode(paymentModeId,startDate,endDate);
