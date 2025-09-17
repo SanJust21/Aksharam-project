@@ -1648,7 +1648,7 @@ SpotRegService {
 
                     allUserDataDto.setTicketId(foreignerData.getTicketId());
                     allUserDataDto.setOrderId(foreignerData.getOrderId());
-                    allUserDataDto.setPaymentId(allUserDataDto.getPaymentId());
+                    allUserDataDto.setPaymentId(foreignerData.getPaymentId());
                     allUserDataDto.setPaymentModeName(paymentModeRepo.findById(foreignerData.getPaymentMode()).map(PaymentMode::getPaymentType).orElse(null));
                     allUserDataDto.setGeneratedTime(foreignerData.getCreatedTime());
                     allUserDataDto.setCreatedBy(foreignerData.getCreatedBy());
@@ -1760,7 +1760,7 @@ SpotRegService {
 
                     allUserDataDto.setTicketId(foreignerData.getTicketId());
                     allUserDataDto.setOrderId(foreignerData.getOrderId());
-                    allUserDataDto.setPaymentId(allUserDataDto.getPaymentId());
+                    allUserDataDto.setPaymentId(foreignerData.getPaymentId());
                     allUserDataDto.setPaymentModeName(paymentModeRepo.findById(foreignerData.getPaymentMode()).map(PaymentMode::getPaymentType).orElse(null));
                     allUserDataDto.setGeneratedTime(foreignerData.getCreatedTime());
                     allUserDataDto.setCreatedBy(foreignerData.getCreatedBy());
