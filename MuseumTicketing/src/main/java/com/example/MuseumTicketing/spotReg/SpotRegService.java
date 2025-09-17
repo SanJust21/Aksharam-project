@@ -1565,6 +1565,7 @@ SpotRegService {
                     allUserDataDto.setOrderId(publicData.getOrderId());
                     allUserDataDto.setPaymentId(publicData.getPaymentId());
                     allUserDataDto.setTicketId(publicData.getTicketId());
+                    allUserDataDto.setVisitDate(publicData.getVisitDate());
 
                     Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(publicData.getSlotId());
                     allUserDataDto.setSlotTime(spotSlotOptional.map(SpotSlot::getSlotStartTime).orElse(null));
@@ -1688,6 +1689,7 @@ SpotRegService {
                     Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(publicData.getPaymentStatusId());
                     allUserDataDto.setPaymentStatusName(paymentStatusOptional.map(PaymentStatus::getStatusName).orElse(null));
 
+                    allUserDataDto.setVisitDate(publicData.getVisitDate());
                     allUserDataDto.setTicketId(publicData.getTicketId());
                     allUserDataDto.setOrderId(publicData.getOrderId());
                     allUserDataDto.setPaymentId(publicData.getPaymentId());
