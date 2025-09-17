@@ -1205,7 +1205,7 @@ SpotRegService {
             return new ResponseEntity<>(allUserDataDtoList,HttpStatus.OK);
         }
 
-        if ("QR".equalsIgnoreCase(paymentName)){
+        if ("QR Code".equalsIgnoreCase(paymentName)){
             List<PublicData> publicDataList = publicRepo.findByVisitDateBetweenAndPaymentMode(startDate,endDate,paymentModeId);
             if (publicDataList.isEmpty()){
                 return new ResponseEntity<>(new ArrayList<>(),HttpStatus.NO_CONTENT);
@@ -1334,7 +1334,7 @@ SpotRegService {
             }
             return new ResponseEntity<>(allUserDataDtoList,HttpStatus.OK);
         }
-        if ("QR".equalsIgnoreCase(paymentName)){
+        if ("QR Code".equalsIgnoreCase(paymentName)){
             List<InstitutionData> institutionDataList = institutionDataRepo.findByVisitDateBetweenAndPaymentMode(startDate,endDate,paymentModeId);
             if (institutionDataList.isEmpty()){
                 return new ResponseEntity<>(new ArrayList<>(),HttpStatus.NO_CONTENT);
@@ -1457,7 +1457,7 @@ SpotRegService {
             }
             return new ResponseEntity<>(allUserDataDtoList,HttpStatus.OK);
         }
-        if ("QR".equalsIgnoreCase(paymentName)){
+        if ("QR Code".equalsIgnoreCase(paymentName)){
             List<ForeignerData> foreignerDataList = foreignerDataRepo.findByVisitDateBetweenAndPaymentMode(startDate,endDate,paymentModeId);
             if (foreignerDataList.isEmpty()){
                 return new ResponseEntity<>(new ArrayList<>(),HttpStatus.NO_CONTENT);
@@ -1543,7 +1543,7 @@ SpotRegService {
             }
             return new ResponseEntity<>(new ArrayList<>(),HttpStatus.OK);
         }
-        if ("QR".equalsIgnoreCase(paymentName)){
+        if ("QR Code".equalsIgnoreCase(paymentName)){
             List<AllUserDataDto> userDataDtoList = getUserDetailsByPaymentMode(paymentModeId,startDate,endDate);
             if (userDataDtoList.isEmpty()){
                 return new ResponseEntity<>(new ArrayList<>(),HttpStatus.NO_CONTENT);
