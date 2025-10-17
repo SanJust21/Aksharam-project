@@ -12,6 +12,7 @@ import com.example.MuseumTicketing.spotReg.category.paymentMode.PaymentMode;
 import com.example.MuseumTicketing.spotReg.category.paymentStatus.PaymentStatus;
 import com.example.MuseumTicketing.spotReg.category.price.PriceData;
 import com.example.MuseumTicketing.spotReg.category.price.PriceDto;
+import com.example.MuseumTicketing.spotReg.category.ticketMode.TicketModeData;
 import com.example.MuseumTicketing.spotReg.category.type.TypeData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,7 +20,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping(path = "/api/category")
@@ -375,4 +378,63 @@ public class CategoryController {
         }
     }
 
+    @PostMapping(path = "/addTicketMode")
+    public ResponseEntity<Map<String,Object>>addTicketMode(@RequestBody TicketModeData modeData){
+        Map<String,Object> response = new HashMap<>();
+        try {
+            response=categoryService.addTicketMode(modeData);
+            if (response.containsKey("Error")){
+                return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
+            }
+            return new ResponseEntity<>(response,HttpStatus.OK);
+        }catch (Exception e){
+            response.put("Error",e.getMessage());
+            return new ResponseEntity<>(response,HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping(path = "/getAllTicketMode")
+    public ResponseEntity<Map<String,Object>>getAllTicketMode(){
+        Map<String,Object> response = new HashMap<>();
+        try {
+            response=categoryService.getAllTicketMode();
+            if (response.containsKey("Error")){
+                return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
+            }
+            return new ResponseEntity<>(response,HttpStatus.OK);
+        }catch (Exception e){
+            response.put("Error",e.getMessage());
+            return new ResponseEntity<>(response,HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PutMapping(path = "/updateTicketMode")
+    public ResponseEntity<Map<String,Object>>updateTicketMode(@RequestParam String modeId,@RequestParam String name){
+        Map<String,Object> response = new HashMap<>();
+        try {
+            response=categoryService.updateTicketMode(modeId,name);
+            if (response.containsKey("Error")){
+                return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
+            }
+            return new ResponseEntity<>(response,HttpStatus.OK);
+        }catch (Exception e){
+            response.put("Error",e.getMessage());
+            return new ResponseEntity<>(response,HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @DeleteMapping(path = "/deleteTicketMode")
+    public ResponseEntity<Map<String,Object>>deleteTicketMode(@RequestParam String modeId){
+        Map<String,Object> response = new HashMap<>();
+        try {
+            response=categoryService.deleteTicketMode(modeId);
+            if (response.containsKey("Error")){
+                return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
+            }
+            return new ResponseEntity<>(response,HttpStatus.OK);
+        }catch (Exception e){
+            response.put("Error",e.getMessage());
+            return new ResponseEntity<>(response,HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }

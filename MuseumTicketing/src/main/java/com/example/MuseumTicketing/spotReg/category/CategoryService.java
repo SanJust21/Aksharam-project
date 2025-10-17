@@ -1,5 +1,7 @@
 package com.example.MuseumTicketing.spotReg.category;
 
+import com.example.MuseumTicketing.Guide.util.AlphaNumeric;
+import com.example.MuseumTicketing.Service.Jwt.UsersServiceImpl;
 import com.example.MuseumTicketing.spotReg.category.additionCharge.AdditionCharge;
 import com.example.MuseumTicketing.spotReg.category.additionCharge.AdditionChargeRepo;
 import com.example.MuseumTicketing.spotReg.category.category.CategoryData;
@@ -19,17 +21,19 @@ import com.example.MuseumTicketing.spotReg.category.paymentStatus.PaymentStatusR
 import com.example.MuseumTicketing.spotReg.category.price.PriceData;
 import com.example.MuseumTicketing.spotReg.category.price.PriceDataRepo;
 import com.example.MuseumTicketing.spotReg.category.price.PriceDto;
+import com.example.MuseumTicketing.spotReg.category.ticketMode.TicketModeData;
+import com.example.MuseumTicketing.spotReg.category.ticketMode.TicketModeRepository;
 import com.example.MuseumTicketing.spotReg.category.type.TypeData;
 import com.example.MuseumTicketing.spotReg.category.type.TypeRepo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -52,6 +56,10 @@ public class CategoryService {
     private DistrictRepo districtRepo;
     @Autowired
     private DiscountCountRepo discountCountRepo;
+    @Autowired
+    private TicketModeRepository modeRepository;
+    @Autowired
+    private AlphaNumeric alphaNumeric;
 
 
     public ResponseEntity<?> addCategory(CategoryData categoryData) {
@@ -499,6 +507,83 @@ public class CategoryService {
             return new ResponseEntity<>(name+" is deleted",HttpStatus.OK);
         }else {
             return new ResponseEntity<>("Id is not valid",HttpStatus.NOT_FOUND);
+        }
+    }
+
+    public Map<String, Object> addTicketMode(TicketModeData modeData) {
+        Map<String,Object> response = new HashMap<>();
+        String name = modeData.getName();
+
+        Optional<TicketModeData> ticketModeDataOptional = modeRepository.findByName(name);
+        if (ticketModeDataOptional.isPresent()){
+            response.put("Error","Duplicate value");
+            response.put("name",name);
+            return response;
+        }
+        TicketModeData data=new TicketModeData();
+        data.setName(name);
+        data.setModeId(alphaNumeric.generateRandomNumber());
+        data.setDescription(modeData.getDescription());
+        data.setCreatedAt(LocalDateTime.now());
+        modeRepository.save(data);
+        response.put("data",data);
+        return response;
+    }
+
+    public Map<String, Object> getAllTicketMode() {
+        Map<String,Object>response=new HashMap<>();
+        try {
+            List<TicketModeData> ticketModeDataList=modeRepository.findAll();
+            if (ticketModeDataList.isEmpty()){
+                response.put("message","No data found");
+                return response;
+            }
+            response.put("data",ticketModeDataList);
+            return response;
+        }catch (Exception e){
+            response.put("Error",e.getMessage());
+            return response;
+        }
+    }
+
+    public Map<String, Object> updateTicketMode(String modeId, String name) {
+        Map<String,Object>response=new HashMap<>();
+        try {
+            Optional<TicketModeData> ticketModeDataOptional=modeRepository.findByModeId(modeId);
+            if (ticketModeDataOptional.isEmpty()){
+                response.put("Error","No data found");
+                response.put("modeId",modeId);
+                return response;
+            }
+            TicketModeData modeData =ticketModeDataOptional.get();
+            modeData.setName(name);
+            modeData.setUpdatedAt(LocalDateTime.now());
+            modeRepository.save(modeData);
+            response.put("data",modeData);
+            return response;
+        }catch (Exception e){
+            response.put("Error",e.getMessage());
+            return response;
+        }
+    }
+
+    public Map<String, Object> deleteTicketMode(String modeId) {
+        Map<String,Object>response=new HashMap<>();
+        try {
+            Optional<TicketModeData> ticketModeDataOptional=modeRepository.findByModeId(modeId);
+            if (ticketModeDataOptional.isEmpty()){
+                response.put("Error","No data found");
+                response.put("modeId",modeId);
+                return response;
+            }
+            TicketModeData modeData =ticketModeDataOptional.get();
+            String name = modeData.getName();
+            modeRepository.delete(modeData);
+            response.put("data",name+" is deleted.");
+            return response;
+        }catch (Exception e){
+            response.put("Error",e.getMessage());
+            return response;
         }
     }
 }
