@@ -66,6 +66,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/jpgData/**").permitAll()
                         .requestMatchers("/api/tribalData/**").permitAll()
                         .requestMatchers("/api/mediaTypeData/**").permitAll()
+                        .requestMatchers("/api/category/getAllTicketMode").permitAll()
                         .requestMatchers("/api/category/addCategory").hasAnyAuthority(Role.ADMIN.name())
                         .requestMatchers("/api/category/getCategory").permitAll()
                         .requestMatchers("/api/category/updateCategory/{id}").hasAnyAuthority(Role.ADMIN.name())
