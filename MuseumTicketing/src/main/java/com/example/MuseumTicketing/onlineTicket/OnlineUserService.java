@@ -5,7 +5,6 @@ import com.example.MuseumTicketing.onlineTicket.foreginer.ForeignerUserOnline;
 import com.example.MuseumTicketing.onlineTicket.foreginer.ForeignerUserOnlineRepository;
 import com.example.MuseumTicketing.onlineTicket.institutionUser.InstitutionUserOnline;
 import com.example.MuseumTicketing.onlineTicket.institutionUser.InstitutionUserOnlineRepository;
-import com.example.MuseumTicketing.onlineTicket.pdf.TicketPdfService;
 import com.example.MuseumTicketing.onlineTicket.publicUser.PublicUserOnline;
 import com.example.MuseumTicketing.onlineTicket.publicUser.PublicUserOnlineRepository;
 import com.example.MuseumTicketing.spotReg.AmountCalculation;
