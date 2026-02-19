@@ -155,15 +155,6 @@ public class SpotRegController {
         return new ResponseEntity<>(new ArrayList<>(),HttpStatus.NOT_FOUND);
     }
 
-//    @GetMapping(path = "/totalRevenueByDate")
-//    public ResponseEntity<?>CategoryBasedTotalRevenueByDate(@RequestParam LocalDate visitDate){
-//        try {
-//            return spotRegService.CategoryBasedTotalRevenueByDate(visitDate);
-//        }catch (Exception e){
-//            return errorService.handlerException(e);
-//        }
-//    }
-
     @GetMapping(path = "/totalRevenueByDate")
     public ResponseEntity<List<GetRevenueDetails>>CategoryBasedTotalRevenueByDate(@RequestParam LocalDate visitDate){
         try {
