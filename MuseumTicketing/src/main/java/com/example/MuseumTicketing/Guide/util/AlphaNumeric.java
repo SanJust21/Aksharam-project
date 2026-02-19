@@ -3,6 +3,7 @@ package com.example.MuseumTicketing.Guide.util;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.Random;
 import java.util.random.RandomGenerator;
 
 @Service
@@ -18,5 +19,10 @@ public class AlphaNumeric {
     public String generateSpotRandomNumber(){
         String number = RandomStringUtils.randomNumeric(spotLength);
         return BOOKING_ID_PREFIX+number;
+    }
+
+    public String otpGenerator(){
+        String otp =String.valueOf(100000 + new Random().nextInt(900000));
+        return otp;
     }
 }
