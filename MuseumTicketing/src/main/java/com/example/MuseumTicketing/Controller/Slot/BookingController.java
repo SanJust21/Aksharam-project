@@ -9,7 +9,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 @RestController
-@RequestMapping(path = "api/booking")
+@RequestMapping(path = "/beta/api/booking")
 @CrossOrigin
 public class BookingController {
     @Autowired

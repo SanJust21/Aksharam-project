@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping(path = "api/stime")
+@RequestMapping(path = "/beta/api/stime")
 @CrossOrigin
 public class ShowTimeController {
     @Autowired

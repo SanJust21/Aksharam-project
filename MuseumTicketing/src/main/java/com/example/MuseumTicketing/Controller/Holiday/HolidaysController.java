@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Objects;
 
 @RestController
-@RequestMapping(path = "/api/holidays")
+@RequestMapping(path = "/beta/api/holidays")
 @CrossOrigin
 public class HolidaysController {
 

@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping(path = "/api/onlineBooking")
+@RequestMapping(path = "/beta/api/onlineBooking")
 public class OnlineUserController {
     @Autowired
     private OnlineUserService onlineUserService;

@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping(path = "/api/category")
+@RequestMapping(path = "/beta/api/category")
 @CrossOrigin
 public class CategoryController {
     @Autowired

@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping(path = "api/calEve")
+@RequestMapping(path = "/beta/api/calEve")
 @CrossOrigin
 @Slf4j
 public class CalendarEventController {

@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/2factor")
+@RequestMapping("/beta/api/2factor")
 @CrossOrigin
 public class TwoFactorController {
 
