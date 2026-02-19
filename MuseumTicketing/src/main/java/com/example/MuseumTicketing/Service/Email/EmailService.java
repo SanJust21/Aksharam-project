@@ -258,5 +258,16 @@ public class EmailService {
         javaMailSender.send(message);
     }
 
+    public void sendOtpEmail(String emailId,String otp){
+        SimpleMailMessage message= new SimpleMailMessage();
+        message.setText(emailId);
+
+        String subjectId = "Aksharam OTP Verification Code";
+        String textData = "OTP for verification code : "+otp+" \n\nThis code is valid for 15 minutes. \n\nRegards,\n Aksharam Museum Team";
+        message.setSubject(subjectId);
+        message.setText(textData);
+        javaMailSender.send(message);
+    }
+
    }
 
