@@ -142,6 +142,33 @@
 		</dependency>
 
 
+		<!-- ✅ iText 7 Core - PDF Generation -->
+		<!-- Source: https://mvnrepository.com/artifact/com.itextpdf/itext7-core -->
+		<dependency>
+			<groupId>com.itextpdf</groupId>
+			<artifactId>itext7-core</artifactId>
+			<version>9.4.0</version>
+			<type>pom</type>
+			<scope>compile</scope>
+		</dependency>
+
+		<!-- ✅ iText Layout (for styled PDF layout) -->
+		<!-- Source: https://mvnrepository.com/artifact/com.itextpdf/layout -->
+		<dependency>
+			<groupId>com.itextpdf</groupId>
+			<artifactId>layout</artifactId>
+			<version>9.4.0</version>
+			<scope>compile</scope>
+		</dependency>
+
+		<!-- ✅ Thymeleaf (optional – only if using HTML template approach) -->
+		<!-- Source: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-thymeleaf -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-thymeleaf</artifactId>
+			<version>4.0.2</version>
+			<scope>compile</scope>
+		</dependency>
 
 	</dependencies>
 
