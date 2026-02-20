@@ -138,10 +138,41 @@ public class CategoryService {
         return new ResponseEntity<>(typeRepo.findAll(),HttpStatus.OK);
     }
 
-    public ResponseEntity<List<TypeData>> getTypeDetailsByCategoryId(Integer id) {
+    public ResponseEntity<List<PriceDto>> getTypeDetailsByCategoryId(Integer id) {
+        if (id==null || id >0){
+            return new ResponseEntity<>(new ArrayList<>(),HttpStatus.BAD_REQUEST);
+        }
         List<TypeData>typeDataList=typeRepo.findByCategoryId(id);
-        return new ResponseEntity<>(typeDataList,HttpStatus.OK);
+        if (typeDataList.isEmpty()){
+            return new ResponseEntity<>(new ArrayList<>(),HttpStatus.BAD_REQUEST);
+        }
+        List<PriceDto> dtoList = new ArrayList<>();
+        for (TypeData data :typeDataList){
+            PriceDto dto = new PriceDto();
+            Integer categoryId = data.getCategoryId();
+            Integer typeId = data.getId();
+            dto.setId(data.getId());
+            dto.setTypeId(typeId);
+            dto.setTypeName(data.getType());
+            dto.setCategoryId(categoryId);
+            dto.setCategoryName(categoryRepo.findById(data.getCategoryId()).map(CategoryData::getCategory).orElse(null));
+            Double price = priceDataRepo.findByCategoryIdAndTypeId(categoryId,typeId).map(PriceData::getPrice).orElse(0.0);
+            dto.setPrice(price);
+            dtoList.add(dto);
+        }
+        return new ResponseEntity<>(dtoList,HttpStatus.OK);
     }
+
+//    public ResponseEntity<List<PriceDto>> getPriceAndTypeByCategoryId(Integer categoryId) {
+//        if (categoryId==null||categoryId>0){
+//            return new ResponseEntity<>(new ArrayList<>(),HttpStatus.BAD_REQUEST);
+//        }
+//        List<TypeData> typeDataList = typeRepo.findByCategoryId(categoryId);
+//        if (typeDataList.isEmpty()){
+//            return new ResponseEntity<>(new ArrayList<>(),HttpStatus.BAD_REQUEST);
+//        }
+//
+//    }
 
     public ResponseEntity<?> updateTypeDetails(Integer id, TypeData typeData) {
         String name = typeData.getType();

@@ -88,7 +88,7 @@ public class CategoryController {
     }
 
     @GetMapping(path = "/getTypeByCategoryId")
-    public ResponseEntity<List<TypeData>>getTypeByCategory(@RequestParam Integer id){
+    public ResponseEntity<List<PriceDto>>getTypeByCategory(@RequestParam Integer id){
         try {
             return categoryService.getTypeDetailsByCategoryId(id);
         }catch (Exception e){
@@ -97,6 +97,15 @@ public class CategoryController {
         return new ResponseEntity<>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+//    @GetMapping(path = "/getPriceAndTypeByCategoryId")
+//    public ResponseEntity<List<PriceDto>>getPriceAndTypeByCategoryId(@RequestParam Integer categoryId){
+//        try {
+//            return categoryService.getPriceAndTypeByCategoryId(categoryId);
+//        }catch (Exception e){
+//            e.printStackTrace();
+//        }
+//        return new ResponseEntity<>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
+//    }
 
     @PutMapping(path = "/updateType/{id}")
     public ResponseEntity<?>updateTypeDetails(@PathVariable Integer id,@RequestBody TypeData typeData){
