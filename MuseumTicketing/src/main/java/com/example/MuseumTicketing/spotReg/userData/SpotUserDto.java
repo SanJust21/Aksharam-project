@@ -35,6 +35,4 @@ public class SpotUserDto {
     private Integer teacherTypeId;
     private Integer paymentStatusId;
 
-    private String emailId;
-
 }
