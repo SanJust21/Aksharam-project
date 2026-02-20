@@ -139,15 +139,17 @@ public class CategoryService {
     }
 
     public ResponseEntity<List<PriceDto>> getTypeDetailsByCategoryId(Integer id) {
-        if (id==null || id >0){
+        if (id==null || id <0){
             return new ResponseEntity<>(new ArrayList<>(),HttpStatus.BAD_REQUEST);
         }
         List<TypeData>typeDataList=typeRepo.findByCategoryId(id);
         if (typeDataList.isEmpty()){
+            log.info("typeId error");
             return new ResponseEntity<>(new ArrayList<>(),HttpStatus.BAD_REQUEST);
         }
         List<PriceDto> dtoList = new ArrayList<>();
         for (TypeData data :typeDataList){
+            log.info("inside for loop : ");
             PriceDto dto = new PriceDto();
             Integer categoryId = data.getCategoryId();
             Integer typeId = data.getId();
