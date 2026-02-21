@@ -73,8 +73,11 @@ public class InstitutionUserOnline {
     @Column(name = "slotId")
     private Integer slotId;
 
-    @Column(name = "slotName")
-    private LocalTime slotName;
+    @Column(name = "slotStartTime")
+    private LocalTime slotStartTime;
+
+    @Column(name = "slotEndTime")
+    private LocalTime slotEndTime;
 
     @Column(name = "visit_status", nullable = false, columnDefinition = "boolean default false")
     private boolean visitStatus;

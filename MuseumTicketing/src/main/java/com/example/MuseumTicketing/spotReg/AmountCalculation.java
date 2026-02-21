@@ -4,10 +4,14 @@ import com.example.MuseumTicketing.spotReg.bookingDetails.booking.BookingDetails
 import com.example.MuseumTicketing.spotReg.bookingDetails.booking.BookingSpotRepo;
 import com.example.MuseumTicketing.spotReg.category.additionCharge.AdditionCharge;
 import com.example.MuseumTicketing.spotReg.category.additionCharge.AdditionChargeRepo;
+import com.example.MuseumTicketing.spotReg.category.category.CategoryData;
+import com.example.MuseumTicketing.spotReg.category.category.CategoryRepo;
 import com.example.MuseumTicketing.spotReg.category.gst.GSTData;
 import com.example.MuseumTicketing.spotReg.category.gst.GSTRepo;
 import com.example.MuseumTicketing.spotReg.category.price.PriceData;
 import com.example.MuseumTicketing.spotReg.category.price.PriceDataRepo;
+import com.example.MuseumTicketing.spotReg.category.type.TypeData;
+import com.example.MuseumTicketing.spotReg.category.type.TypeRepo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,7 +31,10 @@ public class AmountCalculation {
     private AdditionChargeRepo additionChargeRepo;
     @Autowired
     private BookingSpotRepo bookingSpotRepo;
-
+    @Autowired
+    private CategoryRepo categoryRepo;
+    @Autowired
+    private TypeRepo typeRepo;
     //Calculate total ticket charge based on category(public,Institution,foreigner) and type(adult,child,teacher,student,foreignAdult,foreignChild)
     public Double calculateTotalUserCharge(Integer category, Integer typeId, Integer userCount) {
         Double totalUserCharge;
@@ -150,5 +157,69 @@ public class AmountCalculation {
             } return null;
         }
         return null;
+    }
+
+    public Double calculatePublicCharge(Integer category, Integer typeId, Integer userCount) {
+        Double totalUserCharge =0.0;
+        String typeName = typeRepo.findById(typeId).map(TypeData::getType).orElse(null);
+        if ("Adult".equalsIgnoreCase(typeName)){
+            Double perHeadCharge = priceDataRepo.findByCategoryIdAndTypeId(category,typeId).map(PriceData::getPrice).orElse(0.0);
+            totalUserCharge = userCount * perHeadCharge ;
+            log.info("totalAdultCharge : "+totalUserCharge);
+            return totalUserCharge;
+        }
+
+        if ("Child/Student".equalsIgnoreCase(typeName)){
+            Double perHeadCharge = priceDataRepo.findByCategoryIdAndTypeId(category,typeId).map(PriceData::getPrice).orElse(0.0);
+            totalUserCharge = userCount * perHeadCharge ;
+            log.info("totalChildCharge : "+totalUserCharge);
+            return totalUserCharge;
+        }
+
+        if ("Student".equalsIgnoreCase(typeName)){
+            Double perHeadCharge = priceDataRepo.findByCategoryIdAndTypeId(category,typeId).map(PriceData::getPrice).orElse(0.0);
+            totalUserCharge = userCount * perHeadCharge ;
+            log.info("totalStudentCharge : "+totalUserCharge);
+            return totalUserCharge;
+        }
+        return totalUserCharge;
+    }
+
+    public Double calculateInstitutionCharge(Integer category, Integer typeId, Integer userCount) {
+        Double totalUserCharge =0.0;
+        String typeName = typeRepo.findById(typeId).map(TypeData::getType).orElse(null);
+        if ("Teacher".equalsIgnoreCase(typeName)){
+            Double perHeadCharge = priceDataRepo.findByCategoryIdAndTypeId(category,typeId).map(PriceData::getPrice).orElse(0.0);
+            totalUserCharge = userCount * perHeadCharge ;
+            log.info("totalTeacherCharge : "+totalUserCharge);
+            return totalUserCharge;
+        }
+
+        if ("Student".equalsIgnoreCase(typeName)){
+            Double perHeadCharge = priceDataRepo.findByCategoryIdAndTypeId(category,typeId).map(PriceData::getPrice).orElse(0.0);
+            totalUserCharge = userCount * perHeadCharge ;
+            log.info("totalStudentCharge : "+totalUserCharge);
+            return totalUserCharge;
+        }
+        return totalUserCharge;
+    }
+
+    public Double calculateForeignerCharge(Integer category, Integer typeId, Integer userCount) {
+        Double totalUserCharge =0.0;
+        String typeName = typeRepo.findById(typeId).map(TypeData::getType).orElse(null);
+        if ("Adult".equalsIgnoreCase(typeName)){
+            Double perHeadCharge = priceDataRepo.findByCategoryIdAndTypeId(category,typeId).map(PriceData::getPrice).orElse(0.0);
+            totalUserCharge = userCount * perHeadCharge ;
+            log.info("totalAdultCharge : "+totalUserCharge);
+            return totalUserCharge;
+        }
+
+        if ("Child".equalsIgnoreCase(typeName)){
+            Double perHeadCharge = priceDataRepo.findByCategoryIdAndTypeId(category,typeId).map(PriceData::getPrice).orElse(0.0);
+            totalUserCharge = userCount * perHeadCharge ;
+            log.info("totalChildCharge : "+totalUserCharge);
+            return totalUserCharge;
+        }
+        return totalUserCharge;
     }
 }

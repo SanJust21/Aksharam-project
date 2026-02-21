@@ -9,6 +9,11 @@ import com.example.MuseumTicketing.onlineTicket.publicUser.PublicUserOnline;
 import com.example.MuseumTicketing.onlineTicket.publicUser.PublicUserOnlineRepository;
 import com.example.MuseumTicketing.spotReg.AmountCalculation;
 import com.example.MuseumTicketing.spotReg.SpotQRcodeService;
+import com.example.MuseumTicketing.spotReg.bookingDetails.booking.BookingDetails;
+import com.example.MuseumTicketing.spotReg.bookingDetails.booking.BookingSpotRepo;
+import com.example.MuseumTicketing.spotReg.bookingDetails.slotData.SlotSpotDto;
+import com.example.MuseumTicketing.spotReg.bookingDetails.slotData.SpotSlot;
+import com.example.MuseumTicketing.spotReg.bookingDetails.slotData.SpotSlotRepo;
 import com.example.MuseumTicketing.spotReg.category.category.CategoryData;
 import com.example.MuseumTicketing.spotReg.category.category.CategoryRepo;
 import com.example.MuseumTicketing.spotReg.userData.SpotUpdateDto;
@@ -33,6 +38,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -43,9 +49,9 @@ import java.util.Random;
 public class OnlineUserService {
 
     @Value("${razorpay.key.id}")
-    private static String razorpayKeyId ;
+    private String razorpayKeyId ;
     @Value("${razorpay.key.secret}")
-    private static String razorpayKeySecret ;
+    private String razorpayKeySecret ;
 
     private static final String currency = "INR";
 
@@ -67,27 +73,38 @@ public class OnlineUserService {
     private SpotQRcodeService spotQRcodeService;
 //    @Autowired
 //    private TicketPdfService ticketPdfService;
+    @Autowired
+    private SpotSlotRepo slotRepo;
+    @Autowired
+    private BookingSpotRepo bookingSpotRepo;
 
-    public ResponseEntity<Map<String, Object>> onlinePublicTicketBooking(SpotUserDto spotUserDto, Integer category) {
+    public ResponseEntity<Map<String, Object>> onlinePublicTicketBooking(OnlineUserDataDto userDto, Integer category) {
+        Map<String,Object> response = new HashMap<>();
+
+        Integer slotId = userDto.getSlotId();
+        LocalDate visitDate = userDto.getVisitDate();
+
+        Integer countOfPeople = userDto.getAdult() + userDto.getChild();
         PublicUserOnline userOnline = new PublicUserOnline();
-        userOnline.setName(spotUserDto.getName());
-        userOnline.setPhNumber(spotUserDto.getPhNumber());
-        userOnline.setEmailId(spotUserDto.getEmailId());
-        userOnline.setAdult(spotUserDto.getAdult());
-        userOnline.setChild(spotUserDto.getChild());
+        userOnline.setName(userDto.getName());
+        userOnline.setPhNumber(userDto.getPhNumber());
+        userOnline.setEmailId(userDto.getEmailId());
+        userOnline.setAdult(userDto.getAdult());
+        userOnline.setChild(userDto.getChild());
+        userOnline.setCountOfPeople(countOfPeople);
         Double totalAdultCharge = 0.0; Double totalChildCharge = 0.0;
         Double grandTotal ; Integer userCount,typeId;
 
-        if (spotUserDto.getAdult()>0){
-            typeId=spotUserDto.getAdultTypeId();
-            userCount=spotUserDto.getAdult();
-            totalAdultCharge=amountCalculation.calculateTotalUserCharge(category,typeId,userCount);
+        if (userDto.getAdult()>0){
+            typeId=userDto.getAdultTypeId();
+            userCount=userDto.getAdult();
+            totalAdultCharge=amountCalculation.calculatePublicCharge(category,typeId,userCount);
         }
         userOnline.setAdultGrandTotal(totalAdultCharge);
-        if (spotUserDto.getChild()>0){
-            typeId=spotUserDto.getChildTypeId();
-            userCount=spotUserDto.getChild();
-            totalChildCharge = amountCalculation.calculateTotalUserCharge(category,typeId,userCount);
+        if (userDto.getChild()>0){
+            typeId=userDto.getChildTypeId();
+            userCount=userDto.getChild();
+            totalChildCharge = amountCalculation.calculatePublicCharge(category,typeId,userCount);
         }
         userOnline.setChildGrandTotal(totalChildCharge);
 
@@ -102,9 +119,17 @@ public class OnlineUserService {
         userOnline.setTotalGstCharge(totalUserGst);
         userOnline.setGrandTotal(grandTotal);
         userOnline.setSessionId(alphaNumeric.generateRandomNumber());
+        userOnline.setVisitDate(visitDate);
+        userOnline.setBookDate(LocalDate.now());
+        userOnline.setSlotId(slotId);
+        LocalTime slotStartTime = getSlotStartTimeBySlotId(slotId);
+        LocalTime slotEndTime = getSlotEndTimeBySlotId(slotId);
+        userOnline.setSlotStartTime(slotStartTime);
+        userOnline.setSlotEndTime(slotEndTime);
+        userOnline.setCreatedAt(LocalTime.now());
         log.info("publicUserOnline : "+userOnline);
         publicUserOnlineRepository.save(userOnline);
-        Map<String,Object> response = new HashMap<>();
+
         response.put("userData",userOnline);
         response.put("categoryId",category);
         response.put("categoryName","public");
@@ -112,27 +137,51 @@ public class OnlineUserService {
 
     }
 
-    public ResponseEntity<Map<String, Object>> onlineInstitutionTicketBooking(SpotUserDto spotUserDto, Integer category) {
+    private LocalTime getSlotEndTimeBySlotId(Integer slotId) {
+        Optional<SpotSlot> spotSlotOptional = slotRepo.findById(slotId);
+        if (spotSlotOptional.isEmpty()){
+            return null;
+        }
+        SpotSlot slot = spotSlotOptional.get();
+        LocalTime slotTime = slot.getSlotEndTime();
+        return slotTime;
+    }
+
+    private LocalTime getSlotStartTimeBySlotId(Integer slotId) {
+        Optional<SpotSlot> spotSlotOptional = slotRepo.findById(slotId);
+        if (spotSlotOptional.isEmpty()){
+            return null;
+        }
+        SpotSlot slot = spotSlotOptional.get();
+        LocalTime slotTime = slot.getSlotStartTime();
+        return slotTime;
+    }
+
+    public ResponseEntity<Map<String, Object>> onlineInstitutionTicketBooking(OnlineUserDataDto userDto, Integer category) {
         Map<String,Object> response = new HashMap<>();
         try {
+            Integer countOfPeople = userDto.getTeacher() + userDto.getStudent();
+            Integer slotId = userDto.getSlotId();
             InstitutionUserOnline userOnline = new InstitutionUserOnline();
-            userOnline.setName(spotUserDto.getName());
-            userOnline.setPhNumber(spotUserDto.getPhNumber());
-            userOnline.setDistrict(spotUserDto.getDistrict());
-            userOnline.setStudent(spotUserDto.getStudent());
-            userOnline.setTeacher(spotUserDto.getTeacher());
+            userOnline.setName(userDto.getName());
+            userOnline.setPhNumber(userDto.getPhNumber());
+            userOnline.setDistrict(userDto.getDistrict());
+            userOnline.setEmailId(userDto.getEmailId());
+            userOnline.setStudent(userDto.getStudent());
+            userOnline.setTeacher(userDto.getTeacher());
+            userOnline.setCountOfPeople(countOfPeople);
             Double totalTeacherCharge=0.0;  Double totalStudentCharge=0.0;
             Double grandTotal;Integer userCount,typeId;
-            if (spotUserDto.getTeacher()>0){
-                typeId=spotUserDto.getTeacherTypeId();
-                userCount = spotUserDto.getTeacher();
-                totalTeacherCharge = amountCalculation.calculateTotalUserCharge(category,typeId,userCount);
+            if (userDto.getTeacher()>0){
+                typeId=userDto.getTeacherTypeId();
+                userCount = userDto.getTeacher();
+                totalTeacherCharge = amountCalculation.calculateInstitutionCharge(category,typeId,userCount);
             }
 
-            if (spotUserDto.getStudent()>0){
-                typeId=spotUserDto.getStudentTypeId();
-                userCount = spotUserDto.getStudent();
-                totalStudentCharge = amountCalculation.calculateTotalUserCharge(category,typeId,userCount);
+            if (userDto.getStudent()>0){
+                typeId=userDto.getStudentTypeId();
+                userCount = userDto.getStudent();
+                totalStudentCharge = amountCalculation.calculateInstitutionCharge(category,typeId,userCount);
             }
 
             Double totalCharges = totalStudentCharge+totalTeacherCharge;
@@ -151,6 +200,14 @@ public class OnlineUserService {
             userOnline.setTotalGstCharge(totalUserGST);
             userOnline.setGrandTotal(grandTotal);
             userOnline.setSessionId(alphaNumeric.generateRandomNumber());
+            userOnline.setVisitDate(userDto.getVisitDate());
+            userOnline.setBookDate(LocalDate.now());
+            userOnline.setSlotId(userDto.getSlotId());
+            LocalTime slotStartTime = getSlotStartTimeBySlotId(slotId);
+            LocalTime slotEndTime = getSlotEndTimeBySlotId(slotId);
+            userOnline.setSlotStartTime(slotStartTime);
+            userOnline.setSlotEndTime(slotEndTime);
+            userOnline.setCreatedAt(LocalTime.now());
             institutionUserOnlineRepository.save(userOnline);
             response.put("userData",userOnline);
             response.put("categoryName","institution");
@@ -163,30 +220,33 @@ public class OnlineUserService {
         }
     }
 
-    public ResponseEntity<Map<String, Object>> onlineForeignerTicketBooking(SpotUserDto spotUserDto, Integer category) {
+    public ResponseEntity<Map<String, Object>> onlineForeignerTicketBooking(OnlineUserDataDto userDto, Integer category) {
         Map<String,Object> response = new HashMap<>();
         try {
+            Integer slotId = userDto.getSlotId();
             ForeignerUserOnline userOnline = new ForeignerUserOnline();
-            userOnline.setName(spotUserDto.getName());
-            userOnline.setPhNumber(spotUserDto.getPhNumber());
-            userOnline.setAdult(spotUserDto.getAdult());
-            userOnline.setChild(spotUserDto.getChild());
-
+            userOnline.setName(userDto.getName());
+            userOnline.setPhNumber(userDto.getPhNumber());
+            userOnline.setAdult(userDto.getAdult());
+            userOnline.setChild(userDto.getChild());
+            userOnline.setEmailId(userDto.getEmailId());
+            Integer countOfPeople = userDto.getAdult() + userDto.getChild();
+            userOnline.setCountOfPeople(countOfPeople);
             Double totalAdultCharge=0.0;    Double totalChildCharge=0.0;    Double grandTotal;
             Integer userCount,typeId;
-            if (spotUserDto.getAdult()>0){      // calculating ticket charge of foreign adult ticket charge
-                typeId=spotUserDto.getAdultTypeId();
-                userCount = spotUserDto.getAdult();
+            if (userDto.getAdult()>0){      // calculating ticket charge of foreign adult ticket charge
+                typeId=userDto.getAdultTypeId();
+                userCount = userDto.getAdult();
 
-                totalAdultCharge=amountCalculation.calculateTotalUserCharge(category,typeId,userCount);
+                totalAdultCharge=amountCalculation.calculateForeignerCharge(category,typeId,userCount);
             }
             userOnline.setAdultGrandTotal(totalAdultCharge);
 
-            if (spotUserDto.getChild()>0){      // calculating ticket charge of foreign child ticket charge
-                typeId=spotUserDto.getChildTypeId();
-                userCount = spotUserDto.getChild();
+            if (userDto.getChild()>0){      // calculating ticket charge of foreign child ticket charge
+                typeId=userDto.getChildTypeId();
+                userCount = userDto.getChild();
 
-                totalChildCharge=amountCalculation.calculateTotalUserCharge(category,typeId,userCount);
+                totalChildCharge=amountCalculation.calculateForeignerCharge(category,typeId,userCount);
             }
             userOnline.setChildGrandTotal(totalChildCharge);
             Double totalCharges=totalAdultCharge+totalChildCharge;
@@ -204,7 +264,14 @@ public class OnlineUserService {
             userOnline.setTotalGstCharge(totalUserGst);
             userOnline.setGrandTotal(grandTotal);
             userOnline.setSessionId(alphaNumeric.generateRandomNumber());
-
+            userOnline.setVisitDate(userDto.getVisitDate());
+            userOnline.setBookDate(LocalDate.now());
+            LocalTime slotStartTime = getSlotStartTimeBySlotId(slotId);
+            LocalTime slotEndTime = getSlotEndTimeBySlotId(slotId);
+            userOnline.setSlotId(slotId);
+            userOnline.setSlotStartTime(slotStartTime);
+            userOnline.setSlotEndTime(slotEndTime);
+            userOnline.setCreatedAt(LocalTime.now());
             foreignerUserOnlineRepository.save(userOnline);
             response.put("userData",userOnline);
             response.put("categoryName","foreigner");
@@ -233,13 +300,13 @@ public class OnlineUserService {
         if (spotUpdateDto.getAdult()>0){
             typeId = spotUpdateDto.getAdultTypeId();
             userCount = spotUpdateDto.getAdult();
-            totalAdultCharge =amountCalculation.calculateTotalUserCharge(categoryId,typeId,userCount);
+            totalAdultCharge =amountCalculation.calculatePublicCharge(categoryId,typeId,userCount);
         }
 
         if (spotUpdateDto.getChild()>0){ //calculating total child ticket charge
             typeId=spotUpdateDto.getChildTypeId();
             userCount = spotUpdateDto.getChild();
-            totalChildCharge = amountCalculation.calculateTotalUserCharge(categoryId,typeId,userCount);
+            totalChildCharge = amountCalculation.calculatePublicCharge(categoryId,typeId,userCount);
         }
 
         Double totalCharges = totalAdultCharge+totalChildCharge;
@@ -286,13 +353,13 @@ public class OnlineUserService {
             typeId = spotUpdateDto.getTeacherTypeId();
             userCount = spotUpdateDto.getTeacher(); // total no.of teacher's count
             //calculating total teacher's ticket charge by categoryId, userTypeId and count
-            totalTeacherCharge = amountCalculation.calculateTotalUserCharge(categoryId,typeId,userCount);
+            totalTeacherCharge = amountCalculation.calculateInstitutionCharge(categoryId,typeId,userCount);
         }
         if (spotUpdateDto.getStudent()>0){ // calculating total students ticket charge
             typeId=spotUpdateDto.getStudentTypeId();
             userCount=spotUpdateDto.getStudent();     // total no.of students count.
             //calculating total students ticket charge by categoryId, userTypeId and count
-            totalStudentCharge = amountCalculation.calculateTotalUserCharge(categoryId,typeId,userCount);
+            totalStudentCharge = amountCalculation.calculateInstitutionCharge(categoryId,typeId,userCount);
         }
         Double totalCharges = totalStudentCharge+totalTeacherCharge;
 
@@ -338,13 +405,13 @@ public class OnlineUserService {
             typeId=spotUpdateDto.getAdultTypeId();
             userCount = spotUpdateDto.getAdult();
 
-            totalAdultCharge=amountCalculation.calculateTotalUserCharge(categoryId,typeId,userCount);
+            totalAdultCharge=amountCalculation.calculateForeignerCharge(categoryId,typeId,userCount);
         }
         if (spotUpdateDto.getChild()>0){      // calculating ticket charge of foreign child ticket charge
             typeId=spotUpdateDto.getChildTypeId();
             userCount = spotUpdateDto.getChild();
 
-            totalChildCharge=amountCalculation.calculateTotalUserCharge(categoryId,typeId,userCount);
+            totalChildCharge=amountCalculation.calculateForeignerCharge(categoryId,typeId,userCount);
         }
         Double totalCharges=totalAdultCharge+totalChildCharge;
 
@@ -368,8 +435,6 @@ public class OnlineUserService {
         response.put("categoryName","foreigner");
         response.put("message","foreigner details are updated");
         return new ResponseEntity<>(response,HttpStatus.OK);
-
-
     }
 
     public Map<String, Object> makeOnlinePayment(Integer categoryId, String sessionId, double payAmount) {

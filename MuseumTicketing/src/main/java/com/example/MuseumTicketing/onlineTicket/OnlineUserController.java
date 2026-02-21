@@ -15,6 +15,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping(path = "/beta/api/onlineBooking")
+@CrossOrigin
 public class OnlineUserController {
     @Autowired
     private OnlineUserService onlineUserService;
@@ -22,18 +23,18 @@ public class OnlineUserController {
     private CategoryRepo categoryRepo;
 
     @PostMapping(path = "/onlineUserReg")
-    public ResponseEntity<Map<String,Object>>onlineUserRegistration(@RequestParam Integer category,@RequestBody SpotUserDto spotUserDto){
+    public ResponseEntity<Map<String,Object>>onlineUserRegistration(@RequestParam Integer category,@RequestBody OnlineUserDataDto onlineUserDto){
         Map<String,Object>response = new HashMap<>();
         try {
             String categoryName = categoryRepo.findById(category).map(CategoryData::getCategory).orElse(null);
             if ("Public".equalsIgnoreCase(categoryName)){
-                return onlineUserService.onlinePublicTicketBooking(spotUserDto,category);
+                return onlineUserService.onlinePublicTicketBooking(onlineUserDto,category);
             }
             if ("Institution".equalsIgnoreCase(categoryName)){
-                return onlineUserService.onlineInstitutionTicketBooking(spotUserDto,category);
+                return onlineUserService.onlineInstitutionTicketBooking(onlineUserDto,category);
             }
             if ("Foreigner".equalsIgnoreCase(categoryName)){
-                return onlineUserService.onlineForeignerTicketBooking(spotUserDto,category);
+                return onlineUserService.onlineForeignerTicketBooking(onlineUserDto,category);
             }
             response.put("Error","CategoryName is not present");
             return new ResponseEntity<>(response,HttpStatus.NOT_FOUND);
