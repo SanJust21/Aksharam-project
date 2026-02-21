@@ -9,5 +9,6 @@ public class PriceDto {
     private String categoryName;
     private Integer typeId;
     private String typeName;
+    private String type;
     private Double price;
 }

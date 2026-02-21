@@ -156,6 +156,7 @@ public class CategoryService {
             dto.setId(data.getId());
             dto.setTypeId(typeId);
             dto.setTypeName(data.getType());
+            dto.setType(data.getType());
             dto.setCategoryId(categoryId);
             dto.setCategoryName(categoryRepo.findById(data.getCategoryId()).map(CategoryData::getCategory).orElse(null));
             Double price = priceDataRepo.findByCategoryIdAndTypeId(categoryId,typeId).map(PriceData::getPrice).orElse(0.0);
