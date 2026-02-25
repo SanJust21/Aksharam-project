@@ -119,6 +119,7 @@ public class OnlineUserService {
         userOnline.setTotalGstCharge(totalUserGst);
         userOnline.setGrandTotal(grandTotal);
         userOnline.setSessionId(alphaNumeric.generateRandomNumber());
+        userOnline.setBookingId(alphaNumeric.generateOnlineRandomNumber());
         userOnline.setVisitDate(visitDate);
         userOnline.setBookDate(LocalDate.now());
         userOnline.setSlotId(slotId);
@@ -128,6 +129,7 @@ public class OnlineUserService {
         userOnline.setSlotEndTime(slotEndTime);
         userOnline.setCreatedAt(LocalTime.now());
         log.info("publicUserOnline : "+userOnline);
+        response=lockUserSeatForTemporaryTimePeriod(slotId,visitDate,countOfPeople);
         publicUserOnlineRepository.save(userOnline);
 
         response.put("userData",userOnline);
@@ -136,6 +138,34 @@ public class OnlineUserService {
         return new ResponseEntity<>(response, HttpStatus.OK);
 
     }
+
+    private Map<String, Object> lockUserSeatForTemporaryTimePeriod(Integer slotId, LocalDate visitDate, Integer countOfPeople) {
+        Map<String,Object> response = new HashMap<>();
+        Optional<BookingDetails> bookingSpotRepoOptional = bookingSpotRepo.findByBookDateAndSlotId(visitDate,slotId);
+        if (bookingSpotRepoOptional.isEmpty()){
+            response.put("message","can't be reduce the seatCapacity.!!!!");
+            response.put("visitDate",visitDate);
+            response.put("slotId",slotId);
+            response.put("slotStartTime",bookingSpotRepoOptional.get().getSlotStartTime());
+            response.put("slotEndTime",bookingSpotRepoOptional.get().getSlotEndTime());
+            return response;
+        }
+        BookingDetails bDetails = bookingSpotRepoOptional.get();
+        Integer pCapacity = bDetails.getPresentCapacity();
+        if (countOfPeople>pCapacity){
+            response.put("message","presentCapacity is underFlow");
+            response.put("seat",countOfPeople);
+            response.put("presentCapacity",pCapacity);
+            return response;
+        }else {
+            pCapacity -= countOfPeople;
+            bDetails.setPresentCapacity(pCapacity);
+            bookingSpotRepo.save(bDetails);
+            response.put("bookingDetails",bDetails);
+            return response;
+        }
+    }
+
 
     private LocalTime getSlotEndTimeBySlotId(Integer slotId) {
         Optional<SpotSlot> spotSlotOptional = slotRepo.findById(slotId);
@@ -200,7 +230,9 @@ public class OnlineUserService {
             userOnline.setTotalGstCharge(totalUserGST);
             userOnline.setGrandTotal(grandTotal);
             userOnline.setSessionId(alphaNumeric.generateRandomNumber());
-            userOnline.setVisitDate(userDto.getVisitDate());
+            userOnline.setBookingId(alphaNumeric.generateOnlineRandomNumber());
+            LocalDate visitDate = userDto.getVisitDate();
+            userOnline.setVisitDate(visitDate);
             userOnline.setBookDate(LocalDate.now());
             userOnline.setSlotId(userDto.getSlotId());
             LocalTime slotStartTime = getSlotStartTimeBySlotId(slotId);
@@ -208,6 +240,7 @@ public class OnlineUserService {
             userOnline.setSlotStartTime(slotStartTime);
             userOnline.setSlotEndTime(slotEndTime);
             userOnline.setCreatedAt(LocalTime.now());
+            response = lockUserSeatForTemporaryTimePeriod(slotId,visitDate,countOfPeople);
             institutionUserOnlineRepository.save(userOnline);
             response.put("userData",userOnline);
             response.put("categoryName","institution");
@@ -264,7 +297,9 @@ public class OnlineUserService {
             userOnline.setTotalGstCharge(totalUserGst);
             userOnline.setGrandTotal(grandTotal);
             userOnline.setSessionId(alphaNumeric.generateRandomNumber());
-            userOnline.setVisitDate(userDto.getVisitDate());
+            userOnline.setBookingId(alphaNumeric.generateOnlineRandomNumber());
+            LocalDate visitDate = userDto.getVisitDate();
+            userOnline.setVisitDate(visitDate);
             userOnline.setBookDate(LocalDate.now());
             LocalTime slotStartTime = getSlotStartTimeBySlotId(slotId);
             LocalTime slotEndTime = getSlotEndTimeBySlotId(slotId);
@@ -272,6 +307,7 @@ public class OnlineUserService {
             userOnline.setSlotStartTime(slotStartTime);
             userOnline.setSlotEndTime(slotEndTime);
             userOnline.setCreatedAt(LocalTime.now());
+            response = lockUserSeatForTemporaryTimePeriod(slotId,visitDate,countOfPeople);
             foreignerUserOnlineRepository.save(userOnline);
             response.put("userData",userOnline);
             response.put("categoryName","foreigner");
@@ -638,10 +674,10 @@ public class OnlineUserService {
     }
 
     private boolean verifySignature(String orderId, String paymentId, String signatureData) {
-        String secret = "iOSGwx2YAmHsl2dNuzfi1bSa";
+//        String secret = "iOSGwx2YAmHsl2dNuzfi1bSa";
 
         String generatedSignature = orderId+"|"+paymentId;
-        generatedSignature = HmacUtils.hmacSha256Hex(secret,generatedSignature);
+        generatedSignature = HmacUtils.hmacSha256Hex(razorpayKeySecret,generatedSignature);
 
         return generatedSignature.equals(signatureData);
     }
