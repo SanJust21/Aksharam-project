@@ -629,8 +629,6 @@ public class SlotDetailsService {
                 bookingDetails.setPresentStatus(spotSlot.getStatus());
                 bookingSpotRepo.save(bookingDetails);
                 return new ResponseEntity<>(bookingDetails,HttpStatus.CREATED);
-            }else {
-                return new ResponseEntity<>("No slots are available at the present time: "+nowTime,HttpStatus.NOT_FOUND);
             }
         }
         return new ResponseEntity<>(bookingDetails,HttpStatus.OK);
