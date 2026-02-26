@@ -25,4 +25,11 @@ public class AlphaNumeric {
         String otp =String.valueOf(100000 + new Random().nextInt(900000));
         return otp;
     }
+
+    private static final String ONLINE_BOOKING_PREFIX = "AKM_ONLINE";
+    Integer onlineLength = 4;
+    public String generateOnlineRandomNumber(){
+        String number = RandomStringUtils.randomNumeric(onlineLength);
+        return ONLINE_BOOKING_PREFIX+number;
+    }
 }
