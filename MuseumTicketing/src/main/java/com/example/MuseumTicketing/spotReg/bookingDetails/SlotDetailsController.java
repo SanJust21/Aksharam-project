@@ -8,6 +8,7 @@ import com.example.MuseumTicketing.spotReg.bookingDetails.slotData.SlotSpotDto;
 import com.example.MuseumTicketing.spotReg.bookingDetails.slotData.SpotSlot;
 import com.example.MuseumTicketing.spotReg.bookingDetails.slotData.SpotSlotRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -77,9 +78,9 @@ public class SlotDetailsController {
     }
 
     @GetMapping(path = "/bookDate")
-    public ResponseEntity<?>getDateAndSlot(@RequestParam LocalDate bDate){
+    public ResponseEntity<?>getDateAndSlot(@RequestParam LocalDate bDate,@RequestParam(defaultValue = "SpotBooking") String modeType){
         try {
-            return slotDetailsService.generateDateAndSlot(bDate);
+            return slotDetailsService.generateDateAndSlot(bDate,modeType);
         }catch (Exception e){
             return errorService.handlerException(e);
         }

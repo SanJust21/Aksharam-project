@@ -28,4 +28,6 @@ public interface PublicRepo extends JpaRepository<PublicData,Long> {
     List<PublicData> findByPaymentModeAndVisitDate(Integer paymentModeId, LocalDate dateDetails);
 
     List<PublicData> findByVisitDateBetweenAndPaymentMode(LocalDate startDate, LocalDate endDate, Integer paymentId);
+
+    List<PublicData> findByVisitDateAndSlotId(LocalDate bDate, Integer slotId);
 }

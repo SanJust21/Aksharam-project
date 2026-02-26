@@ -25,4 +25,6 @@ public interface ForeignerDataRepo extends JpaRepository<ForeignerData,Long> {
     List<ForeignerData> findByPaymentModeAndVisitDate(Integer paymentModeId, LocalDate dateDetails);
 
     List<ForeignerData> findByVisitDateBetweenAndPaymentMode(LocalDate startDate, LocalDate endDate, Integer paymentId);
+
+    List<ForeignerData> findByVisitDateAndSlotId(LocalDate bDate, Integer slotId);
 }
