@@ -68,7 +68,7 @@ public class InstitutionUserOnline {
     private String ticketId;
 
     @Column(name = "bookingId")
-    private Integer bookingId;
+    private String bookingId;
 
     @Column(name = "slotId")
     private Integer slotId;
