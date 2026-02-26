@@ -199,14 +199,13 @@ public class SlotDetailsService {
     }
 
     private ResponseEntity<?> createOnlineNewBookingDetailsByBookDate(LocalDate bDate, String modeType) {
-        BookingDetails bookingDetails = new BookingDetails();
-        bookingDetails.setBookDate(bDate);
         LocalTime nowTime = LocalTime.now();
         List<SpotSlot> spotSlotList = spotSlotRepo.findAll();
         if (spotSlotList.isEmpty()){
             return new ResponseEntity<>("Create slot at least one.!",HttpStatus.NOT_FOUND);
         }
         for (SpotSlot slot : spotSlotList){
+            BookingDetails bookingDetails = new BookingDetails();
             bookingDetails.setBookDate(bDate);
             bookingDetails.setSlotId(slot.getId());
             bookingDetails.setSlotStartTime(slot.getSlotStartTime());
