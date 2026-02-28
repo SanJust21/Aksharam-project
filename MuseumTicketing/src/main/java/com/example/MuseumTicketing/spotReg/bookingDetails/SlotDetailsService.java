@@ -136,6 +136,10 @@ public class SlotDetailsService {
         }
         List<BookingDetails> bookingDetailsList = bookingSpotRepo.findByBookDate(bDate);
         if (bookingDetailsList.isEmpty()){
+            List<BookingDetails> bookingDetailList = bookingSpotRepo.findAll();
+            if (!bookingDetailList.isEmpty()){
+                bookingSpotRepo.deleteAll(bookingDetailList);
+            }
             List<SpotSlot> spotSlotList = spotSlotRepo.findAll();
             if (spotSlotList.isEmpty()){
                 return new ResponseEntity<>("Create slot at least one.!",HttpStatus.NOT_FOUND);
