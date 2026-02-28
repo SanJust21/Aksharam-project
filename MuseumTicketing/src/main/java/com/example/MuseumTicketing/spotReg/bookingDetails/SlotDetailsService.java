@@ -120,12 +120,8 @@ public class SlotDetailsService {
         return new ResponseEntity<>("Id isn't valid",HttpStatus.BAD_REQUEST);
     }
 
-
-
-
-
-
     public ResponseEntity<?> generateDateAndSlot(LocalDate bDate,String modeType) {
+        bookingSpotRepo.deleteByBookDateBefore(LocalDate.now());
         String messageId = null;
         if (modeType==null || modeType.isBlank()){
             modeType = "SpotBooking";
@@ -136,10 +132,6 @@ public class SlotDetailsService {
         }
         List<BookingDetails> bookingDetailsList = bookingSpotRepo.findByBookDate(bDate);
         if (bookingDetailsList.isEmpty()){
-            List<BookingDetails> bookingDetailList = bookingSpotRepo.findAll();
-            if (!bookingDetailList.isEmpty()){
-                bookingSpotRepo.deleteAll(bookingDetailList);
-            }
             List<SpotSlot> spotSlotList = spotSlotRepo.findAll();
             if (spotSlotList.isEmpty()){
                 return new ResponseEntity<>("Create slot at least one.!",HttpStatus.NOT_FOUND);
