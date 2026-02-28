@@ -127,27 +127,37 @@ public class SlotDetailsService {
 
     public ResponseEntity<?> generateDateAndSlot(LocalDate bDate,String modeType) {
         String messageId = null;
-        if (modeType==null || modeType.isEmpty() || modeType.isBlank()){
-            messageId = "modeType is required.";
-            return new ResponseEntity<>(messageId,HttpStatus.NOT_FOUND);
+        if (modeType==null || modeType.isBlank()){
+            modeType = "SpotBooking";
         }
-        if ("Online".equalsIgnoreCase(modeType)){
-            List<BookingDetails> bookingDetailsList = bookingSpotRepo.findByBookDate(bDate);
-            if (bookingDetailsList.isEmpty()){
-                return createOnlineNewBookingDetailsByBookDate(bDate,modeType);
+        if (bDate==null){
+            messageId = "bookDate is required.";
+            return new ResponseEntity<>(messageId,HttpStatus.BAD_REQUEST);
+        }
+        List<BookingDetails> bookingDetailsList = bookingSpotRepo.findByBookDate(bDate);
+        if (bookingDetailsList.isEmpty()){
+            List<SpotSlot> spotSlotList = spotSlotRepo.findAll();
+            if (spotSlotList.isEmpty()){
+                return new ResponseEntity<>("Create slot at least one.!",HttpStatus.NOT_FOUND);
             }
-            return existingBookingInOnlineByBookDate(bookingDetailsList,modeType,bDate);
-        }
+            for (SpotSlot slot : spotSlotList){
+                BookingDetails bookingDetails = new BookingDetails();
+                bookingDetails.setBookDate(bDate);
+                bookingDetails.setSlotId(slot.getId());
+                bookingDetails.setSlotStartTime(slot.getSlotStartTime());
+                bookingDetails.setSlotEndTime(slot.getSlotEndTime());
+                bookingDetails.setPresentCapacity(slot.getTotalCapacity());
+                bookingDetails.setTotalCapacity(slot.getTotalCapacity());
+                bookingDetails.setPresentStatus(slot.getStatus());
+                bookingSpotRepo.save(bookingDetails);
+            }
+            return new ResponseEntity<>(getSlotDetailsWithTheDateAndModeType(bDate,modeType),HttpStatus.OK);
+        }else {
+            return new ResponseEntity<>(getSlotDetailsWithTheDateAndModeType(bDate,modeType),HttpStatus.OK);
 
-        if ("SpotBooking".equalsIgnoreCase(modeType)){
-            List<BookingDetails> bookingDetailsList = bookingSpotRepo.findByBookDate(bDate);
-            if (bookingDetailsList.isEmpty()){
-                return createNewBookingDetailsByBookDate(bDate,modeType);
-            }
-            return existingBookingSeatDetailsByBookDate(bookingDetailsList,modeType,bDate);
         }
-        messageId = "ModeType cannot be find.";
-        return new ResponseEntity<>(messageId,HttpStatus.NOT_FOUND);
+//        messageId = "ModeType cannot be find.";
+//        return new ResponseEntity<>(messageId,HttpStatus.NOT_FOUND);
 //        List<BookingDetails> bookingDetailsList = bookingSpotRepo.findByBookDate(bDate);
 //        if (!bookingDetailsList.isEmpty()){
 //            for (BookingDetails bookingDetails : bookingDetailsList){
@@ -196,6 +206,290 @@ public class SlotDetailsService {
 //            }
 //        }
 //        return new ResponseEntity<>("No slots are available at "+now,HttpStatus.NO_CONTENT);
+    }
+
+    private ResponseEntity<?> getSlotDetailsWithTheDateAndModeType(LocalDate bDate, String modeType) {
+        LocalDate currentDate = LocalDate.now();
+        List<BookingDetails> bookingDetailsList = bookingSpotRepo.findByBookDate(bDate);
+        List<BookingSlotDto> slotDtoList = new ArrayList<>();
+        String messageId=null;
+        if ("Online".equalsIgnoreCase(modeType)){
+            if (currentDate.isEqual(bDate)&& !bookingDetailsList.isEmpty()){ // in Response : runningSlotDetails + upComingSlotDetails.
+                //bookDate == visitDate
+                for (BookingDetails bDetails:bookingDetailsList){
+                    checkCategoryPublicHoldTicket(currentDate,bDetails);
+                    checkCategoryInstitutionHoldTicket(currentDate,bDetails);
+                    checkCategoryForeignerHoldTicket(currentDate,bDetails);
+                    if (bDetails.getSlotEndTime().isAfter(LocalTime.now())){
+                        BookingSlotDto slotDto = new BookingSlotDto();
+                        slotDto.setSlotId(bDetails.getSlotId());
+                        slotDto.setBookDate(bDetails.getBookDate());
+                        slotDto.setSlotStartTime(bDetails.getSlotStartTime());
+                        slotDto.setSlotEndTime(bDetails.getSlotEndTime());
+                        slotDto.setPresentCapacity(bDetails.getPresentCapacity());
+                        slotDto.setTotalCapacity(bDetails.getTotalCapacity());
+                        slotDto.setPresentStatus(bDetails.getPresentStatus());
+                        slotDtoList.add(slotDto);
+                    }
+                }
+                return new ResponseEntity<>(slotDtoList,HttpStatus.OK);
+
+            }else {
+                // in bDate Response(upcomingDate) : all slots are upComing, allSlotDetails.
+                //visitDate and bookDate are different.
+                if (!bookingDetailsList.isEmpty()){
+                    for (BookingDetails bDetails:bookingDetailsList){
+                        checkOnlinePublicTicketHold(bDate,bDetails);
+                        checkOnlineInstitutionTicketHold(bDate,bDetails);
+                        checkOnlineForeignerTicketHold(bDate,bDetails);
+                        BookingSlotDto slotDto = new BookingSlotDto();
+                        slotDto.setSlotId(bDetails.getSlotId());
+                        slotDto.setBookDate(bDetails.getBookDate());
+                        slotDto.setSlotStartTime(bDetails.getSlotStartTime());
+                        slotDto.setSlotEndTime(bDetails.getSlotEndTime());
+                        slotDto.setPresentCapacity(bDetails.getPresentCapacity());
+                        slotDto.setTotalCapacity(bDetails.getTotalCapacity());
+                        slotDto.setPresentStatus(bDetails.getPresentStatus());
+                        slotDtoList.add(slotDto);
+                    }
+
+                }
+                return new ResponseEntity<>(slotDtoList,HttpStatus.OK);
+            }
+        }
+
+        if ("SpotBooking".equalsIgnoreCase(modeType)){
+            LocalTime nowTime = LocalTime.now();
+            if (currentDate.isEqual(bDate)&& !bookingDetailsList.isEmpty()){
+                for (BookingDetails bDetails:bookingDetailsList){
+                    if (!nowTime.isBefore(bDetails.getSlotStartTime()) && nowTime.isBefore(bDetails.getSlotStartTime())){
+                        BookingSlotDto slotDto = new BookingSlotDto();
+                        slotDto.setSlotId(bDetails.getSlotId());
+                        slotDto.setBookDate(bDetails.getBookDate());
+                        slotDto.setSlotStartTime(bDetails.getSlotStartTime());
+                        slotDto.setSlotEndTime(bDetails.getSlotEndTime());
+                        slotDto.setPresentCapacity(bDetails.getPresentCapacity());
+                        slotDto.setTotalCapacity(bDetails.getTotalCapacity());
+                        slotDto.setPresentStatus(bDetails.getPresentStatus());
+                        return new ResponseEntity<>(slotDto,HttpStatus.OK);
+                    }else {
+                        messageId = "No slot is available at the present time. : "+nowTime;
+                        return new ResponseEntity<>(messageId,HttpStatus.NOT_FOUND);
+                    }
+                }
+            }
+        }
+        messageId = "modeType is not correct. : "+modeType;
+        return new ResponseEntity<>(messageId,HttpStatus.NOT_FOUND);
+    }
+
+    private void checkOnlineForeignerTicketHold(LocalDate bDate, BookingDetails bDetails) {
+        List<ForeignerUserOnline> foreignerUserOnlineList = fUserOnlineRepository.findByVisitDate(bDate);
+        int totalTicketCount=0;
+        LocalDateTime currentDateTime = LocalDateTime.now();
+        if (!foreignerUserOnlineList.isEmpty()){
+            for (ForeignerUserOnline userOnline:foreignerUserOnlineList){
+                LocalDateTime createdAt = userOnline.getCreatedAt();
+                LocalDateTime expiryTime = createdAt.plusMinutes(onlineTimeInterval);
+                if (currentDateTime.isAfter(expiryTime)){
+                    String paymentId = userOnline.getPaymentId();
+                    Boolean paymentStatus = userOnline.isPaymentStatus();
+                    if (paymentId==null||paymentId.isBlank()||Boolean.FALSE.equals(paymentStatus)){
+                        totalTicketCount+=userOnline.getCountOfPeople();
+                        fUserOnlineRepository.delete(userOnline);
+                    }
+                }
+            }
+            if (totalTicketCount>0){
+                bDetails.setPresentCapacity(bDetails.getPresentCapacity()+totalTicketCount);
+                bookingSpotRepo.save(bDetails);
+            }
+        }
+    }
+
+    private void checkOnlineInstitutionTicketHold(LocalDate bDate, BookingDetails bDetails) {
+        List<InstitutionUserOnline> institutionUserOnlineList = iUserOnlineRepository.findByVisitDate(bDate);
+        int totalTicketCount=0;
+        LocalDateTime currentDateTime = LocalDateTime.now();
+        for (InstitutionUserOnline userOnline:institutionUserOnlineList){
+            LocalDateTime createdAt = userOnline.getCreatedAt();
+            LocalDateTime expiryTime = createdAt.plusMinutes(onlineTimeInterval);
+            if (currentDateTime.isAfter(expiryTime)){
+                String paymentId = userOnline.getPaymentId();
+                Boolean paymentStatus = userOnline.isPaymentStatus();
+                if (paymentId==null||paymentId.isBlank()||Boolean.FALSE.equals(paymentStatus)){
+                    totalTicketCount+=userOnline.getCountOfPeople();
+                    iUserOnlineRepository.delete(userOnline);
+                }
+            }
+        }
+        if (totalTicketCount>0){
+            bDetails.setPresentCapacity(bDetails.getPresentCapacity()+totalTicketCount);
+            bookingSpotRepo.save(bDetails);
+        }
+    }
+
+    private void checkOnlinePublicTicketHold(LocalDate bDate, BookingDetails bDetails) {
+        List<PublicUserOnline> publicUserOnlineList = pUserOnlineRepository.findByVisitDate(bDate);
+        int totalTicketCount=0;LocalDateTime currentDateTime = LocalDateTime.now();
+        if (!publicUserOnlineList.isEmpty()){
+            for (PublicUserOnline userOnline:publicUserOnlineList){
+                LocalDateTime createdAt = userOnline.getCreatedAt();
+                LocalDateTime expiryTime = createdAt.plusMinutes(onlineTimeInterval);
+                if (currentDateTime.isAfter(expiryTime)){
+                    String paymentId = userOnline.getPaymentId();
+                    Boolean paymentStatus = userOnline.isPaymentStatus();
+                    if (paymentId==null||paymentId.isBlank()||Boolean.FALSE.equals(paymentStatus)){
+                        totalTicketCount+=userOnline.getCountOfPeople();
+                        pUserOnlineRepository.delete(userOnline);
+                    }
+                }
+            }
+            if (totalTicketCount>0){
+                bDetails.setPresentCapacity(bDetails.getPresentCapacity()+totalTicketCount);
+                bookingSpotRepo.save(bDetails);
+            }
+        }
+    }
+
+
+    private void checkCategoryForeignerHoldTicket(LocalDate currentDate, BookingDetails bDetails) {
+        List<ForeignerData> foreignerDataList = foreignerDataRepo.findByVisitDate(currentDate);
+        List<ForeignerUserOnline> foreignerUserOnlineList = fUserOnlineRepository.findByBookDate(currentDate);
+        LocalTime currentTime = LocalTime.now();
+        int totalTicketCount = 0;
+        if (!foreignerDataList.isEmpty()){
+            for (ForeignerData fData:foreignerDataList){
+                LocalTime createdAt = fData.getCreatedTime();
+                LocalTime expiryTime = createdAt.plusMinutes(spotTimeInterval);
+                if (currentTime.isAfter(expiryTime)){
+                    String paymentId = fData.getPaymentId();
+                    Integer paymentStatusId = fData.getPaymentStatusId();
+                    String paymentStatus = paymentStatusRepo.findById(paymentStatusId).map(PaymentStatus::getStatusName).orElse(null);
+                    if (paymentId==null ||paymentId.isBlank()||"Pending".equalsIgnoreCase(paymentStatus)){
+                        totalTicketCount+=fData.getCountOfPeople();
+                        foreignerDataRepo.delete(fData);
+                    }
+                }
+            }
+            if (totalTicketCount>0){
+                bDetails.setPresentCapacity(bDetails.getPresentCapacity()+totalTicketCount);
+                bookingSpotRepo.save(bDetails);
+            }
+        }
+        if (!foreignerUserOnlineList.isEmpty()){
+            totalTicketCount=0;
+            LocalDateTime currentDateTime = LocalDateTime.now();
+            for (ForeignerUserOnline userOnline:foreignerUserOnlineList){
+                LocalDateTime createdAt = userOnline.getCreatedAt();
+                LocalDateTime expiryTime = createdAt.plusMinutes(onlineTimeInterval);
+                if (currentDateTime.isAfter(expiryTime)){
+                    String paymentId = userOnline.getPaymentId();
+                    Boolean paymentStatus = userOnline.isPaymentStatus();
+                    if (paymentId==null||paymentId.isBlank()||Boolean.FALSE.equals(paymentStatus)){
+                        totalTicketCount+=userOnline.getCountOfPeople();
+                        fUserOnlineRepository.delete(userOnline);
+                    }
+                }
+            }
+            if (totalTicketCount>0){
+                bDetails.setPresentCapacity(bDetails.getPresentCapacity()+totalTicketCount);
+                bookingSpotRepo.save(bDetails);
+            }
+        }
+    }
+
+    private void checkCategoryInstitutionHoldTicket(LocalDate currentDate, BookingDetails bDetails) {
+        List<InstitutionData> institutionDataList = institutionDataRepo.findByVisitDate(currentDate);
+        List<InstitutionUserOnline> institutionUserOnlineList = iUserOnlineRepository.findByBookDate(currentDate);
+        LocalTime currentTime = LocalTime.now();
+        int totalTicketCount = 0;
+        if (!institutionDataList.isEmpty()){
+            for (InstitutionData iData:institutionDataList){
+                LocalTime createdAt = iData.getCreatedTime();
+                LocalTime expiryTime = createdAt.plusMinutes(spotTimeInterval);
+                if (currentTime.isAfter(expiryTime)){
+                    String paymentId = iData.getPaymentId();
+                    Integer paymentStatusId = iData.getPaymentStatusId();
+                    String paymentStatus = paymentStatusRepo.findById(paymentStatusId).map(PaymentStatus::getStatusName).orElse(null);
+                    if (paymentId==null ||paymentId.isBlank()|| "Pending".equalsIgnoreCase(paymentStatus)){
+                        totalTicketCount+=iData.getCountOfPeople();
+                        institutionDataRepo.delete(iData);
+                    }
+                }
+            }
+            if (totalTicketCount>0){
+                bDetails.setPresentCapacity(bDetails.getPresentCapacity()+totalTicketCount);
+                bookingSpotRepo.save(bDetails);
+            }
+        }
+
+        if (!institutionUserOnlineList.isEmpty()){
+            totalTicketCount=0;
+            LocalDateTime currentDateTime = LocalDateTime.now();
+            for (InstitutionUserOnline userOnline:institutionUserOnlineList){
+                LocalDateTime createdAt = userOnline.getCreatedAt();
+                LocalDateTime expiryTime = createdAt.plusMinutes(onlineTimeInterval);
+                if (currentDateTime.isAfter(expiryTime)){
+                    String paymentId = userOnline.getPaymentId();
+                    Boolean paymentStatus = userOnline.isPaymentStatus();
+                    if (paymentId==null||paymentId.isBlank()||Boolean.FALSE.equals(paymentStatus)){
+                        totalTicketCount+=userOnline.getCountOfPeople();
+                        iUserOnlineRepository.delete(userOnline);
+                    }
+                }
+            }
+            if (totalTicketCount>0){
+                bDetails.setPresentCapacity(bDetails.getPresentCapacity()+totalTicketCount);
+                bookingSpotRepo.save(bDetails);
+            }
+        }
+    }
+
+    private void checkCategoryPublicHoldTicket(LocalDate currentDate, BookingDetails bDetails) {
+        List<PublicData> publicDataList = publicRepo.findByVisitDate(currentDate);
+        List<PublicUserOnline> publicUserOnlineList = pUserOnlineRepository.findByBookDate(currentDate);
+        LocalTime currentTime = LocalTime.now();
+        int totalTicketCount = 0;
+        if (!publicDataList.isEmpty()){
+            for (PublicData pData:publicDataList){
+                LocalTime createdAt = pData.getCreatedTime();
+                LocalTime expiryTime = createdAt.plusMinutes(spotTimeInterval);
+                if (currentTime.isAfter(expiryTime)){
+                    String paymentId = pData.getPaymentId();
+                    Integer paymentStatusId = pData.getPaymentStatusId();
+                    String paymentStatus = paymentStatusRepo.findById(paymentStatusId).map(PaymentStatus::getStatusName).orElse(null);
+                    if (paymentId==null ||paymentId.isBlank()||"Pending".equalsIgnoreCase(paymentStatus)){
+                        totalTicketCount+=pData.getCountOfPeople();
+                        publicRepo.delete(pData);
+                    }
+                }
+            }
+            if (totalTicketCount>0){
+                bDetails.setPresentCapacity(bDetails.getPresentCapacity()+totalTicketCount);
+                bookingSpotRepo.save(bDetails);
+            }
+        }
+        if (!publicUserOnlineList.isEmpty()){
+            totalTicketCount=0;
+            LocalDateTime currentDateTime = LocalDateTime.now();
+            for (PublicUserOnline userOnline:publicUserOnlineList){
+                LocalDateTime createdAt = userOnline.getCreatedAt();
+                LocalDateTime expiryTime = createdAt.plusMinutes(onlineTimeInterval);
+                if (currentDateTime.isAfter(expiryTime)){
+                    String paymentId = userOnline.getPaymentId();
+                    Boolean paymentStatus = userOnline.isPaymentStatus();
+                    if (paymentId==null||paymentId.isBlank()||Boolean.FALSE.equals(paymentStatus)){
+                        totalTicketCount+=userOnline.getCountOfPeople();
+                        pUserOnlineRepository.delete(userOnline);
+                    }
+                }
+            }
+            if (totalTicketCount>0){
+                bDetails.setPresentCapacity(bDetails.getPresentCapacity()+totalTicketCount);
+                bookingSpotRepo.save(bDetails);
+            }
+        }
     }
 
     private ResponseEntity<?> createOnlineNewBookingDetailsByBookDate(LocalDate bDate, String modeType) {
@@ -283,10 +577,10 @@ public class SlotDetailsService {
         List<ForeignerUserOnline> foreignerUserOnlineList = fUserOnlineRepository.findByBookDateAndSlotId(bDate,slotId);
         if (!foreignerUserOnlineList.isEmpty()){
             for (ForeignerUserOnline userOnline : foreignerUserOnlineList){
-                LocalTime createdAt = userOnline.getCreatedAt();
+                LocalDateTime createdAt = userOnline.getCreatedAt();
                 Integer countOfTicket = userOnline.getCountOfPeople();
-                LocalTime expiryTime = createdAt.plusMinutes(onlineTimeInterval);
-                LocalTime currentTime = LocalTime.now();
+                LocalDateTime expiryTime = createdAt.plusMinutes(onlineTimeInterval);
+                LocalDateTime currentTime = LocalDateTime.now();
                 if (currentTime.isAfter(expiryTime)){
                     String paymentId = userOnline.getPaymentId();
                     Boolean paymentStatus = userOnline.isPaymentStatus();
@@ -307,10 +601,10 @@ public class SlotDetailsService {
         List<ForeignerUserOnline> foreignerUserOnlineList = fUserOnlineRepository.findByBookDate(currentDate);
         if (!foreignerUserOnlineList.isEmpty()){
             for (ForeignerUserOnline userOnline:foreignerUserOnlineList){
-                LocalTime createdAt = userOnline.getCreatedAt();
+                LocalDateTime createdAt = userOnline.getCreatedAt();
                 Integer countOfTicket = userOnline.getCountOfPeople();
-                LocalTime expiryTime = createdAt.plusMinutes(onlineTimeInterval);
-                LocalTime currentTime = LocalTime.now();
+                LocalDateTime expiryTime = createdAt.plusMinutes(onlineTimeInterval);
+                LocalDateTime currentTime = LocalDateTime.now();
                 if (currentTime.isAfter(expiryTime)){
                     String paymentId = userOnline.getPaymentId();
                     Boolean paymentStatus = userOnline.isPaymentStatus();
@@ -334,10 +628,10 @@ public class SlotDetailsService {
         List<InstitutionUserOnline> institutionUserOnlineList = iUserOnlineRepository.findByBookDateAndSlotId(bDate,slotId);
         if (!institutionUserOnlineList.isEmpty()){
             for (InstitutionUserOnline userOnline : institutionUserOnlineList){
-                LocalTime createdAt = userOnline.getCreatedAt();
+                LocalDateTime createdAt = userOnline.getCreatedAt();
                 Integer countOfTicket = userOnline.getCountOfPeople();
-                LocalTime expiryTime = createdAt.plusMinutes(onlineTimeInterval);
-                LocalTime currentTime = LocalTime.now();
+                LocalDateTime expiryTime = createdAt.plusMinutes(onlineTimeInterval);
+                LocalDateTime currentTime = LocalDateTime.now();
                 if (currentTime.isAfter(expiryTime)){
                     String paymentId = userOnline.getPaymentId();
                     Boolean paymentStatus = userOnline.isPaymentStatus();
@@ -358,10 +652,10 @@ public class SlotDetailsService {
         List<InstitutionUserOnline> institutionUserOnlineList = iUserOnlineRepository.findByBookDate(currentDate);
         if (!institutionUserOnlineList.isEmpty()){
             for (InstitutionUserOnline userOnline : institutionUserOnlineList){
-                LocalTime createdAt = userOnline.getCreatedAt();
+                LocalDateTime createdAt = userOnline.getCreatedAt();
                 Integer countOfTicket = userOnline.getCountOfPeople();
-                LocalTime expiryTime = createdAt.plusMinutes(onlineTimeInterval);
-                LocalTime currentTime = LocalTime.now();
+                LocalDateTime expiryTime = createdAt.plusMinutes(onlineTimeInterval);
+                LocalDateTime currentTime = LocalDateTime.now();
                 if (currentTime.isAfter(expiryTime)){
                     String paymentId = userOnline.getPaymentId();
                     Boolean paymentStatus = userOnline.isPaymentStatus();
@@ -385,10 +679,10 @@ public class SlotDetailsService {
         List<PublicUserOnline> publicUserOnlineList = pUserOnlineRepository.findByBookDateAndSlotId(bDate,slotId);
         if (!publicUserOnlineList.isEmpty()){
             for (PublicUserOnline userOnline : publicUserOnlineList){
-                LocalTime createdAt = userOnline.getCreatedAt();
+                LocalDateTime createdAt = userOnline.getCreatedAt();
                 Integer countOfTicket = userOnline.getCountOfPeople();
-                LocalTime expiryTime = createdAt.plusMinutes(onlineTimeInterval);
-                LocalTime currentTime = LocalTime.now();
+                LocalDateTime expiryTime = createdAt.plusMinutes(onlineTimeInterval);
+                LocalDateTime currentTime = LocalDateTime.now();
                 if (currentTime.isAfter(expiryTime)){
                     String paymentId = userOnline.getPaymentId();
                     Boolean paymentStatus = userOnline.isPaymentStatus();
@@ -410,10 +704,10 @@ public class SlotDetailsService {
         List<PublicUserOnline> publicUserOnlinesList = pUserOnlineRepository.findByBookDate(currentDate);
         if (!publicUserOnlinesList.isEmpty()){
             for (PublicUserOnline userOnline : publicUserOnlinesList){
-                LocalTime createdAt = userOnline.getCreatedAt();
+                LocalDateTime createdAt = userOnline.getCreatedAt();
                 Integer countOfTicket = userOnline.getCountOfPeople();
-                LocalTime expiryTime = createdAt.plusMinutes(onlineTimeInterval);
-                LocalTime currentTime = LocalTime.now();
+                LocalDateTime expiryTime = createdAt.plusMinutes(onlineTimeInterval);
+                LocalDateTime currentTime = LocalDateTime.now();
                 if (currentTime.isAfter(expiryTime)){
                     String paymentId = userOnline.getPaymentId();
                     Boolean paymentStatus = userOnline.isPaymentStatus();

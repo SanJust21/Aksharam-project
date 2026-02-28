@@ -18,4 +18,6 @@ public interface InstitutionUserOnlineRepository extends JpaRepository<Instituti
     List<InstitutionUserOnline> findByBookDateAndSlotId(LocalDate bDate, Integer slotId);
 
     List<InstitutionUserOnline> findByBookDate(LocalDate currentDate);
+
+    List<InstitutionUserOnline> findByVisitDate(LocalDate bDate);
 }

@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -127,9 +128,12 @@ public class OnlineUserService {
         LocalTime slotEndTime = getSlotEndTimeBySlotId(slotId);
         userOnline.setSlotStartTime(slotStartTime);
         userOnline.setSlotEndTime(slotEndTime);
-        userOnline.setCreatedAt(LocalTime.now());
+        userOnline.setCreatedAt(LocalDateTime.now());
         log.info("publicUserOnline : "+userOnline);
         response=lockUserSeatForTemporaryTimePeriod(slotId,visitDate,countOfPeople);
+        if (response.containsKey("message")){
+            return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
+        }
         publicUserOnlineRepository.save(userOnline);
 
         response.put("userData",userOnline);
@@ -142,12 +146,11 @@ public class OnlineUserService {
     private Map<String, Object> lockUserSeatForTemporaryTimePeriod(Integer slotId, LocalDate visitDate, Integer countOfPeople) {
         Map<String,Object> response = new HashMap<>();
         Optional<BookingDetails> bookingSpotRepoOptional = bookingSpotRepo.findByBookDateAndSlotId(visitDate,slotId);
+
         if (bookingSpotRepoOptional.isEmpty()){
-            response.put("message","can't be reduce the seatCapacity.!!!!");
+            response.put("message","No slot found for selected date!!!!");
             response.put("visitDate",visitDate);
             response.put("slotId",slotId);
-            response.put("slotStartTime",bookingSpotRepoOptional.get().getSlotStartTime());
-            response.put("slotEndTime",bookingSpotRepoOptional.get().getSlotEndTime());
             return response;
         }
         BookingDetails bDetails = bookingSpotRepoOptional.get();
@@ -239,7 +242,7 @@ public class OnlineUserService {
             LocalTime slotEndTime = getSlotEndTimeBySlotId(slotId);
             userOnline.setSlotStartTime(slotStartTime);
             userOnline.setSlotEndTime(slotEndTime);
-            userOnline.setCreatedAt(LocalTime.now());
+            userOnline.setCreatedAt(LocalDateTime.now());
             response = lockUserSeatForTemporaryTimePeriod(slotId,visitDate,countOfPeople);
             institutionUserOnlineRepository.save(userOnline);
             response.put("userData",userOnline);
@@ -306,7 +309,7 @@ public class OnlineUserService {
             userOnline.setSlotId(slotId);
             userOnline.setSlotStartTime(slotStartTime);
             userOnline.setSlotEndTime(slotEndTime);
-            userOnline.setCreatedAt(LocalTime.now());
+            userOnline.setCreatedAt(LocalDateTime.now());
             response = lockUserSeatForTemporaryTimePeriod(slotId,visitDate,countOfPeople);
             foreignerUserOnlineRepository.save(userOnline);
             response.put("userData",userOnline);
@@ -585,24 +588,25 @@ public class OnlineUserService {
         Map<String,Object> response = new HashMap<>();
         response = verifyPayment(orderId,paymentId,signatureData);
         String ticketId = (String) response.get("ticketId");
-        String paymentStatus = (String) response.get("paymentStatus");
+        Boolean paymentStatus = (Boolean) response.get("paymentStatus");
 
         String categoryName = categoryRepo.findById(categoryId).map(CategoryData::getCategory).orElse(null);
         if ("Public".equalsIgnoreCase(categoryName)){
-            setPublicTicketIdAndPaymentStatus(orderId,paymentId,ticketId,paymentStatus);
+            response = setPublicTicketIdAndPaymentStatus(orderId,paymentId,ticketId,paymentStatus);
+
         }
         if ("Institution".equalsIgnoreCase(categoryName)){
-            setInstitutionTicketIdAndPaymentStatus(orderId,paymentId,ticketId);
+            response = setInstitutionTicketIdAndPaymentStatus(orderId,paymentId,ticketId);
         }
         if ("Foreigner".equalsIgnoreCase(categoryName)){
-            setForeignerTicketIdAndPaymentStatus(orderId,paymentId,ticketId);
+            response = setForeignerTicketIdAndPaymentStatus(orderId,paymentId,ticketId);
         }
-        response.put("Error","categoryName is not find");
         response.put("categoryId",categoryId);
         return response;
     }
 
-    private void setForeignerTicketIdAndPaymentStatus(String orderId, String paymentId, String ticketId) {
+    private Map<String, Object> setForeignerTicketIdAndPaymentStatus(String orderId, String paymentId, String ticketId) {
+        Map<String,Object> response = new HashMap<>();
         Optional<ForeignerUserOnline> foreignerUserOnlineOptional = foreignerUserOnlineRepository.findByOrderId(orderId);
         if (foreignerUserOnlineOptional.isPresent()){
             ForeignerUserOnline userOnline = foreignerUserOnlineOptional.get();
@@ -610,10 +614,14 @@ public class OnlineUserService {
             userOnline.setPaymentId(paymentId);
             userOnline.setPaymentStatus(true);
             foreignerUserOnlineRepository.save(userOnline);
+            response.put("userData",userOnline);
+            return response;
         }
+        return response;
     }
 
-    private void setInstitutionTicketIdAndPaymentStatus(String orderId, String paymentId, String ticketId) {
+    private Map<String, Object> setInstitutionTicketIdAndPaymentStatus(String orderId, String paymentId, String ticketId) {
+        Map<String,Object> response = new HashMap<>();
         Optional<InstitutionUserOnline> institutionUserOnlineOptional = institutionUserOnlineRepository.findByOrderId(orderId);
         if (institutionUserOnlineOptional.isPresent()){
             InstitutionUserOnline userOnline = institutionUserOnlineOptional.get();
@@ -621,10 +629,14 @@ public class OnlineUserService {
             userOnline.setPaymentId(paymentId);
             userOnline.setPaymentStatus(true);
             institutionUserOnlineRepository.save(userOnline);
+            response.put("userData",userOnline);
+            return response;
         }
+        return response;
     }
 
-    private void setPublicTicketIdAndPaymentStatus(String orderId, String paymentId, String ticketId, String paymentStatus) {
+    private Map<String, Object> setPublicTicketIdAndPaymentStatus(String orderId, String paymentId, String ticketId, Boolean paymentStatus) {
+        Map<String,Object> response = new HashMap<>();
         Optional<PublicUserOnline> publicUserOnlineOptional = publicUserOnlineRepository.findByOrderId(orderId);
         if (publicUserOnlineOptional.isPresent()){
             PublicUserOnline userOnline=publicUserOnlineOptional.get();
@@ -632,7 +644,10 @@ public class OnlineUserService {
             userOnline.setPaymentId(paymentId);
             userOnline.setPaymentStatus(true);
             publicUserOnlineRepository.save(userOnline);
+            response.put("userData",userOnline);
+            return response;
         }
+        return response;
     }
 
     private Map<String, Object> verifyPayment(String orderId, String paymentId, String signatureData) throws RazorpayException{

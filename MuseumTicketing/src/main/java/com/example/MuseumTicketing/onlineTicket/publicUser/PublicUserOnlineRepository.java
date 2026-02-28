@@ -20,4 +20,5 @@ public interface PublicUserOnlineRepository extends JpaRepository<PublicUserOnli
     List<PublicUserOnline> findByBookDate(LocalDate currentDate);
 
 
+    List<PublicUserOnline> findByVisitDate(LocalDate bDate);
 }

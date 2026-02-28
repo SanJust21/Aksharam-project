@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Data
@@ -37,8 +38,8 @@ public class PublicUserOnline {
     @Column(name = "child")
     private Integer child;
 
-    @Column(name = "student")
-    private Integer student;
+//    @Column(name = "student")
+//    private Integer student;
 
     @Column(name = "adultGrandTotal")
     private Double adultGrandTotal;
@@ -46,8 +47,8 @@ public class PublicUserOnline {
     @Column(name = "childGrandTotal")
     private Double childGrandTotal;
 
-    @Column(name = "studentGrandTotal")
-    private Double studentGrandTotal;
+//    @Column(name = "studentGrandTotal")
+//    private Double studentGrandTotal;
 
 
     @Column(name = "totalAmount")
@@ -96,6 +97,6 @@ public class PublicUserOnline {
     private Integer countOfPeople;
 
     @Column(name = "createdAt")
-    private LocalTime createdAt;
+    private LocalDateTime createdAt;
 
 }

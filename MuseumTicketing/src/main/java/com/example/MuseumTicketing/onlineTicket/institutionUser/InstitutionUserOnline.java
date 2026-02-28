@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Data
@@ -92,6 +93,6 @@ public class InstitutionUserOnline {
     private String sessionId;
 
     @Column(name = "createdAt")
-    private LocalTime createdAt;
+    private LocalDateTime createdAt;
 
 }

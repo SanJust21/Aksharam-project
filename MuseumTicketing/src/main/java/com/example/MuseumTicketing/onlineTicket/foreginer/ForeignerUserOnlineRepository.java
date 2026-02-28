@@ -18,4 +18,6 @@ public interface ForeignerUserOnlineRepository extends JpaRepository<ForeignerUs
     List<ForeignerUserOnline> findByBookDateAndSlotId(LocalDate bDate, Integer slotId);
 
     List<ForeignerUserOnline> findByBookDate(LocalDate currentDate);
+
+    List<ForeignerUserOnline> findByVisitDate(LocalDate bDate);
 }
