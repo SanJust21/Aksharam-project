@@ -145,7 +145,7 @@ public class AmountCalculation {
 
     //decline slot by no.of userCount
     public BookingDetails generateBookingDate(LocalDate visitDate, Integer slotId, Integer totalUserCount) {
-        Optional<BookingDetails> bookingDetailsOptional = bookingSpotRepo.findByBookDateAndSlotId(visitDate,slotId);
+        Optional<BookingDetails> bookingDetailsOptional = bookingSpotRepo.findByBookDateAndSlotIdForUpdate(visitDate,slotId);
         if (bookingDetailsOptional.isPresent()){
             BookingDetails bookingDetails = bookingDetailsOptional.get();
             Integer capacity = bookingDetails.getPresentCapacity();

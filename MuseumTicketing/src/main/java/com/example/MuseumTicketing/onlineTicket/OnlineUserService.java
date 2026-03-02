@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -47,6 +48,7 @@ import java.util.Random;
 
 @Service
 @Slf4j
+@Transactional
 public class OnlineUserService {
 
     @Value("${razorpay.key.id}")
@@ -143,9 +145,10 @@ public class OnlineUserService {
 
     }
 
+    @Transactional
     private Map<String, Object> lockUserSeatForTemporaryTimePeriod(Integer slotId, LocalDate visitDate, Integer countOfPeople) {
         Map<String,Object> response = new HashMap<>();
-        Optional<BookingDetails> bookingSpotRepoOptional = bookingSpotRepo.findByBookDateAndSlotId(visitDate,slotId);
+        Optional<BookingDetails> bookingSpotRepoOptional = bookingSpotRepo.findByBookDateAndSlotIdForUpdate(visitDate,slotId);
 
         if (bookingSpotRepoOptional.isEmpty()){
             response.put("message","No slot found for selected date!!!!");
@@ -156,13 +159,12 @@ public class OnlineUserService {
         BookingDetails bDetails = bookingSpotRepoOptional.get();
         Integer pCapacity = bDetails.getPresentCapacity();
         if (countOfPeople>pCapacity){
-            response.put("message","presentCapacity is underFlow");
+            response.put("message","Not enough tickets available");
             response.put("seat",countOfPeople);
             response.put("presentCapacity",pCapacity);
             return response;
         }else {
-            pCapacity -= countOfPeople;
-            bDetails.setPresentCapacity(pCapacity);
+            bDetails.setPresentCapacity(pCapacity-countOfPeople);
             bookingSpotRepo.save(bDetails);
             response.put("bookingDetails",bDetails);
             return response;

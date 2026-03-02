@@ -556,7 +556,7 @@ SpotRegService {
         Optional<ForeignerData> foreignerDataOptional = foreignerDataRepo.findByOrderId(orderId);
 
         if (publicDataOptional.isPresent()){
-           Optional<BookingDetails> bookingDetailsOptional = bookingSpotRepo.findByBookDateAndSlotId(spotPaymentDto.getVisitDate(),spotPaymentDto.getSlotId());
+           Optional<BookingDetails> bookingDetailsOptional = bookingSpotRepo.findByBookDateAndSlotIdForUpdate(spotPaymentDto.getVisitDate(),spotPaymentDto.getSlotId());
            if (bookingDetailsOptional.isPresent()){
                BookingDetails bookingDetails = bookingDetailsOptional.get();
                if (bookingDetails.getPresentCapacity()>0){
@@ -593,7 +593,7 @@ SpotRegService {
                    spotBookingDto.setChildCount(publicData.getChild());
                    spotBookingDto.setSeniorCitizenCount(publicData.getSeniorCitizen());
                    spotBookingDto.setVisitDate(publicData.getVisitDate());
-                   Optional<BookingDetails> bookingDetails1 = bookingSpotRepo.findByBookDateAndSlotId(publicData.getVisitDate(), publicData.getSlotId());
+                   Optional<BookingDetails> bookingDetails1 = bookingSpotRepo.findByBookDateAndSlotIdForUpdate(publicData.getVisitDate(), publicData.getSlotId());
                    if (bookingDetails1.isPresent()){
                        BookingDetails bookingDetails2 = bookingDetails1.get();
                        spotBookingDto.setSlotStartTime(bookingDetails2.getSlotStartTime());
@@ -612,7 +612,7 @@ SpotRegService {
                }return new ResponseEntity<>(null,HttpStatus.BAD_REQUEST);
            }
         } else if (institutionDataOptional.isPresent()) {
-            Optional<BookingDetails> bookingDetailsOptional = bookingSpotRepo.findByBookDateAndSlotId(spotPaymentDto.getVisitDate(),spotPaymentDto.getSlotId());
+            Optional<BookingDetails> bookingDetailsOptional = bookingSpotRepo.findByBookDateAndSlotIdForUpdate(spotPaymentDto.getVisitDate(),spotPaymentDto.getSlotId());
             if (bookingDetailsOptional.isPresent()){
                 BookingDetails bookingDetails = bookingDetailsOptional.get();
                 if (bookingDetails.getPresentCapacity()>0){
@@ -654,7 +654,7 @@ SpotRegService {
                     spotBookingDto.setDiscountAmount(institutionData.getDiscountAmount());
                     spotBookingDto.setStudentCount(institutionData.getStudent());
                     spotBookingDto.setVisitDate(institutionData.getVisitDate());
-                    Optional<BookingDetails> bookingDetails1 = bookingSpotRepo.findByBookDateAndSlotId(institutionData.getVisitDate(), institutionData.getSlotId());
+                    Optional<BookingDetails> bookingDetails1 = bookingSpotRepo.findByBookDateAndSlotIdForUpdate(institutionData.getVisitDate(), institutionData.getSlotId());
                     if (bookingDetails1.isPresent()){
                         BookingDetails bookingDetails2 = bookingDetails1.get();
                         spotBookingDto.setSlotStartTime(bookingDetails2.getSlotStartTime());
@@ -675,7 +675,7 @@ SpotRegService {
 
 
         } else if (foreignerDataOptional.isPresent()) {
-            Optional<BookingDetails> bookingDetailsOptional = bookingSpotRepo.findByBookDateAndSlotId(spotPaymentDto.getVisitDate(),spotPaymentDto.getSlotId());
+            Optional<BookingDetails> bookingDetailsOptional = bookingSpotRepo.findByBookDateAndSlotIdForUpdate(spotPaymentDto.getVisitDate(),spotPaymentDto.getSlotId());
 
             if (bookingDetailsOptional.isPresent()){
                 BookingDetails bookingDetails = bookingDetailsOptional.get();
@@ -712,7 +712,7 @@ SpotRegService {
                     spotBookingDto.setAdultCount(foreignerData.getAdult());
                     spotBookingDto.setChildCount(foreignerData.getChild());
                     spotBookingDto.setVisitDate(foreignerData.getVisitDate());
-                    Optional<BookingDetails> bookingDetails1 = bookingSpotRepo.findByBookDateAndSlotId(foreignerData.getVisitDate(),foreignerData.getSlotId());
+                    Optional<BookingDetails> bookingDetails1 = bookingSpotRepo.findByBookDateAndSlotIdForUpdate(foreignerData.getVisitDate(),foreignerData.getSlotId());
                     if (bookingDetails1.isPresent()){
                         BookingDetails bookingDetails2 = bookingDetails1.get();
                         spotBookingDto.setSlotStartTime(bookingDetails2.getSlotStartTime());

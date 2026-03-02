@@ -11,7 +11,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
+@EnableScheduling
 @SpringBootApplication
 //@EnableScheduling
 public class MuseumTicketingApplication implements CommandLineRunner {
