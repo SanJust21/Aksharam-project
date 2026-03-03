@@ -113,4 +113,19 @@ public class OnlineUserController {
             return new ResponseEntity<>(response,HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @GetMapping(path = "/getCurrentDateTime")
+    public ResponseEntity<Map<String,Object>>getCurrentDateTime(){
+        Map<String,Object> response = new HashMap<>();
+        try {
+            response=onlineUserService.getCurrentDateTime();
+            if (response.containsKey("Error")){
+                return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
+            }
+            return new ResponseEntity<>(response,HttpStatus.OK);
+        }catch (Exception e){
+            response.put("Error",e.getMessage());
+            return new ResponseEntity<>(response,HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }

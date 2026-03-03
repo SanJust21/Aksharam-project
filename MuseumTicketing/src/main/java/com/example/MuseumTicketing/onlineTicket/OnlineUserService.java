@@ -773,6 +773,15 @@ public class OnlineUserService {
         return response;
     }
 
+    public Map<String, Object> getCurrentDateTime() {
+        Map<String, Object> response = new HashMap<>();
+        LocalTime nowTime = LocalTime.now();
+        LocalDateTime nowDateTime = LocalDateTime.now();
+        response.put("currentDateTime",nowDateTime);
+        response.put("currentTime",nowTime);
+        return response;
+    }
+
 //    private Map<String, Object> sendTicketEmail(String ticketId,Integer categoryId) {
 //        Map<String,Object> response = new HashMap<>();
 //        if (ticketId==null||ticketId.isEmpty()||ticketId.isBlank()||categoryId==null){
