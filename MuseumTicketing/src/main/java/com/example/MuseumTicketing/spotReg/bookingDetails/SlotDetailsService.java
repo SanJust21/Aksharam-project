@@ -160,6 +160,7 @@ public class SlotDetailsService {
         List<BookingSlotDto> slotDtoList = new ArrayList<>();
         String messageId=null;
         if ("Online".equalsIgnoreCase(modeType)){
+            bookingDetailsList.sort(Comparator.comparing(BookingDetails::getSlotStartTime)); //sort slot based on start time
             if (currentDate.isEqual(bDate)&& !bookingDetailsList.isEmpty()){ // in Response : runningSlotDetails + upComingSlotDetails.
                 //bookDate == visitDate
                 for (BookingDetails bDetails:bookingDetailsList){
