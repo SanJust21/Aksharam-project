@@ -103,15 +103,15 @@ public class OnlineUserService {
         Double totalAdultCharge = 0.0; Double totalChildCharge = 0.0;
         Double grandTotal ; Integer userCount,typeId;
 
-        if (userDto.getAdult()>0){
+        if (adultCount>0){
             typeId=userDto.getAdultTypeId();
-            userCount=userDto.getAdult();
+            userCount=adultCount;
             totalAdultCharge=amountCalculation.calculatePublicCharge(category,typeId,userCount);
         }
         userOnline.setAdultGrandTotal(totalAdultCharge);
-        if (userDto.getChild()>0){
+        if (childCount>0){
             typeId=userDto.getChildTypeId();
-            userCount=userDto.getChild();
+            userCount=childCount;
             totalChildCharge = amountCalculation.calculatePublicCharge(category,typeId,userCount);
         }
         userOnline.setChildGrandTotal(totalChildCharge);
@@ -217,15 +217,15 @@ public class OnlineUserService {
             userOnline.setCountOfPeople(countOfPeople);
             Double totalTeacherCharge=0.0;  Double totalStudentCharge=0.0;
             Double grandTotal;Integer userCount,typeId;
-            if (userDto.getTeacher()>0){
+            if (teacherCount>0){
                 typeId=userDto.getTeacherTypeId();
-                userCount = userDto.getTeacher();
+                userCount = teacherCount;
                 totalTeacherCharge = amountCalculation.calculateInstitutionCharge(category,typeId,userCount);
             }
 
-            if (userDto.getStudent()>0){
+            if (studentCount>0){
                 typeId=userDto.getStudentTypeId();
-                userCount = userDto.getStudent();
+                userCount = studentCount;
                 totalStudentCharge = amountCalculation.calculateInstitutionCharge(category,typeId,userCount);
             }
 
@@ -286,17 +286,17 @@ public class OnlineUserService {
             userOnline.setCountOfPeople(countOfPeople);
             Double totalAdultCharge=0.0;    Double totalChildCharge=0.0;    Double grandTotal;
             Integer userCount,typeId;
-            if (userDto.getAdult()>0){      // calculating ticket charge of foreign adult ticket charge
+            if (adultCount>0){      // calculating ticket charge of foreign adult ticket charge
                 typeId=userDto.getAdultTypeId();
-                userCount = userDto.getAdult();
+                userCount = adultCount;
 
                 totalAdultCharge=amountCalculation.calculateForeignerCharge(category,typeId,userCount);
             }
             userOnline.setAdultGrandTotal(totalAdultCharge);
 
-            if (userDto.getChild()>0){      // calculating ticket charge of foreign child ticket charge
+            if (childCount>0){      // calculating ticket charge of foreign child ticket charge
                 typeId=userDto.getChildTypeId();
-                userCount = userDto.getChild();
+                userCount = childCount;
 
                 totalChildCharge=amountCalculation.calculateForeignerCharge(category,typeId,userCount);
             }
