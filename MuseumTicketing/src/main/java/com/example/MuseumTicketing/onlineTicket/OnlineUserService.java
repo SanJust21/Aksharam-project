@@ -534,10 +534,11 @@ public class OnlineUserService {
             double payAmount_=payAmount*100;
             response = getOrderResponse(razorpayKeyId,payAmount_,currency,orderId,sessionId);
             return response;
+        }else {
+            response.put("Error","user is not find out");
+            response.put("sessionId",sessionId);
+            return response;
         }
-        response.put("Error","user is not find out");
-        response.put("sessionId",sessionId);
-        return response;
     }
 
     private Map<String, Object> institutionMakePayment(String sessionId, String orderId,double payAmount) {
@@ -550,10 +551,11 @@ public class OnlineUserService {
             double payAmount_=payAmount*100;
             response = getOrderResponse(razorpayKeyId,payAmount_,currency,orderId,sessionId);
             return response;
+        }else {
+            response.put("Error","user is not find out");
+            response.put("sessionId",sessionId);
+            return response;
         }
-        response.put("Error","user is not find out");
-        response.put("sessionId",sessionId);
-        return response;
     }
 
     private Map<String, Object> publicMakePayment(String sessionId, String orderId,double payAmount) {
@@ -566,10 +568,12 @@ public class OnlineUserService {
             double payAmount_=payAmount*100;
             response = getOrderResponse(razorpayKeyId,payAmount_,currency,orderId,sessionId);
             return response;
+        }else {
+            response.put("Error","user is not find out");
+            response.put("sessionId",sessionId);
+            return response;
         }
-        response.put("Error","user is not find out");
-        response.put("sessionId",sessionId);
-        return response;
+
     }
 
     private Map<String, Object> getOrderResponse(String razorpayKeyId, double payAmount, String currency, String orderId, String sessionId) {
