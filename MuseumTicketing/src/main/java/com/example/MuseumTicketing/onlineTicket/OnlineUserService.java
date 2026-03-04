@@ -87,7 +87,7 @@ public class OnlineUserService {
         Integer slotId = userDto.getSlotId();
         LocalDate visitDate = userDto.getVisitDate();
 
-        Integer countOfPeople = userDto.getAdult() + userDto.getChild();
+
         PublicUserOnline userOnline = new PublicUserOnline();
         userOnline.setName(userDto.getName());
         userOnline.setPhNumber(userDto.getPhNumber());
@@ -98,6 +98,7 @@ public class OnlineUserService {
         Integer child = userDto.getChild();
         Integer childCount = (child!=null)?child:0;
         userOnline.setChild(childCount);
+        Integer countOfPeople = adultCount + childCount;
         userOnline.setCountOfPeople(countOfPeople);
         Double totalAdultCharge = 0.0; Double totalChildCharge = 0.0;
         Double grandTotal ; Integer userCount,typeId;
@@ -199,7 +200,7 @@ public class OnlineUserService {
     public ResponseEntity<Map<String, Object>> onlineInstitutionTicketBooking(OnlineUserDataDto userDto, Integer category) {
         Map<String,Object> response = new HashMap<>();
         try {
-            Integer countOfPeople = userDto.getTeacher() + userDto.getStudent();
+
             Integer slotId = userDto.getSlotId();
             InstitutionUserOnline userOnline = new InstitutionUserOnline();
             userOnline.setName(userDto.getName());
@@ -212,6 +213,7 @@ public class OnlineUserService {
             Integer teacher = userDto.getTeacher();
             Integer teacherCount = (teacher!=null)?teacher:0;
             userOnline.setTeacher(teacherCount);
+            Integer countOfPeople = teacherCount + studentCount;
             userOnline.setCountOfPeople(countOfPeople);
             Double totalTeacherCharge=0.0;  Double totalStudentCharge=0.0;
             Double grandTotal;Integer userCount,typeId;
@@ -280,7 +282,7 @@ public class OnlineUserService {
             Integer childCount = (child!=null)?child:0;
             userOnline.setChild(childCount);
             userOnline.setEmailId(userDto.getEmailId());
-            Integer countOfPeople = userDto.getAdult() + userDto.getChild();
+            Integer countOfPeople = adultCount + childCount;
             userOnline.setCountOfPeople(countOfPeople);
             Double totalAdultCharge=0.0;    Double totalChildCharge=0.0;    Double grandTotal;
             Integer userCount,typeId;
