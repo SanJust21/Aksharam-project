@@ -213,11 +213,10 @@ public class SlotDetailsService {
                         slotDto.setTotalCapacity(bDetails.getTotalCapacity());
                         slotDto.setPresentStatus(bDetails.getPresentStatus());
                         return new ResponseEntity<>(slotDto,HttpStatus.OK);
-                    }else {
-                        messageId = "No slot is available at the present time. : "+nowTime;
-                        return new ResponseEntity<>(messageId,HttpStatus.NOT_FOUND);
                     }
                 }
+                messageId = "No slot is available at the present time. : "+nowTime;
+                return new ResponseEntity<>(messageId,HttpStatus.NOT_FOUND);
             }
         }
         messageId = "modeType is not correct. : "+modeType;
