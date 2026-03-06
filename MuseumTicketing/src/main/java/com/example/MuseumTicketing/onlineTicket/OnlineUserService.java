@@ -151,7 +151,7 @@ public class OnlineUserService {
     }
 
     @Transactional
-    private Map<String, Object> lockUserSeatForTemporaryTimePeriod(Integer slotId, LocalDate visitDate, Integer countOfPeople) {
+    public Map<String, Object> lockUserSeatForTemporaryTimePeriod(Integer slotId, LocalDate visitDate, Integer countOfPeople) {
         Map<String,Object> response = new HashMap<>();
         Optional<BookingDetails> bookingSpotRepoOptional = bookingSpotRepo.findByBookDateAndSlotIdForUpdate(visitDate,slotId);
 
