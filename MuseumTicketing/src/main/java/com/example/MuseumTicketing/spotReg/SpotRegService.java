@@ -1,6 +1,7 @@
 package com.example.MuseumTicketing.spotReg;
 
 import com.example.MuseumTicketing.Guide.util.AlphaNumeric;
+import com.example.MuseumTicketing.onlineTicket.OnlineUserService;
 import com.example.MuseumTicketing.spotReg.bookingDetails.booking.BookingDetails;
 import com.example.MuseumTicketing.spotReg.bookingDetails.booking.BookingSpotRepo;
 import com.example.MuseumTicketing.spotReg.bookingDetails.slotData.SpotSlot;
@@ -42,6 +43,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -86,6 +88,8 @@ SpotRegService {
     private SpotQRcodeService spotQRcodeService;
     @Autowired
     private DiscountCountRepo discountCountRepo;
+    @Autowired
+    private OnlineUserService onlineUserService;
 
     //public static final Integer studentDiscountId=1;
 
@@ -563,12 +567,14 @@ SpotRegService {
         }return new ResponseEntity<>("CategoryId isn't valid.",HttpStatus.BAD_REQUEST);
     }
 
+    @Transactional
     public ResponseEntity<SpotBookingDto> confirmPaymentDetails(String orderId, SpotPaymentDto spotPaymentDto,Integer totalUserCount)throws WriterException, IOException {
         SpotBookingDto spotBookingDto = new SpotBookingDto();
         Optional<PublicData> publicDataOptional = publicRepo.findByOrderId(orderId);
         Optional<InstitutionData> institutionDataOptional = institutionDataRepo.findByOrderId(orderId);
         Optional<ForeignerData> foreignerDataOptional = foreignerDataRepo.findByOrderId(orderId);
 
+        Map<String,Object> response = new HashMap<>();
         if (publicDataOptional.isPresent()){
            Optional<BookingDetails> bookingDetailsOptional = bookingSpotRepo.findByBookDateAndSlotIdForUpdate(spotPaymentDto.getVisitDate(),spotPaymentDto.getSlotId());
            if (bookingDetailsOptional.isPresent()){
@@ -585,7 +591,7 @@ SpotRegService {
                        String name =paymentStatus.getStatusName();
                        PaymentMode paymentMode = paymentModeOptional.get();
                        String modeName = paymentMode.getPaymentType();
-                       if ("cash".equalsIgnoreCase(modeName) || "QRCode".equalsIgnoreCase(modeName) && "received".equalsIgnoreCase(name)){
+                       if (("cash".equalsIgnoreCase(modeName) || "QRCode".equalsIgnoreCase(modeName)) && "received".equalsIgnoreCase(name)){
                            publicData.setTicketId(alphaNumeric.generateSpotRandomNumber());
                            publicData.setPaymentId(alphaNumeric.generateRandomNumber());
                            publicData.setCreatedTime(LocalTime.now());
@@ -600,6 +606,11 @@ SpotRegService {
                    }
                    publicData.setCreatedBy(spotPaymentDto.getCreatedBy());
                    publicData.setCountOfPeople(totalUserCount);
+                   response = onlineUserService.lockUserSeatForTemporaryTimePeriod(spotPaymentDto.getSlotId(),spotPaymentDto.getVisitDate(),totalUserCount);
+                   if (response.containsKey("message")){
+                       String messageId = (String) response.get("message");
+                       return new ResponseEntity<>(spotBookingDto,HttpStatus.BAD_REQUEST);
+                   }
                    publicRepo.save(publicData);
                    spotBookingDto.setName(publicData.getName());
                    spotBookingDto.setPhNumber(publicData.getPhNumber());
@@ -642,7 +653,7 @@ SpotRegService {
                         String name =paymentStatus.getStatusName();
                         PaymentMode paymentMode = paymentModeOptional.get();
                         String modeName = paymentMode.getPaymentType();
-                        if ("cash".equalsIgnoreCase(modeName) || "QRCode".equalsIgnoreCase(modeName) && "received".equalsIgnoreCase(name)){
+                        if (("cash".equalsIgnoreCase(modeName) || "QRCode".equalsIgnoreCase(modeName)) && "received".equalsIgnoreCase(name)){
                             institutionData.setTicketId(alphaNumeric.generateSpotRandomNumber());
                             institutionData.setPaymentId(alphaNumeric.generateRandomNumber());
                             institutionData.setCreatedTime(LocalTime.now());
@@ -657,6 +668,11 @@ SpotRegService {
                     institutionData.setSlotId(booking.getSlotId());
                     institutionData.setCreatedBy(spotPaymentDto.getCreatedBy());
                     institutionData.setCountOfPeople(totalUserCount);
+                    response = onlineUserService.lockUserSeatForTemporaryTimePeriod(booking.getSlotId(),booking.getBookDate(),totalUserCount);
+                    if (response.containsKey("message")){
+                        String messageId = (String) response.get("message");
+                        return new ResponseEntity<>(spotBookingDto,HttpStatus.BAD_REQUEST);
+                    }
                     institutionDataRepo.save(institutionData);
                     spotBookingDto.setName(institutionData.getName());
                     spotBookingDto.setPhNumber(institutionData.getPhNumber());
@@ -705,7 +721,7 @@ SpotRegService {
                         String name =paymentStatus.getStatusName();
                         PaymentMode paymentMode = paymentModeOptional.get();
                         String modeName = paymentMode.getPaymentType();
-                        if ("cash".equalsIgnoreCase(modeName) || "QRCode".equalsIgnoreCase(modeName) && "received".equalsIgnoreCase(name)){
+                        if (("cash".equalsIgnoreCase(modeName) || "QRCode".equalsIgnoreCase(modeName)) && "received".equalsIgnoreCase(name)){
                             foreignerData.setTicketId(alphaNumeric.generateSpotRandomNumber());
                             foreignerData.setPaymentId(alphaNumeric.generateRandomNumber());
                             foreignerData.setCreatedTime(LocalTime.now());
@@ -720,6 +736,11 @@ SpotRegService {
                     foreignerData.setSlotId(bookingDetail.getSlotId());
                     foreignerData.setCreatedBy(spotPaymentDto.getCreatedBy());
                     foreignerData.setCountOfPeople(totalUserCount);
+                    response = onlineUserService.lockUserSeatForTemporaryTimePeriod(bookingDetail.getSlotId(),bookingDetail.getBookDate(),totalUserCount);
+                    if (response.containsKey("message")){
+                        String messageId = (String) response.get("message");
+                        return new ResponseEntity<>(spotBookingDto,HttpStatus.BAD_REQUEST);
+                    }
                     foreignerDataRepo.save(foreignerData);
                     spotBookingDto.setName(foreignerData.getName());
                     spotBookingDto.setPhNumber(foreignerData.getPhNumber());
