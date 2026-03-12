@@ -596,10 +596,8 @@ SpotRegService {
                            publicData.setPaymentId(alphaNumeric.generateRandomNumber());
                            publicData.setCreatedTime(LocalTime.now());
 
-                           // if the user booked the tickets then reduce  the present slot capacity by userCount.
-                           BookingDetails bookingDetail = amountCalculation.generateBookingDate(spotPaymentDto.getVisitDate(),spotPaymentDto.getSlotId(),totalUserCount);
-                           publicData.setSlotId(bookingDetail.getSlotId());
-                           publicData.setVisitDate(bookingDetail.getBookDate());
+                           publicData.setSlotId(spotPaymentDto.getSlotId());
+                           publicData.setVisitDate(spotPaymentDto.getVisitDate());
                        }else {
                            publicData.setTicketId(null);
                        }
@@ -662,13 +660,11 @@ SpotRegService {
                         }
                     }
 
-                    // if the user booked the tickets then reduce  the present slot capacity by userCount.
-                    BookingDetails booking = amountCalculation.generateBookingDate(spotPaymentDto.getVisitDate(),spotPaymentDto.getSlotId(),totalUserCount);
-                    institutionData.setVisitDate(booking.getBookDate());
-                    institutionData.setSlotId(booking.getSlotId());
+                    institutionData.setVisitDate(spotPaymentDto.getVisitDate());
+                    institutionData.setSlotId(spotPaymentDto.getSlotId());
                     institutionData.setCreatedBy(spotPaymentDto.getCreatedBy());
                     institutionData.setCountOfPeople(totalUserCount);
-                    response = onlineUserService.lockUserSeatForTemporaryTimePeriod(booking.getSlotId(),booking.getBookDate(),totalUserCount);
+                    response = onlineUserService.lockUserSeatForTemporaryTimePeriod(spotPaymentDto.getSlotId(),spotPaymentDto.getVisitDate(),totalUserCount);
                     if (response.containsKey("message")){
                         String messageId = (String) response.get("message");
                         return new ResponseEntity<>(spotBookingDto,HttpStatus.BAD_REQUEST);
@@ -702,8 +698,6 @@ SpotRegService {
                 }
             }
 
-
-
         } else if (foreignerDataOptional.isPresent()) {
             Optional<BookingDetails> bookingDetailsOptional = bookingSpotRepo.findByBookDateAndSlotIdForUpdate(spotPaymentDto.getVisitDate(),spotPaymentDto.getSlotId());
 
@@ -729,14 +723,11 @@ SpotRegService {
                             foreignerData.setTicketId(null);
                         }
                     }
-
-                    // if the user booked the tickets then reduce  the present slot capacity by userCount.
-                    BookingDetails bookingDetail = amountCalculation.generateBookingDate(spotPaymentDto.getVisitDate(),spotPaymentDto.getSlotId(),totalUserCount);
-                    foreignerData.setVisitDate(bookingDetail.getBookDate());
-                    foreignerData.setSlotId(bookingDetail.getSlotId());
+                    foreignerData.setVisitDate(spotPaymentDto.getVisitDate());
+                    foreignerData.setSlotId(spotPaymentDto.getSlotId());
                     foreignerData.setCreatedBy(spotPaymentDto.getCreatedBy());
                     foreignerData.setCountOfPeople(totalUserCount);
-                    response = onlineUserService.lockUserSeatForTemporaryTimePeriod(bookingDetail.getSlotId(),bookingDetail.getBookDate(),totalUserCount);
+                    response = onlineUserService.lockUserSeatForTemporaryTimePeriod(spotPaymentDto.getSlotId(),spotPaymentDto.getVisitDate(),totalUserCount);
                     if (response.containsKey("message")){
                         String messageId = (String) response.get("message");
                         return new ResponseEntity<>(spotBookingDto,HttpStatus.BAD_REQUEST);
@@ -770,12 +761,10 @@ SpotRegService {
 
     public ResponseEntity<?> getAllUserDetails() {
         List<AllUserDataDto> allUserDataDtoList = new ArrayList<>();
-//        List<PublicData> publicDataList = publicRepo.findAll();
         List<PublicData> publicDataList = publicRepo.findAll();
 
         if (!publicDataList.isEmpty()){
             publicDataList.sort(Comparator.comparing(PublicData::getId).reversed());
-//            List<PublicDtoData> publicDtoDataList = new ArrayList<>();
             for (PublicData publicData : publicDataList){
                 if (publicData.getTicketId()!=null){
                     AllUserDataDto allUserDataDto = new AllUserDataDto();
@@ -818,13 +807,10 @@ SpotRegService {
                 }
 
             }
-//            allUserDataDto.setPublicDtoDataList(publicDtoDataList);
-            //allUserDataDtoList.add(allUserDataDto);
         }
         List<InstitutionData> institutionDataList = institutionDataRepo.findAll();
         if (!institutionDataList.isEmpty()){
             institutionDataList.sort(Comparator.comparing(InstitutionData::getId).reversed());
-//            List<InstitutionDtoData> institutionDtoDataList = new ArrayList<>();
             for (InstitutionData institutionData : institutionDataList){
                 if (institutionData.getTicketId()!=null){
                     AllUserDataDto allUserDataDto = new AllUserDataDto();
@@ -866,11 +852,8 @@ SpotRegService {
                     allUserDataDtoList.add(allUserDataDto);
                 }
             }
-            //allUserDataDto.setInstitutionDtoDataList(institutionDtoDataList);
-            //allUserDataDtoList.add(allUserDataDto);
         }
         List<ForeignerData> foreignerDataList = foreignerDataRepo.findAll();
-//        List<ForeignerDtoData> foreignerDtoDataList = new ArrayList<>();
         if (!foreignerDataList.isEmpty()){
             foreignerDataList.sort(Comparator.comparing(ForeignerData::getId).reversed());
             for (ForeignerData foreignerData : foreignerDataList){
@@ -911,8 +894,6 @@ SpotRegService {
                 }
 
             }
-//            allUserDataDto.setForeignerDtoDataList(foreignerDtoDataList);
-//            allUserDataDtoList.add(allUserDataDto);
             return new ResponseEntity<>(allUserDataDtoList,HttpStatus.OK);
         }
         return new ResponseEntity<>(null,HttpStatus.BAD_REQUEST);
