@@ -35,6 +35,7 @@ public class SpotRegController {
     private ErrorService errorService;
     @Autowired
     private CategoryRepo categoryRepo;
+    private static final String defaultModeName = "SpotBooking";
 
 
     @PostMapping(path = "/userReg")
@@ -101,21 +102,12 @@ public class SpotRegController {
     }
     
     @GetMapping(path = "/getAllUser")
-    public ResponseEntity<?>getAllUser(@RequestParam(required = false) Integer categoryId){
+    public ResponseEntity<?>getAllUser(@RequestParam(required = false) Integer categoryId,
+                                       @RequestParam(defaultValue = "SpotBooking",required = false) String modeType){
         try {
-            Optional<CategoryData>categoryDataOptional=categoryRepo.findById(categoryId);
-            if (categoryDataOptional.isPresent()){
-                CategoryData categoryData = categoryDataOptional.get();
-                String name = categoryData.getCategory();
-                if ("Public".equalsIgnoreCase(name)){
-                    return spotRegService.getAllPublic();
-                } else if ("Institution".equalsIgnoreCase(name)) {
-                    return spotRegService.getAllInstitution();
-                } else if ("Foreigner".equalsIgnoreCase(name)) {
-                }return spotRegService.getAllForeigner();
-            }else {
-                return spotRegService.getAllUserDetails();
-            }
+            ResponseEntity<?> responseEntity = modeType.equalsIgnoreCase(defaultModeName) ?
+                    spotRegService.getAllUserDetailsSpot(categoryId): spotRegService.getAllUserDetailsOnline(categoryId);
+            return new ResponseEntity<>(responseEntity,HttpStatus.OK);
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -123,10 +115,12 @@ public class SpotRegController {
     }
 
     @GetMapping(path = "/getUserDetailsByDate")
-    public ResponseEntity<List<GetUserData_>> getUserDetailsByDate(@RequestParam LocalDate visitDate, @RequestParam Integer categoryId){
+    public ResponseEntity<List<GetUserData_>> getUserDetailsByDate(@RequestParam LocalDate visitDate, @RequestParam Integer categoryId,
+                                                                   @RequestParam(defaultValue = "SpotBooking",required = false) String modeType){
         try {
-            return spotRegService.getUserDetailsByDate(visitDate,categoryId);
-
+            List<GetUserData_> getUserDataList = modeType.equalsIgnoreCase(defaultModeName) ?
+                    spotRegService.getUserDetailsByDateSpot(visitDate,categoryId) : spotRegService.getUserDetailsByDateOnline(visitDate,categoryId) ;
+            return new ResponseEntity<>(getUserDataList,HttpStatus.OK);
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -135,20 +129,13 @@ public class SpotRegController {
 
     @GetMapping(path = "/getUserDetailsByRangeOfDate")
     public ResponseEntity<List<AllUserDataDto>> getUserDetailsByRangeOfDate(@RequestParam LocalDate startDate, @RequestParam LocalDate endDate,
-                                                                            @RequestParam Integer categoryId,@RequestParam(defaultValue = "3") Integer paymentModeId){
+                                                                            @RequestParam Integer categoryId,@RequestParam(defaultValue = "3") Integer paymentModeId,
+                                                                            @RequestParam(defaultValue = "SpotBooking",required = false) String modeType){
         try {
-            Optional<CategoryData> categoryDataOptional = categoryRepo.findById(categoryId);
-            String name = categoryDataOptional.map(CategoryData::getCategory).orElse(null);
-            if ("Public".equalsIgnoreCase(name)){
-                return spotRegService.getPublicUserDetailsByRangeOfDate(startDate,endDate,paymentModeId);
-            }
-            if ("Institution".equalsIgnoreCase(name)){
-                return spotRegService.getInstitutionUserDetailsByRangeOfDate(startDate,endDate,paymentModeId);
-            }
-            if ("Foreigner".equalsIgnoreCase(name)){
-                return spotRegService.getForeignerUserDetailsByRangeOfDate(startDate,endDate,paymentModeId);
-            }
-            return spotRegService.getUserDetailsByRangeOfDate(startDate,endDate,paymentModeId);
+            List<AllUserDataDto> allUserDataDtoList = defaultModeName.equalsIgnoreCase(modeType) ? spotRegService.
+                    getUserDetailsByRangeOfDateSpot(startDate,endDate,categoryId,paymentModeId) : spotRegService.
+                    getUserDetailsByRangeOfDateOnline(startDate,endDate,categoryId);
+            return new ResponseEntity<>(allUserDataDtoList,HttpStatus.OK);
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -156,9 +143,13 @@ public class SpotRegController {
     }
 
     @GetMapping(path = "/totalRevenueByDate")
-    public ResponseEntity<List<GetRevenueDetails>>CategoryBasedTotalRevenueByDate(@RequestParam LocalDate visitDate){
+    public ResponseEntity<List<GetRevenueDetails>>CategoryBasedTotalRevenueByDate(@RequestParam LocalDate visitDate,@RequestParam (required = false) Integer categoryId,
+                                                                                  @RequestParam(defaultValue = "SpotBooking",required = false) String modeType){
         try {
-            return spotRegService.CategoryBasedTotalRevenueByDate(visitDate);
+            List<GetRevenueDetails> getRevenueDetailsList = defaultModeName.equalsIgnoreCase(modeType) ?
+                    spotRegService.getCategoryBasedTotalRevenueByDateSpotBooking(visitDate,categoryId) :
+                    spotRegService.getCategoryBasedTotalRevenueByDateOnlineBooking(visitDate,categoryId);
+            return new ResponseEntity<>(getRevenueDetailsList,HttpStatus.OK);
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -166,21 +157,12 @@ public class SpotRegController {
     }
 
     @GetMapping(path = "/visitorsCountByDate")
-    public ResponseEntity<?> totalVisitorsCountByDate(@RequestParam LocalDate vDate,@RequestParam(required =false) Integer categoryId){
+    public ResponseEntity<?> totalVisitorsCountByDate(@RequestParam LocalDate vDate,@RequestParam(required =false) Integer categoryId,
+                                                      @RequestParam(required = false,defaultValue = "SpotBooking") String modeType){
         try {
-            Optional<CategoryData> categoryDataOptional = categoryRepo.findById(categoryId);
-            if (categoryDataOptional.isPresent()){
-                CategoryData categoryData = categoryDataOptional.get();
-                String name = categoryData.getCategory();
-                if ("Public".equalsIgnoreCase(name)){
-                    return spotRegService.totalPublicVisitorsCountByDate(vDate);
-                } else if ("Institution".equalsIgnoreCase(name)) {
-                    return spotRegService.totalInstitutionVisitorsCountByDate(vDate);
-                } else if ("Foreigner".equalsIgnoreCase(name)) {
-                    return spotRegService.totalForeignerVisitorsCountByDate(vDate);
-                }
-            }
-            return spotRegService.totalVisitorSCountByDate(vDate);
+            ResponseEntity<?> responseEntity = defaultModeName.equalsIgnoreCase(modeType) ? spotRegService.spotBookingTotalVisitorsCountByDate(vDate,categoryId) :
+                    spotRegService.onlineTotalVisitorsCountByDate(vDate,categoryId);
+            return new ResponseEntity<>(responseEntity,HttpStatus.OK);
         }catch (Exception e){
             return errorService.handlerException(e);
         }
@@ -188,9 +170,14 @@ public class SpotRegController {
 
     //visitors count and grand total from a range of date
     @GetMapping(path = "/visitorsCountByRangeOfDate")
-    public ResponseEntity<List<VisitsCountDto>> visitorsCountByDateRange(@RequestParam LocalDate startDate, @RequestParam LocalDate endDate){
+    public ResponseEntity<List<VisitsCountDto>> visitorsCountByDateRange(@RequestParam LocalDate startDate, @RequestParam LocalDate endDate,
+                                                                         @RequestParam(required =false) Integer categoryId,
+                                                                         @RequestParam(required = false,defaultValue = "SpotBooking") String modeType){
         try {
-            return spotRegService.visitorsCountByDateRange(startDate,endDate);
+            List<VisitsCountDto> visitsCountDtoList = defaultModeName.equalsIgnoreCase(modeType) ?
+                    spotRegService.spotBookingVisitorsCountByDateRange(startDate,endDate,categoryId) :
+                    spotRegService.onlineVisitorsCountByDateRange(startDate,endDate,categoryId);
+            return new ResponseEntity<>(visitsCountDtoList,HttpStatus.OK);
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -198,9 +185,12 @@ public class SpotRegController {
     }
 
     @GetMapping(path = "/visitsIncomeAndTotalCountUpToNow")
-    public ResponseEntity<List<VisitorsAmountDto>>visitsIncomeAndTotalCountUptoNow(@RequestParam Integer categoryId){
+    public ResponseEntity<List<VisitorsAmountDto>>visitsIncomeAndTotalCountUpToNow(@RequestParam Integer categoryId,
+                                                                                   @RequestParam(required = false,defaultValue = "SpotBooking") String modeType){
         try {
-            return spotRegService.visitsIncomeAndTotalCountUpToNow(categoryId);
+            List<VisitorsAmountDto> visitorsAmountDtoList = defaultModeName.equalsIgnoreCase(modeType) ? spotRegService.spotVisitsIncomeAndTotalCountUpToNow(categoryId) :
+                    spotRegService.onlineVisitsIncomeAndTotalCountUpToNow(categoryId);
+            return new ResponseEntity<>(visitorsAmountDtoList,HttpStatus.OK);
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -208,9 +198,12 @@ public class SpotRegController {
     }
 
     @GetMapping(path = "/monthlyData")
-    public Map<String, Map<String, Object>> getMonthlyData(@RequestParam int year,@RequestParam Integer categoryId){
+    public Map<String, Map<String, Object>> getMonthlyData(@RequestParam int year,@RequestParam Integer categoryId,
+                                                           @RequestParam(required = false,defaultValue = "SpotBooking") String modeType){
         try {
-            return spotRegService.getMonthlyDataByYear(year,categoryId);
+            Map<String, Map<String, Object>> response = defaultModeName.equalsIgnoreCase(modeType) ? spotRegService.getMonthlyDataByYearSpotBooking(year,categoryId) :
+                    spotRegService.getMonthlyDataByYearOnineBooking(year,categoryId);
+            return response;
         }catch (Exception e){
             e.printStackTrace();
         }

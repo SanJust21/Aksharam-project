@@ -2,6 +2,12 @@ package com.example.MuseumTicketing.spotReg;
 
 import com.example.MuseumTicketing.Guide.util.AlphaNumeric;
 import com.example.MuseumTicketing.onlineTicket.OnlineUserService;
+import com.example.MuseumTicketing.onlineTicket.foreginer.ForeignerUserOnline;
+import com.example.MuseumTicketing.onlineTicket.foreginer.ForeignerUserOnlineRepository;
+import com.example.MuseumTicketing.onlineTicket.institutionUser.InstitutionUserOnline;
+import com.example.MuseumTicketing.onlineTicket.institutionUser.InstitutionUserOnlineRepository;
+import com.example.MuseumTicketing.onlineTicket.publicUser.PublicUserOnline;
+import com.example.MuseumTicketing.onlineTicket.publicUser.PublicUserOnlineRepository;
 import com.example.MuseumTicketing.spotReg.bookingDetails.booking.BookingDetails;
 import com.example.MuseumTicketing.spotReg.bookingDetails.booking.BookingSpotRepo;
 import com.example.MuseumTicketing.spotReg.bookingDetails.slotData.SpotSlot;
@@ -51,6 +57,8 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class
@@ -90,9 +98,18 @@ SpotRegService {
     private DiscountCountRepo discountCountRepo;
     @Autowired
     private OnlineUserService onlineUserService;
-
-    //public static final Integer studentDiscountId=1;
-
+    private static final String publicCategory = "Public";
+    private static final String institutionCategory = "Institution";
+    private static final String foreignerCategory = "Foreigner";
+    @Autowired
+    private PublicUserOnlineRepository publicUserOnlineRepository;
+    @Autowired
+    private InstitutionUserOnlineRepository institutionUserOnlineRepository;
+    @Autowired
+    private ForeignerUserOnlineRepository foreignerUserOnlineRepository;
+    private static final String paymentStatusTrue = "Received";
+    private static final String paymentStatusFalse = "Pending";
+    private static final String paymentModeOnline = "OnlineTransaction";
 
     public ResponseEntity<?> publicUserReg(SpotUserDto spotUserDto, Integer category) {
         PublicData publicDetails = new PublicData();
@@ -915,6 +932,7 @@ SpotRegService {
                     publicDtoData.setChildCount(publicData.getChild());
                     publicDtoData.setSeniorCitizenCount(publicData.getSeniorCitizen());
                     publicDtoData.setVisitDate(publicData.getVisitDate());
+                    publicDtoData.setBookDate(publicData.getVisitDate());
                     Optional<SpotSlot> spotSlotOptional = spotSlotRepo.findById(publicData.getSlotId());
                     if (spotSlotOptional.isPresent()){
                         SpotSlot spotSlot = spotSlotOptional.get();
@@ -1161,10 +1179,6 @@ SpotRegService {
                                 getUserData.setSlotTime(spotSlot.getSlotStartTime());
                             }
                             getUserData.setCreatedBy(foreignerData.getCreatedBy());
-//                        getUserData.setSeniorCitizen(0);
-//                        getUserData.setTeacher(0);
-//                        getUserData.setStudent(0);
-//                        getUserData.setDistrict("NoData");
                             getUserDataList.add(getUserData);
                         }
                     }
@@ -1791,49 +1805,6 @@ SpotRegService {
         return allUserDataDtoList;
     }
 
-    public ResponseEntity<List<GetRevenueDetails>> CategoryBasedTotalRevenueByDate(LocalDate visitDate) {
-        List<PublicData> publicDataList = publicRepo.findByVisitDate(visitDate);
-        List<InstitutionData> institutionDataList = institutionDataRepo.findByVisitDate(visitDate);
-        List<ForeignerData> foreignerDataList = foreignerDataRepo.findByVisitDate(visitDate);
-        Double revenueAmount = 0.0,totalRevenue=0.0;
-        List<GetRevenueDetails> getRevenueDetailsList = new ArrayList<>();
-        GetRevenueDetails getRevenueDetails = new GetRevenueDetails();
-        if (publicDataList.isEmpty() && institutionDataList.isEmpty() && foreignerDataList.isEmpty()){
-            return new ResponseEntity<>(new ArrayList<>(),HttpStatus.NO_CONTENT);
-        }else {
-            if (!publicDataList.isEmpty()){
-                for (PublicData publicData : publicDataList){
-                    if (publicData.getTicketId()!=null){
-                        revenueAmount+=publicData.getGrandTotal();
-                    }
-                }
-                totalRevenue+=revenueAmount;
-                getRevenueDetails.setPublicRevenue(revenueAmount);
-            }
-            if (!institutionDataList.isEmpty()){
-                for (InstitutionData institutionData : institutionDataList){
-                    if (institutionData.getTicketId()!=null){
-                        revenueAmount+=institutionData.getGrandTotal();
-                    }
-                }
-                totalRevenue+=revenueAmount;
-                getRevenueDetails.setInstitutionRevenue(revenueAmount);
-            }
-            if (!foreignerDataList.isEmpty()){
-                for (ForeignerData foreignerData :foreignerDataList){
-                    if (foreignerData.getTicketId()!=null){
-                        revenueAmount+=foreignerData.getGrandTotal();
-                    }
-                }
-                totalRevenue+=revenueAmount;
-                getRevenueDetails.setForeignerRevenue(revenueAmount);
-            }
-            getRevenueDetails.setOverAllIncome(totalRevenue);
-            getRevenueDetailsList.add(getRevenueDetails);
-            return new ResponseEntity<>(getRevenueDetailsList,HttpStatus.OK);
-        }
-    }
-
     public ResponseEntity<?> totalPublicVisitorsCountByDate(LocalDate vDate) {
         List<PublicData> publicDataList = publicRepo.findByVisitDate(vDate);
         Integer adultCount =0,childCount=0,seniorCitizenCount=0,count=0;
@@ -2017,7 +1988,6 @@ SpotRegService {
                 adultCount=0;childCount=0;count=0;adultGrandTotals=0.0;childGrandTotals=0.0;overAllGrandTotal=0.0;
             }
             if (!institutionDataList.isEmpty()){
-                List<InstitutionVisitorsDto> institutionVisitorsDtoList = new ArrayList<>();
                 for (InstitutionData institutionData : institutionDataList){
                     if (institutionData.getTicketId()!=null){
                         adultCount+=institutionData.getTeacher();
@@ -2659,5 +2629,1830 @@ SpotRegService {
             }
         }
         return new ResponseEntity<>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    public ResponseEntity<?> getAllUserDetailsSpot(Integer categoryId) {
+        String categoryName = categoryRepo.findById(categoryId).map(CategoryData::getCategory).orElse(null);
+        if (publicCategory.equalsIgnoreCase(categoryName)){
+            return getAllPublic();
+        }
+        if (institutionCategory.equalsIgnoreCase(categoryName)){
+            return getAllInstitution();
+        }
+        if (foreignerCategory.equalsIgnoreCase(categoryName)){
+            return getAllForeigner();
+        }
+        return getAllUserDetails();
+    }
+
+    public ResponseEntity<?> getAllUserDetailsOnline(Integer categoryId) {
+        String categoryName = categoryRepo.findById(categoryId).map(CategoryData::getCategory).orElse(null);
+        if (publicCategory.equalsIgnoreCase(categoryName)){
+            return getAllPublicOnline();
+        }
+        if (institutionCategory.equalsIgnoreCase(categoryName)){
+            return getAllInstitutionOnline();
+        }
+        if (foreignerCategory.equalsIgnoreCase(categoryName)){
+            return getAllForeignerOnline();
+        }
+        return getAllUsersDetailsOnline();
+    }
+
+    private ResponseEntity<?> getAllUsersDetailsOnline() {
+        List<AllUserDataDto> allUserDataDtoList = new ArrayList<>();
+        allUserDataDtoList.addAll(getPublicOnlineData());
+        allUserDataDtoList.addAll(getInstitutionData());
+        allUserDataDtoList.addAll(getForeignerData());
+        if (allUserDataDtoList.isEmpty()){
+            return new ResponseEntity<>(allUserDataDtoList,HttpStatus.NO_CONTENT);
+        }
+        return new ResponseEntity<>(allUserDataDtoList,HttpStatus.OK);
+    }
+
+    private ResponseEntity<?> getAllForeignerOnline() {
+        List<AllUserDataDto> foreignerDto = getForeignerData();
+        if (foreignerDto.isEmpty()){
+            return new ResponseEntity<>(foreignerDto,HttpStatus.NO_CONTENT);
+        }
+        return new ResponseEntity<>(foreignerDto,HttpStatus.OK);
+    }
+
+    private List<AllUserDataDto> getForeignerData() {
+        List<ForeignerUserOnline> foreignerUserOnlineList = foreignerUserOnlineRepository.findAll();
+        List<AllUserDataDto> foreignerDtoDataList = new ArrayList<>();
+        if (foreignerUserOnlineList.isEmpty()){
+            return foreignerDtoDataList;
+        }
+        foreignerUserOnlineList.sort(Comparator.comparing(ForeignerUserOnline::getId).reversed());
+        for (ForeignerUserOnline userOnline:foreignerUserOnlineList){
+            if (userOnline.getTicketId() !=null){
+                AllUserDataDto foreignerDtoData = new AllUserDataDto();
+                foreignerDtoData.setName(userOnline.getName());
+                foreignerDtoData.setPhNumber(userOnline.getPhNumber());
+                foreignerDtoData.setAdultCount(userOnline.getAdult());
+                foreignerDtoData.setAdultCharge(userOnline.getAdultGrandTotal());
+                foreignerDtoData.setChildCount(userOnline.getChild());
+                foreignerDtoData.setChildCharge(userOnline.getChildGrandTotal());
+                foreignerDtoData.setVisitDate(userOnline.getVisitDate());
+                foreignerDtoData.setBookDate(userOnline.getBookDate());
+                foreignerDtoData.setSlotTime(userOnline.getSlotStartTime());
+                foreignerDtoData.setPaymentModeName(paymentModeOnline);
+                boolean paymentStatusCode = userOnline.isPaymentStatus();
+                String paymentStatus =  paymentStatusCode ? paymentStatusTrue : paymentStatusFalse;
+                foreignerDtoData.setPaymentStatusName(paymentStatus);
+                foreignerDtoData.setTicketId(userOnline.getTicketId());
+                foreignerDtoData.setOrderId(userOnline.getOrderId());
+                foreignerDtoData.setPaymentId(userOnline.getPaymentId());
+                foreignerDtoData.setGeneratedTime(userOnline.getCreatedAt().toLocalTime());
+                foreignerDtoData.setVisitStatus(userOnline.isVisitStatus());
+                foreignerDtoData.setCategoryName(foreignerCategory);
+                foreignerDtoDataList.add(foreignerDtoData);
+            }
+        }
+        return foreignerDtoDataList;
+    }
+
+    private ResponseEntity<?> getAllInstitutionOnline() {
+        List<AllUserDataDto> institutionDto = getInstitutionData();
+        if (institutionDto.isEmpty()){
+            return new ResponseEntity<>(institutionDto,HttpStatus.NO_CONTENT);
+        }
+        return new ResponseEntity<>(institutionDto,HttpStatus.OK);
+    }
+
+    private List<AllUserDataDto> getInstitutionData() {
+        List<InstitutionUserOnline> institutionUserOnlineList = institutionUserOnlineRepository.findAll();
+        List<AllUserDataDto> institutionDtoDataList = new ArrayList<>();
+        institutionUserOnlineList.sort(Comparator.comparing(InstitutionUserOnline::getId).reversed());
+        if (institutionUserOnlineList.isEmpty()){
+            return institutionDtoDataList;
+        }
+        for (InstitutionUserOnline userOnline:institutionUserOnlineList){
+            if (userOnline.getTicketId() !=null){
+                AllUserDataDto dtoData = new AllUserDataDto();
+                dtoData.setName(userOnline.getName());
+                dtoData.setPhNumber(userOnline.getPhNumber());
+                dtoData.setDistrict(userOnline.getDistrict());
+                dtoData.setTeacherCount(userOnline.getTeacher());
+                dtoData.setTeacherCharge(userOnline.getTeacherTicketCharge());
+                dtoData.setStudentCount(userOnline.getStudent());
+                dtoData.setStudentCharge(userOnline.getStudentTicketCharge());
+                dtoData.setGrandTotal(userOnline.getGrandTotal());
+                dtoData.setPaymentModeName(paymentModeOnline);
+                boolean paymentStatusCode = userOnline.isPaymentStatus();
+                String paymentStatus =  paymentStatusCode ? paymentStatusTrue : paymentStatusFalse;
+                dtoData.setPaymentStatusName(paymentStatus);
+                dtoData.setVisitDate(userOnline.getVisitDate());
+                dtoData.setBookDate(userOnline.getBookDate());
+                dtoData.setSlotTime(userOnline.getSlotStartTime());
+                dtoData.setTicketId(userOnline.getTicketId());
+                dtoData.setOrderId(userOnline.getOrderId());
+                dtoData.setPaymentId(userOnline.getPaymentId());
+                dtoData.setGeneratedTime(userOnline.getCreatedAt().toLocalTime());
+                dtoData.setVisitStatus(userOnline.isVisitStatus());
+                dtoData.setCategoryName(institutionCategory);
+                institutionDtoDataList.add(dtoData);
+            }
+        }
+        return institutionDtoDataList;
+    }
+
+    private ResponseEntity<?> getAllPublicOnline() {
+        List<AllUserDataDto> publicUsers = getPublicOnlineData();
+        if (publicUsers.isEmpty()){
+            return new ResponseEntity<>(publicUsers,HttpStatus.NO_CONTENT);
+        }
+        return new ResponseEntity<>(publicUsers,HttpStatus.OK);
+    }
+
+    private List<AllUserDataDto> getPublicOnlineData() {
+        List<PublicUserOnline> publicUserOnlineList = publicUserOnlineRepository.findAll();
+        List<AllUserDataDto> publicDtoDataList = new ArrayList<>();
+        publicUserOnlineList.sort(Comparator.comparing(PublicUserOnline::getId).reversed());
+        if (publicUserOnlineList.isEmpty()){
+            return publicDtoDataList;
+        }
+        for (PublicUserOnline userOnline : publicUserOnlineList){
+            if (userOnline.getTicketId() !=null){
+                AllUserDataDto publicDtoData = new AllUserDataDto();
+                publicDtoData.setName(userOnline.getName());
+                publicDtoData.setPhNumber(userOnline.getPhNumber());
+                publicDtoData.setAdultCount(userOnline.getAdult());
+                publicDtoData.setAdultCharge(userOnline.getAdultGrandTotal());
+                publicDtoData.setChildCount(userOnline.getChild());
+                publicDtoData.setChildCharge(userOnline.getChildGrandTotal());
+                publicDtoData.setVisitDate(userOnline.getVisitDate());
+                publicDtoData.setBookDate(userOnline.getBookDate());
+                publicDtoData.setSlotTime(userOnline.getSlotStartTime());
+                publicDtoData.setGrandTotal(userOnline.getGrandTotal());
+                publicDtoData.setPaymentModeName(paymentModeOnline);
+                boolean paymentStatusCode = userOnline.isPaymentStatus();
+                String paymentStatus =  paymentStatusCode ? paymentStatusTrue : paymentStatusFalse;
+                publicDtoData.setPaymentStatusName(paymentStatus);
+                publicDtoData.setTicketId(userOnline.getTicketId());
+                publicDtoData.setOrderId(userOnline.getOrderId());
+                publicDtoData.setPaymentId(userOnline.getPaymentId());
+                publicDtoData.setGeneratedTime(userOnline.getCreatedAt().toLocalTime());
+                publicDtoData.setVisitStatus(userOnline.isVisitStatus());
+                publicDtoData.setCategoryName(publicCategory);
+                publicDtoDataList.add(publicDtoData);
+            }
+        }
+        return publicDtoDataList;
+    }
+
+    public List<GetUserData_> getUserDetailsByDateSpot(LocalDate visitDate, Integer categoryId) {
+        List<GetUserData_> getUserDataList = new ArrayList<>();
+        String categoryName = categoryRepo.findById(categoryId).map(CategoryData::getCategory).orElse(null);
+        if (publicCategory.equalsIgnoreCase(categoryName)){
+            List<PublicData> publicDataList = publicRepo.findByVisitDate(visitDate);
+            if (publicDataList.isEmpty()){
+                return getUserDataList;
+            }
+            for (PublicData publicData : publicDataList){
+                if (publicData.getTicketId()!=null){
+                    GetUserData_ getUserData = new GetUserData_();
+                    getUserData.setName(publicData.getName());
+                    getUserData.setPhNumber(publicData.getPhNumber());
+                    getUserData.setAdult(publicData.getAdult());
+                    getUserData.setAdultCharge(publicData.getAdultGrandTotal());
+                    getUserData.setChild(publicData.getChild());
+                    getUserData.setChildCharge(publicData.getChildGrandTotal());
+                    getUserData.setSeniorCitizen(publicData.getSeniorCitizen());
+                    getUserData.setGrandTotal(publicData.getGrandTotal());
+                    Integer paymentId = publicData.getPaymentMode();
+                    String paymentMode = paymentModeRepo.findById(paymentId).map(PaymentMode::getPaymentType).orElse(null);
+                    getUserData.setPaymentModeName(paymentMode);
+                    getUserData.setPaymentStatus(paymentStatusRepo.findById(publicData.getPaymentStatusId()).map(PaymentStatus::getStatusName).orElse(null));
+                    getUserData.setTicketId(publicData.getTicketId());
+                    getUserData.setGeneratedTime(publicData.getCreatedTime());
+                    getUserData.setSlotTime(spotSlotRepo.findById(publicData.getSlotId()).map(SpotSlot::getSlotStartTime).orElse(null));
+                    getUserData.setCreatedBy(publicData.getCreatedBy());
+                    getUserDataList.add(getUserData);
+                }
+            }
+
+        }
+
+        if (institutionCategory.equalsIgnoreCase(categoryName)){
+            List<InstitutionData> institutionDataList = institutionDataRepo.findByVisitDate(visitDate);
+            if (institutionDataList.isEmpty()){
+                return getUserDataList;
+            }
+            for (InstitutionData institutionData:institutionDataList){
+                if (institutionData.getTicketId()!=null){
+                    GetUserData_ getUserData = new GetUserData_();
+                    getUserData.setName(institutionData.getName());
+                    getUserData.setPhNumber(institutionData.getPhNumber());
+                    getUserData.setDistrict(institutionData.getDistrict());
+                    getUserData.setTeacher(institutionData.getTeacher());
+                    getUserData.setTeacherCharge(institutionData.getTeacherTicketCharge());
+                    getUserData.setStudent(institutionData.getStudent());
+                    getUserData.setStudentCharge(institutionData.getStudentTicketCharge());
+                    getUserData.setStudentDiscount(institutionData.getStudentDiscount());
+                    getUserData.setPayableStudentCharge(institutionData.getPayableStudentCharge());
+                    getUserData.setDiscountAmount(institutionData.getDiscountAmount());
+                    getUserData.setGrandTotal(institutionData.getGrandTotal());
+                    getUserData.setPaymentModeName(paymentModeRepo.findById(institutionData.getPaymentMode()).map(PaymentMode::getPaymentType).orElse(null));
+                    getUserData.setTicketId(institutionData.getTicketId());
+                    getUserData.setGeneratedTime(institutionData.getCreatedTime());
+                    getUserData.setSlotTime(spotSlotRepo.findById(institutionData.getSlotId()).map(SpotSlot::getSlotStartTime).orElse(null));
+                    getUserData.setCreatedBy(institutionData.getCreatedBy());
+                    getUserDataList.add(getUserData);
+                }
+            }
+        }
+        if (foreignerCategory.equalsIgnoreCase(categoryName)){
+            List<ForeignerData> foreignerDataList = foreignerDataRepo.findByVisitDate(visitDate);
+            if (foreignerDataList.isEmpty()){
+                return getUserDataList;
+            }
+            for (ForeignerData foreignerData:foreignerDataList){
+                if (foreignerData.getTicketId()!=null){
+                    GetUserData_ getUserData = new GetUserData_();
+                    getUserData.setName(foreignerData.getName());
+                    getUserData.setPhNumber(foreignerData.getPhNumber());
+                    getUserData.setAdult(foreignerData.getAdult());
+                    getUserData.setAdultCharge(foreignerData.getAdultGrandTotal());
+                    getUserData.setChild(foreignerData.getChild());
+                    getUserData.setChildCharge(foreignerData.getChildGrandTotal());
+                    getUserData.setGrandTotal(foreignerData.getGrandTotal());
+                    getUserData.setPaymentModeName(paymentModeRepo.findById(foreignerData.getPaymentMode()).map(PaymentMode::getPaymentType).orElse(null));
+                    getUserData.setPaymentStatus(paymentStatusRepo.findById(foreignerData.getPaymentStatusId()).map(PaymentStatus::getStatusName).orElse(null));
+                    getUserData.setTicketId(foreignerData.getTicketId());
+                    getUserData.setGeneratedTime(foreignerData.getCreatedTime());
+                    getUserData.setSlotTime(spotSlotRepo.findById(foreignerData.getSlotId()).map(SpotSlot::getSlotStartTime).orElse(null));
+                    getUserData.setCreatedBy(foreignerData.getCreatedBy());
+                    getUserDataList.add(getUserData);
+                }
+            }
+        }
+        return getUserDataList;
+    }
+
+    public List<GetUserData_> getUserDetailsByDateOnline(LocalDate visitDate, Integer categoryId) {
+        List<GetUserData_> getUserDataList = new ArrayList<>();
+        String categoryName = categoryRepo.findById(categoryId).map(CategoryData::getCategory).orElse(null);
+        if (publicCategory.equalsIgnoreCase(categoryName)){
+            List<PublicUserOnline> publicUserOnlineList = publicUserOnlineRepository.findByVisitDate(visitDate);
+            if (publicUserOnlineList.isEmpty()){
+                return getUserDataList;
+            }
+            for (PublicUserOnline userOnline:publicUserOnlineList){
+                if (userOnline.getTicketId()!=null){
+                    GetUserData_ getUserData = new GetUserData_();
+                    getUserData.setName(userOnline.getName());
+                    getUserData.setPhNumber(userOnline.getPhNumber());
+                    getUserData.setAdult(userOnline.getAdult());
+                    getUserData.setAdultCharge(userOnline.getAdultGrandTotal());
+                    getUserData.setChild(userOnline.getChild());
+                    getUserData.setChildCharge(userOnline.getChildGrandTotal());
+                    getUserData.setGrandTotal(userOnline.getGrandTotal());
+                    String paymentId = userOnline.getPaymentId();
+                    getUserData.setPaymentId(paymentId);
+                    getUserData.setPaymentModeName(paymentModeOnline);
+                    boolean paymentStatusCode = userOnline.isPaymentStatus();
+                    String paymentStatus =  paymentStatusCode ? paymentStatusTrue : paymentStatusFalse;
+                    getUserData.setPaymentStatus(paymentStatus);
+                    getUserData.setTicketId(userOnline.getTicketId());
+                    getUserData.setOrderId(userOnline.getOrderId());
+                    getUserData.setPaymentId(userOnline.getPaymentId());
+                    getUserData.setGeneratedTime(userOnline.getCreatedAt().toLocalTime());
+                    getUserData.setSlotTime(userOnline.getSlotStartTime());
+                    getUserDataList.add(getUserData);
+                }
+            }
+        }
+
+        if (institutionCategory.equalsIgnoreCase(categoryName)){
+            List<InstitutionUserOnline> institutionUserOnlineList = institutionUserOnlineRepository.findByVisitDate(visitDate);
+            if (institutionUserOnlineList.isEmpty()){
+                return getUserDataList;
+            }
+            for (InstitutionUserOnline userOnline:institutionUserOnlineList){
+                if (userOnline.getTicketId()!=null){
+                    GetUserData_ getUserData = new GetUserData_();
+                    getUserData.setName(userOnline.getName());
+                    getUserData.setPhNumber(userOnline.getPhNumber());
+                    getUserData.setDistrict(userOnline.getDistrict());
+                    getUserData.setTeacher(userOnline.getTeacher());
+                    getUserData.setTeacherCharge(userOnline.getTeacherTicketCharge());
+                    getUserData.setStudent(userOnline.getStudent());
+                    getUserData.setStudentCharge(userOnline.getStudentTicketCharge());
+                    getUserData.setGrandTotal(userOnline.getGrandTotal());
+                    getUserData.setPaymentModeName(paymentModeOnline);
+                    getUserData.setTicketId(userOnline.getTicketId());
+                    getUserData.setGeneratedTime(userOnline.getCreatedAt().toLocalTime());
+                    getUserData.setSlotTime(userOnline.getSlotStartTime());
+                    getUserDataList.add(getUserData);
+                }
+            }
+        }
+
+        if (foreignerCategory.equalsIgnoreCase(categoryName)){
+            List<ForeignerUserOnline> foreignerUserOnlineList = foreignerUserOnlineRepository.findByVisitDate(visitDate);
+            if (foreignerUserOnlineList.isEmpty()){
+                return getUserDataList;
+            }
+            for (ForeignerUserOnline userOnline:foreignerUserOnlineList){
+                GetUserData_ getUserData = new GetUserData_();
+                getUserData.setName(userOnline.getName());
+                getUserData.setPhNumber(userOnline.getPhNumber());
+                getUserData.setAdult(userOnline.getAdult());
+                getUserData.setAdultCharge(userOnline.getAdultGrandTotal());
+                getUserData.setChild(userOnline.getChild());
+                getUserData.setChildCharge(userOnline.getChildGrandTotal());
+                getUserData.setGrandTotal(userOnline.getGrandTotal());
+                getUserData.setPaymentModeName(paymentModeOnline);
+                boolean paymentStatusCode = userOnline.isPaymentStatus();
+                String paymentStatus =  paymentStatusCode ? paymentStatusTrue : paymentStatusFalse;
+                getUserData.setPaymentStatus(paymentStatus);
+                getUserData.setTicketId(userOnline.getTicketId());
+                getUserData.setOrderId(userOnline.getOrderId());
+                getUserData.setPaymentId(userOnline.getPaymentId());
+                getUserData.setGeneratedTime(userOnline.getCreatedAt().toLocalTime());
+                getUserData.setSlotTime(userOnline.getSlotStartTime());
+                getUserDataList.add(getUserData);
+            }
+        }
+        return getUserDataList;
+    }
+
+    public List<AllUserDataDto> getUserDetailsByRangeOfDateSpot(LocalDate startDate, LocalDate endDate, Integer categoryId, Integer paymentModeId) {
+        String categoryName = categoryRepo.findById(categoryId).map(CategoryData::getCategory).orElse(null);
+        if (publicCategory.equalsIgnoreCase(categoryName)){
+            ResponseEntity<List<AllUserDataDto>> allUserDataDtoList = getPublicUserDetailsByRangeOfDate(startDate, endDate, paymentModeId);
+            return allUserDataDtoList.getBody();
+        }
+
+        if (institutionCategory.equalsIgnoreCase(categoryName)){
+            ResponseEntity<List<AllUserDataDto>> allUserDataDtoList = getInstitutionUserDetailsByRangeOfDate(startDate,endDate,paymentModeId);
+            return allUserDataDtoList.getBody();
+        }
+
+        if (foreignerCategory.equalsIgnoreCase(categoryName)){
+            ResponseEntity<List<AllUserDataDto>> allUserDataDtoList = getForeignerUserDetailsByRangeOfDate(startDate, endDate, paymentModeId);
+            return allUserDataDtoList.getBody();
+        }
+
+        ResponseEntity<List<AllUserDataDto>> allUserDataDtoList = getUserDetailsByRangeOfDate(startDate, endDate, paymentModeId);
+        return allUserDataDtoList.getBody();
+    }
+
+    public List<AllUserDataDto> getUserDetailsByRangeOfDateOnline(LocalDate startDate, LocalDate endDate, Integer categoryId) {
+        String categoryName = categoryRepo.findById(categoryId).map(CategoryData::getCategory).orElse(null);
+        List<AllUserDataDto> allUserDataDtoList = new ArrayList<>();
+        if (publicCategory.equalsIgnoreCase(categoryName)){
+            allUserDataDtoList = getPublicOnlineUserDetailsByRangeOfDate(startDate,endDate);
+            return allUserDataDtoList;
+        }
+        if (institutionCategory.equalsIgnoreCase(categoryName)){
+            allUserDataDtoList = getInstitutionOnlineUserDetailsByRangeOfDate(startDate,endDate);
+            return allUserDataDtoList;
+        }
+        if (foreignerCategory.equalsIgnoreCase(categoryName)){
+            allUserDataDtoList = getForeignerOnlineUserDetailsByRangeOfDate(startDate,endDate);
+            return allUserDataDtoList;
+        }
+        return getAllOnlineUserDetailsByRangeOfDate(startDate,endDate);
+    }
+
+    private List<AllUserDataDto> getAllOnlineUserDetailsByRangeOfDate(LocalDate startDate, LocalDate endDate) {
+        List<AllUserDataDto> allUserDataDtoList = new ArrayList<>();
+        List<AllUserDataDto> publicUserDataList = getPublicOnlineUserDetailsByRangeOfDate(startDate,endDate);
+        List<AllUserDataDto> institutionDataList = getInstitutionOnlineUserDetailsByRangeOfDate(startDate, endDate);
+        List<AllUserDataDto> foreignerDataList =getForeignerOnlineUserDetailsByRangeOfDate(startDate, endDate);
+        allUserDataDtoList.addAll(publicUserDataList);
+        allUserDataDtoList.addAll(institutionDataList);
+        allUserDataDtoList.addAll(foreignerDataList);
+        return allUserDataDtoList;
+    }
+
+    private List<AllUserDataDto> getForeignerOnlineUserDetailsByRangeOfDate(LocalDate startDate, LocalDate endDate) {
+        List<AllUserDataDto> allUserDataDtoList = new ArrayList<>();
+        List<ForeignerUserOnline> foreignerUserOnlineList = foreignerUserOnlineRepository.findByVisitDateBetween(startDate,endDate);
+        if (foreignerUserOnlineList.isEmpty()){
+            return allUserDataDtoList;
+        }
+        for (ForeignerUserOnline userOnline:foreignerUserOnlineList){
+            AllUserDataDto allUserDataDto = new AllUserDataDto();
+            allUserDataDto.setName(userOnline.getName());
+            allUserDataDto.setPhNumber(userOnline.getPhNumber());
+            allUserDataDto.setAdultCount(userOnline.getAdult());
+            allUserDataDto.setAdultCharge(userOnline.getAdultGrandTotal());
+            allUserDataDto.setChildCount(userOnline.getChild());
+            allUserDataDto.setChildCharge(userOnline.getChildGrandTotal());
+            allUserDataDto.setGrandTotal(userOnline.getGrandTotal());
+            allUserDataDto.setOrderId(userOnline.getOrderId());
+            allUserDataDto.setPaymentId(userOnline.getPaymentId());
+            allUserDataDto.setTicketId(userOnline.getTicketId());
+            allUserDataDto.setVisitDate(userOnline.getVisitDate());
+            allUserDataDto.setSlotTime(userOnline.getSlotStartTime());
+            allUserDataDto.setGeneratedTime(userOnline.getCreatedAt().toLocalTime());
+            allUserDataDto.setCategoryName(foreignerCategory);
+            allUserDataDtoList.add(allUserDataDto);
+        }
+        return allUserDataDtoList;
+    }
+
+    private List<AllUserDataDto> getInstitutionOnlineUserDetailsByRangeOfDate(LocalDate startDate, LocalDate endDate) {
+        List<AllUserDataDto> allUserDataDtoList = new ArrayList<>();
+        List<InstitutionUserOnline> institutionUserOnlineList = institutionUserOnlineRepository.findByVisitDateBetween(startDate,endDate);
+        if (institutionUserOnlineList.isEmpty()){
+            return allUserDataDtoList;
+        }
+
+        for (InstitutionUserOnline userOnline:institutionUserOnlineList){
+            if (userOnline.getTicketId()!=null){
+                AllUserDataDto allUserDataDto = new AllUserDataDto();
+                allUserDataDto.setName(userOnline.getName());
+                allUserDataDto.setPhNumber(userOnline.getPhNumber());
+                allUserDataDto.setTeacherCount(userOnline.getTeacher());
+                allUserDataDto.setTeacherCharge(userOnline.getTeacherTicketCharge());
+                allUserDataDto.setStudentCount(userOnline.getStudent());
+                allUserDataDto.setStudentCharge(userOnline.getStudentTicketCharge());
+                allUserDataDto.setOrderId(userOnline.getOrderId());
+                allUserDataDto.setGrandTotal(userOnline.getGrandTotal());
+                allUserDataDto.setPaymentId(userOnline.getPaymentId());
+                allUserDataDto.setTicketId(userOnline.getTicketId());
+                allUserDataDto.setVisitDate(userOnline.getVisitDate());
+                allUserDataDto.setSlotTime(userOnline.getSlotStartTime());
+                allUserDataDto.setGeneratedTime(userOnline.getCreatedAt().toLocalTime());
+                allUserDataDto.setCategoryName(institutionCategory);
+                allUserDataDtoList.add(allUserDataDto);
+            }
+        }
+        return allUserDataDtoList;
+    }
+
+    private List<AllUserDataDto> getPublicOnlineUserDetailsByRangeOfDate(LocalDate startDate, LocalDate endDate) {
+        List<AllUserDataDto> allUserDataDtoList = new ArrayList<>();
+        List<PublicUserOnline> publicUserOnlineList = publicUserOnlineRepository.findByVisitDateBetween(startDate,endDate);
+        if (publicUserOnlineList.isEmpty()){
+            return allUserDataDtoList;
+        }
+        for (PublicUserOnline userOnline:publicUserOnlineList){
+            if (userOnline.getTicketId()!=null){
+                AllUserDataDto allUserDataDto = new AllUserDataDto();
+                allUserDataDto.setName(userOnline.getName());
+                allUserDataDto.setPhNumber(userOnline.getPhNumber());
+                allUserDataDto.setAdultCount(userOnline.getAdult());
+                allUserDataDto.setAdultCharge(userOnline.getAdultGrandTotal());
+                allUserDataDto.setChildCount(userOnline.getChild());
+                allUserDataDto.setChildCharge(userOnline.getChildGrandTotal());
+                allUserDataDto.setGrandTotal(userOnline.getGrandTotal());
+                allUserDataDto.setOrderId(userOnline.getOrderId());
+                allUserDataDto.setPaymentId(userOnline.getPaymentId());
+                allUserDataDto.setTicketId(userOnline.getTicketId());
+                allUserDataDto.setVisitDate(userOnline.getVisitDate());
+                allUserDataDto.setSlotTime(userOnline.getSlotStartTime());
+                allUserDataDto.setGeneratedTime(userOnline.getCreatedAt().toLocalTime());
+                allUserDataDto.setCategoryName(publicCategory);
+                allUserDataDtoList.add(allUserDataDto);
+            }
+        }
+        return allUserDataDtoList;
+    }
+
+    public List<GetRevenueDetails> getCategoryBasedTotalRevenueByDateSpotBooking(LocalDate visitDate,Integer categoryId) {
+        if (visitDate==null){
+            return new ArrayList<>();
+        }
+        List<GetRevenueDetails> getRevenueDetailsList = categoryId==null ? getAllCategoryBasedTotalRevenueByDate(visitDate)
+                : getCategoryBasedTotalRevenueByDate(visitDate,categoryId);
+        return getRevenueDetailsList;
+    }
+
+    private List<GetRevenueDetails> getCategoryBasedTotalRevenueByDate(LocalDate visitDate, Integer categoryId) {
+        List<GetRevenueDetails> getRevenueDetailsList = new ArrayList<>();
+        String categoryName = categoryRepo.findById(categoryId).map(CategoryData::getCategory).orElse(null);
+        if (publicCategory.equalsIgnoreCase(categoryName)){
+            getRevenueDetailsList = getPublicCategoryBasedTotalRevenueByDate(visitDate);
+            return getRevenueDetailsList;
+        }
+        if (institutionCategory.equalsIgnoreCase(categoryName)){
+            getRevenueDetailsList = getInstitutionCategoryBasedTotalRevenueByDate(visitDate);
+            return getRevenueDetailsList;
+        }
+        if (foreignerCategory.equalsIgnoreCase(categoryName)){
+            getRevenueDetailsList =  getForeignerCategoryBasedTotalRevenueByDate(visitDate);
+            return getRevenueDetailsList;
+        }
+        return getAllCategoryBasedTotalRevenueByDate(visitDate);
+    }
+
+    private List<GetRevenueDetails> getAllCategoryBasedTotalRevenueByDate(LocalDate visitDate) {
+        List<PublicData> publicDataList = publicRepo.findByVisitDate(visitDate);
+        List<InstitutionData> institutionDataList = institutionDataRepo.findByVisitDate(visitDate);
+        List<ForeignerData> foreignerDataList = foreignerDataRepo.findByVisitDate(visitDate);
+        Double revenueAmount = 0.0,totalRevenue=0.0;
+        List<GetRevenueDetails> getRevenueDetailsList = new ArrayList<>();
+        GetRevenueDetails getRevenueDetails = new GetRevenueDetails();
+        if (!publicDataList.isEmpty()){
+            for (PublicData publicData : publicDataList){
+                if (publicData.getTicketId()!=null){
+                    revenueAmount+=publicData.getGrandTotal();
+                }
+            }
+            totalRevenue+=revenueAmount;
+            getRevenueDetails.setPublicRevenue(revenueAmount);
+        }
+        if (!institutionDataList.isEmpty()){
+            for (InstitutionData institutionData : institutionDataList){
+                if (institutionData.getTicketId()!=null){
+                    revenueAmount+=institutionData.getGrandTotal();
+                }
+            }
+            totalRevenue+=revenueAmount;
+            getRevenueDetails.setInstitutionRevenue(revenueAmount);
+        }
+        if (!foreignerDataList.isEmpty()){
+            for (ForeignerData foreignerData :foreignerDataList){
+                if (foreignerData.getTicketId()!=null){
+                    revenueAmount+=foreignerData.getGrandTotal();
+                }
+            }
+            totalRevenue+=revenueAmount;
+            getRevenueDetails.setForeignerRevenue(revenueAmount);
+        }
+        getRevenueDetails.setOverAllIncome(totalRevenue);
+        getRevenueDetailsList.add(getRevenueDetails);
+        return getRevenueDetailsList;
+    }
+
+    private List<GetRevenueDetails> getForeignerCategoryBasedTotalRevenueByDate(LocalDate visitDate) {
+        List<GetRevenueDetails> getRevenueDetailsList = new ArrayList<>();
+        List<ForeignerData> foreignerUserOnlineList = foreignerDataRepo.findByVisitDate(visitDate);
+        Double revenueAmount = 0.0,totalRevenue=0.0;
+        GetRevenueDetails getRevenueDetails = new GetRevenueDetails();
+        if (foreignerUserOnlineList.isEmpty()){
+            return getRevenueDetailsList;
+        }
+        for (ForeignerData userOnline : foreignerUserOnlineList){
+            if (userOnline.getTicketId()!=null){
+                revenueAmount+=userOnline.getGrandTotal();
+            }
+        }
+        totalRevenue+=revenueAmount;
+        getRevenueDetails.setInstitutionRevenue(revenueAmount);
+        getRevenueDetails.setOverAllIncome(totalRevenue);
+        getRevenueDetailsList.add(getRevenueDetails);
+        return getRevenueDetailsList;
+    }
+
+    private List<GetRevenueDetails> getInstitutionCategoryBasedTotalRevenueByDate(LocalDate visitDate) {
+        List<GetRevenueDetails> getRevenueDetailsList = new ArrayList<>();
+        List<InstitutionData> institutionDataList = institutionDataRepo.findByVisitDate(visitDate);
+        Double revenueAmount = 0.0,totalRevenue=0.0;
+        GetRevenueDetails getRevenueDetails = new GetRevenueDetails();
+        if (institutionDataList.isEmpty()){
+            return getRevenueDetailsList;
+        }
+        for (InstitutionData userOnline:institutionDataList){
+            if (userOnline.getTicketId()!=null){
+                revenueAmount+=userOnline.getGrandTotal();
+            }
+        }
+        totalRevenue+=revenueAmount;
+        getRevenueDetails.setInstitutionRevenue(revenueAmount);
+        getRevenueDetails.setOverAllIncome(totalRevenue);
+        getRevenueDetailsList.add(getRevenueDetails);
+        return getRevenueDetailsList;
+    }
+
+    private List<GetRevenueDetails> getPublicCategoryBasedTotalRevenueByDate(LocalDate visitDate) {
+        List<GetRevenueDetails> getRevenueDetailsList = new ArrayList<>();
+        List<PublicData> publicDataList = publicRepo.findByVisitDate(visitDate);
+        Double revenueAmount = 0.0,totalRevenue=0.0;
+        GetRevenueDetails getRevenueDetails = new GetRevenueDetails();
+        if (publicDataList.isEmpty()){
+            return getRevenueDetailsList;
+        }
+        for (PublicData userOnline:publicDataList){
+            if (userOnline.getTicketId()!=null){
+                revenueAmount+=userOnline.getGrandTotal();
+            }
+        }
+        totalRevenue+=revenueAmount;
+        getRevenueDetails.setPublicRevenue(revenueAmount);
+        getRevenueDetails.setOverAllIncome(totalRevenue);
+        getRevenueDetailsList.add(getRevenueDetails);
+        return getRevenueDetailsList;
+    }
+
+    public List<GetRevenueDetails> getCategoryBasedTotalRevenueByDateOnlineBooking(LocalDate visitDate, Integer categoryId) {
+        if (visitDate==null){
+            return new ArrayList<>();
+        }
+        List<GetRevenueDetails> getRevenueDetailsList = categoryId==null ? getAllOnlineCategoryBasedTotalRevenueByDate(visitDate)
+                : getOnlineCategoryBasedTotalRevenueByDate(visitDate,categoryId);
+        return getRevenueDetailsList;
+    }
+
+    private List<GetRevenueDetails> getOnlineCategoryBasedTotalRevenueByDate(LocalDate visitDate, Integer categoryId) {
+        List<GetRevenueDetails> getRevenueDetailsList = new ArrayList<>();
+        String categoryName = categoryRepo.findById(categoryId).map(CategoryData::getCategory).orElse(null);
+        if (publicCategory.equalsIgnoreCase(categoryName)){
+            getRevenueDetailsList = getOnlinePublicCategoryBasedTotalRevenueByDate(visitDate);
+            return getRevenueDetailsList;
+        }
+        if (institutionCategory.equalsIgnoreCase(categoryName)){
+            getRevenueDetailsList = getOnlineInstitutionCategoryBasedTotalRevenueByDate(visitDate);
+            return getRevenueDetailsList;
+        }
+        if (foreignerCategory.equalsIgnoreCase(categoryName)){
+            getRevenueDetailsList = getOnlineForeignerCategoryBasedTotalRevenueByDate(visitDate);
+            return getRevenueDetailsList;
+        }
+        return getAllOnlineCategoryBasedTotalRevenueByDate(visitDate);
+    }
+
+    private List<GetRevenueDetails> getAllOnlineCategoryBasedTotalRevenueByDate(LocalDate visitDate) {
+        List<PublicUserOnline> publicUserOnlineList = publicUserOnlineRepository.findByVisitDate(visitDate);
+        List<InstitutionUserOnline> institutionUserOnlineList = institutionUserOnlineRepository.findByVisitDate(visitDate);
+        List<ForeignerUserOnline> foreignerUserOnlineList = foreignerUserOnlineRepository.findByVisitDate(visitDate);
+        Double revenueAmount = 0.0,totalRevenue=0.0;
+        List<GetRevenueDetails> getRevenueDetailsList = new ArrayList<>();
+        GetRevenueDetails getRevenueDetails = new GetRevenueDetails();
+        if (!publicUserOnlineList.isEmpty()){
+            for (PublicUserOnline publicData : publicUserOnlineList){
+                if (publicData.getTicketId()!=null){
+                    revenueAmount+=publicData.getGrandTotal();
+                }
+            }
+            totalRevenue+=revenueAmount;
+            getRevenueDetails.setPublicRevenue(revenueAmount);
+        }
+        if (!institutionUserOnlineList.isEmpty()){
+            for (InstitutionUserOnline institutionData : institutionUserOnlineList){
+                if (institutionData.getTicketId()!=null){
+                    revenueAmount+=institutionData.getGrandTotal();
+                }
+            }
+            totalRevenue+=revenueAmount;
+            getRevenueDetails.setInstitutionRevenue(revenueAmount);
+        }
+        if (!foreignerUserOnlineList.isEmpty()){
+            for (ForeignerUserOnline foreignerData : foreignerUserOnlineList){
+                if (foreignerData.getTicketId()!=null){
+                    revenueAmount+=foreignerData.getGrandTotal();
+                }
+            }
+            totalRevenue+=revenueAmount;
+            getRevenueDetails.setForeignerRevenue(revenueAmount);
+        }
+        getRevenueDetails.setOverAllIncome(totalRevenue);
+        getRevenueDetailsList.add(getRevenueDetails);
+        return getRevenueDetailsList;
+    }
+
+    private List<GetRevenueDetails> getOnlineForeignerCategoryBasedTotalRevenueByDate(LocalDate visitDate) {
+        List<GetRevenueDetails> getRevenueDetailsList = new ArrayList<>();
+        List<ForeignerUserOnline> foreignerUserOnlineList = foreignerUserOnlineRepository.findByVisitDate(visitDate);
+        Double revenueAmount = 0.0,totalRevenue=0.0;
+        GetRevenueDetails getRevenueDetails = new GetRevenueDetails();
+        if (foreignerUserOnlineList.isEmpty()){
+            return getRevenueDetailsList;
+        }
+        for (ForeignerUserOnline userOnline : foreignerUserOnlineList){
+            if (userOnline.getTicketId()!=null){
+                revenueAmount+=userOnline.getGrandTotal();
+            }
+        }
+        totalRevenue+=revenueAmount;
+        getRevenueDetails.setInstitutionRevenue(revenueAmount);
+        getRevenueDetails.setOverAllIncome(totalRevenue);
+        getRevenueDetailsList.add(getRevenueDetails);
+        return getRevenueDetailsList;
+    }
+
+    private List<GetRevenueDetails> getOnlineInstitutionCategoryBasedTotalRevenueByDate(LocalDate visitDate) {
+        List<GetRevenueDetails> getRevenueDetailsList = new ArrayList<>();
+        List<InstitutionUserOnline> institutionUserOnlineList = institutionUserOnlineRepository.findByVisitDate(visitDate);
+        Double revenueAmount = 0.0,totalRevenue=0.0;
+        GetRevenueDetails getRevenueDetails = new GetRevenueDetails();
+        if (institutionUserOnlineList.isEmpty()){
+            return getRevenueDetailsList;
+        }
+        for (InstitutionUserOnline userOnline:institutionUserOnlineList){
+            if (userOnline.getTicketId()!=null){
+                revenueAmount+=userOnline.getGrandTotal();
+            }
+        }
+        totalRevenue+=revenueAmount;
+        getRevenueDetails.setInstitutionRevenue(revenueAmount);
+        getRevenueDetails.setOverAllIncome(totalRevenue);
+        getRevenueDetailsList.add(getRevenueDetails);
+        return getRevenueDetailsList;
+    }
+
+    private List<GetRevenueDetails> getOnlinePublicCategoryBasedTotalRevenueByDate(LocalDate visitDate) {
+        List<GetRevenueDetails> getRevenueDetailsList = new ArrayList<>();
+        List<PublicUserOnline> publicUserOnlineList = publicUserOnlineRepository.findByVisitDate(visitDate);
+        Double revenueAmount = 0.0,totalRevenue=0.0;
+        GetRevenueDetails getRevenueDetails = new GetRevenueDetails();
+        if (publicUserOnlineList.isEmpty()){
+            return getRevenueDetailsList;
+        }
+        for (PublicUserOnline userOnline:publicUserOnlineList){
+            if (userOnline.getTicketId()!=null){
+                revenueAmount+=userOnline.getGrandTotal();
+            }
+        }
+        totalRevenue+=revenueAmount;
+        getRevenueDetails.setPublicRevenue(revenueAmount);
+        getRevenueDetails.setOverAllIncome(totalRevenue);
+        getRevenueDetailsList.add(getRevenueDetails);
+        return getRevenueDetailsList;
+    }
+
+    public ResponseEntity<?> spotBookingTotalVisitorsCountByDate(LocalDate vDate, Integer categoryId) {
+        String categoryName = categoryRepo.findById(categoryId).map(CategoryData::getCategory).orElse(null);
+        if (publicCategory.equalsIgnoreCase(categoryName)){
+            ResponseEntity<?> responseEntity = totalPublicVisitorsCountByDate(vDate);
+            return responseEntity;
+        }
+        if(institutionCategory.equalsIgnoreCase(categoryName)){
+            ResponseEntity<?> responseEntity = totalInstitutionVisitorsCountByDate(vDate);
+            return responseEntity;
+        }
+        if (foreignerCategory.equalsIgnoreCase(categoryName)){
+            ResponseEntity<?> responseEntity = totalForeignerVisitorsCountByDate(vDate);
+            return responseEntity;
+        }
+        ResponseEntity<?> responseEntity = totalVisitorSCountByDate(vDate);
+        return responseEntity;
+    }
+
+    public ResponseEntity<?> onlineTotalVisitorsCountByDate(LocalDate vDate, Integer categoryId) {
+        String categoryName = categoryRepo.findById(categoryId).map(CategoryData::getCategory).orElse(null);
+
+        if (publicCategory.equalsIgnoreCase(categoryName)){
+            List<PublicVisitorsDto> publicVisitorsDtoList = getOnlinePublicTotalVisitorsCountByDate(vDate);
+            return new ResponseEntity<>(publicVisitorsDtoList,HttpStatus.OK);
+        }
+        if (institutionCategory.equalsIgnoreCase(categoryName)){
+            List<InstitutionVisitorsDto> institutionVisitorsDtoList = getOnlineInstitutionTotalVisitorsCountByDate(vDate);
+            return new ResponseEntity<>(institutionVisitorsDtoList,HttpStatus.OK);
+        }
+        if (foreignerCategory.equalsIgnoreCase(categoryName)){
+            List<ForeignerVisitorsDto> foreignerVisitorsDtoList = getOnlineForeignerTotalVisitorsCountByDate(vDate);
+            return new ResponseEntity<>(foreignerVisitorsDtoList,HttpStatus.OK);
+        }
+        List<VisitsCountDto> visitsCountDtoList = getOnlineAllTotalVisitorsCountByDate(vDate);
+        return new ResponseEntity<>(visitsCountDtoList,HttpStatus.OK);
+    }
+
+    private List<VisitsCountDto> getOnlineAllTotalVisitorsCountByDate(LocalDate vDate) {
+        List<PublicUserOnline> publicUserOnlineList = publicUserOnlineRepository.findByVisitDate(vDate);
+        List<InstitutionUserOnline> institutionUserOnlineList = institutionUserOnlineRepository.findByVisitDate(vDate);
+        List<ForeignerUserOnline> foreignerUserOnlineList = foreignerUserOnlineRepository.findByVisitDate(vDate);
+
+        List<VisitsCountDto> visitsCountDtoList = new ArrayList<>();
+        VisitsCountDto visitsCountDto = new VisitsCountDto();
+        Integer adultCount =0,childCount=0,count=0,totalCount=0;
+        if (publicUserOnlineList.isEmpty() && institutionUserOnlineList.isEmpty() && foreignerUserOnlineList.isEmpty()){
+            return visitsCountDtoList;
+        }
+
+        if(!publicUserOnlineList.isEmpty()){
+            for (PublicUserOnline userOnline : publicUserOnlineList){
+                if (userOnline.getTicketId() !=null){
+                    adultCount += userOnline.getAdult();
+                    childCount +=userOnline.getChild();
+                    count++;
+                }
+            }
+            totalCount += count;
+            visitsCountDto.setAdultCount(adultCount);
+            visitsCountDto.setChildCount(childCount);
+            visitsCountDto.setPublicTicketCount(count);
+            count=0;adultCount=0;childCount=0;
+        }
+
+        if (!institutionUserOnlineList.isEmpty()){
+            for (InstitutionUserOnline userOnline : institutionUserOnlineList){
+                if (userOnline.getTicketId() !=null){
+                    adultCount += userOnline.getTeacher();
+                    childCount += userOnline.getStudent();
+                    count++;
+                }
+            }
+            totalCount += count;
+            visitsCountDto.setTeacherCount(adultCount);
+            visitsCountDto.setStudentCount(childCount);
+            visitsCountDto.setInstitutionTicketCount(count);
+            count=0;adultCount=0;childCount=0;
+        }
+
+        if (!foreignerUserOnlineList.isEmpty()){
+            for (ForeignerUserOnline userOnline:foreignerUserOnlineList){
+                if (userOnline.getTicketId() !=null){
+                    adultCount += userOnline.getAdult();
+                    childCount += userOnline.getChild();
+                    count++;
+                }
+            }
+            totalCount+=count;
+            visitsCountDto.setForeignAdult(adultCount);
+            visitsCountDto.setForeignChild(childCount);
+            visitsCountDto.setForeignerTicketCount(count);
+        }
+        visitsCountDto.setTotalVisitsCount(totalCount);
+        visitsCountDtoList.add(visitsCountDto);
+        return visitsCountDtoList;
+    }
+
+    private List<ForeignerVisitorsDto> getOnlineForeignerTotalVisitorsCountByDate(LocalDate vDate) {
+        List<ForeignerVisitorsDto> visitsCountDtoList = new ArrayList<>();
+        List<ForeignerUserOnline> foreignerUserOnlineList = foreignerUserOnlineRepository.findByVisitDate(vDate);
+        if (foreignerUserOnlineList.isEmpty()){
+            return visitsCountDtoList;
+        }
+        Integer adultCount =0,childCount=0,count=0;
+        ForeignerVisitorsDto visitsCountDto = new ForeignerVisitorsDto();
+        for (ForeignerUserOnline userOnline : foreignerUserOnlineList){
+            if ( userOnline.getTicketId() !=null){
+                adultCount += userOnline.getAdult();
+                childCount += userOnline.getChild();
+                count++;
+            }
+        }
+        visitsCountDto.setForeignAdult(adultCount);
+        visitsCountDto.setForeignChild(childCount);
+        visitsCountDto.setForeignerTicketCount(count);
+        visitsCountDtoList.add(visitsCountDto);
+        return visitsCountDtoList;
+    }
+
+    private List<InstitutionVisitorsDto> getOnlineInstitutionTotalVisitorsCountByDate(LocalDate vDate) {
+        List<InstitutionVisitorsDto> visitsCountDtoList = new ArrayList<>();
+        List<InstitutionUserOnline> institutionUserOnlineList = institutionUserOnlineRepository.findByVisitDate(vDate);
+        if (institutionUserOnlineList.isEmpty()){
+            return visitsCountDtoList;
+        }
+        Integer teacherCount =0,studentCount=0,count=0;
+        InstitutionVisitorsDto visitsCountDto = new InstitutionVisitorsDto();
+        for (InstitutionUserOnline userOnline : institutionUserOnlineList){
+            if (userOnline.getTicketId() !=null){
+                teacherCount += userOnline.getTeacher();
+                studentCount += userOnline.getStudent();
+                count++;
+            }
+        }
+        visitsCountDto.setTeacherCount(teacherCount);
+        visitsCountDto.setStudnetCount(studentCount);
+        visitsCountDto.setInstitutionTicketCount(count);
+        visitsCountDtoList.add(visitsCountDto);
+        return visitsCountDtoList;
+    }
+
+    private List<PublicVisitorsDto> getOnlinePublicTotalVisitorsCountByDate(LocalDate vDate) {
+        List<PublicUserOnline> publicUserOnlineList = publicUserOnlineRepository.findByVisitDate(vDate);
+        PublicVisitorsDto visitsCountDto = new PublicVisitorsDto();
+        Integer adultCount =0,childCount=0,count=0;
+        List<PublicVisitorsDto> publicVisitorsDtoList = new ArrayList<>();
+        if (publicUserOnlineList.isEmpty()){
+            return publicVisitorsDtoList;
+        }
+        for (PublicUserOnline userOnline:publicUserOnlineList){
+            if (userOnline.getTicketId()!=null){
+                adultCount+=userOnline.getAdult();
+                childCount+=userOnline.getChild();
+                count++;
+            }
+        }
+        visitsCountDto.setAdultCount(adultCount);
+        visitsCountDto.setChildCount(childCount);
+        visitsCountDto.setPublicTicketCount(count);
+        publicVisitorsDtoList.add(visitsCountDto);
+        return publicVisitorsDtoList;
+    }
+
+    public List<VisitsCountDto> spotBookingVisitorsCountByDateRange(LocalDate startDate, LocalDate endDate, Integer categoryId) {
+        List<VisitsCountDto> visitsCountDtoList = new ArrayList<>();
+        String categoryName = categoryRepo.findById(categoryId).map(CategoryData::getCategory).orElse(null);
+        if (publicCategory.equalsIgnoreCase(categoryName)){
+            visitsCountDtoList = getPublicSpotBookingVisitorsCountByDateRange(startDate,endDate);
+            return visitsCountDtoList;
+        }
+        if (institutionCategory.equalsIgnoreCase(categoryName)){
+            visitsCountDtoList = getInstitutionSpotBookingVisitorsCountByDateRange(startDate,endDate);
+            return visitsCountDtoList;
+        }
+        if (foreignerCategory.equalsIgnoreCase(categoryName)){
+            visitsCountDtoList = getForeignerSpotBookingVisitorsCountByDateRange(startDate,endDate);
+            return visitsCountDtoList;
+        }
+        visitsCountDtoList = getAllSpotBookingVisitorsCountByDateRange(startDate,endDate);
+        return visitsCountDtoList;
+    }
+
+    private List<VisitsCountDto> getAllSpotBookingVisitorsCountByDateRange(LocalDate startDate, LocalDate endDate) {
+        List<PublicData> publicDataList = publicRepo.findByVisitDateBetween(startDate,endDate);
+        List<InstitutionData> institutionDataList = institutionDataRepo.findByVisitDateBetween(startDate,endDate);
+        List<ForeignerData> foreignerDataList = foreignerDataRepo.findByVisitDateBetween(startDate,endDate);
+
+        List<VisitsCountDto> visitsCountDtoList = new ArrayList<>();
+        VisitsCountDto visitsCountDto = new VisitsCountDto();
+        Integer adultCount =0,childCount=0,seniorCitizenCount=0,count=0,totalCount=0,flag=0,discountNumber=0;
+        Double adultGrandTotals=0.0,childGrandTotals=0.0,seniorCitizenGrandTotal=0.0,overAllGrandTotal=0.0,discountPercentage=0.0;
+        Double overAllIncome=0.0;
+
+        if (publicDataList.isEmpty() && institutionDataList.isEmpty() && foreignerDataList.isEmpty()){
+            return visitsCountDtoList;
+        }else {
+            if (!publicDataList.isEmpty()){//
+                for (PublicData publicData : publicDataList){
+                    if (publicData.getTicketId()!=null){
+                        adultCount+=publicData.getAdult();
+                        childCount+=publicData.getChild();
+                        seniorCitizenCount+=publicData.getSeniorCitizen();
+                        count++;
+                        adultGrandTotals += publicData.getAdultGrandTotal();
+                        childGrandTotals += publicData.getChildGrandTotal();
+                        seniorCitizenGrandTotal +=publicData.getSeniorCitizenGrandTotal();
+                    }
+                }
+                overAllGrandTotal+=adultGrandTotals+childGrandTotals+seniorCitizenGrandTotal;
+                totalCount+=count;
+                visitsCountDto.setPublicTicketCount(count);
+                visitsCountDto.setAdultCount(adultCount);
+                visitsCountDto.setChildCount(childCount);
+                visitsCountDto.setSeniorCitizen(seniorCitizenCount);
+                visitsCountDto.setPublicGrandTotal(overAllGrandTotal);
+                visitsCountDto.setAdultGrandTotal(adultGrandTotals);
+                visitsCountDto.setChildGrandTotal(childGrandTotals);
+                visitsCountDto.setSeniorCitizenGrandTotal(seniorCitizenGrandTotal);
+                overAllIncome+=overAllGrandTotal;
+                adultCount=0;childCount=0;count=0;adultGrandTotals=0.0;childGrandTotals=0.0;overAllGrandTotal=0.0;
+            }
+            if (!institutionDataList.isEmpty()){
+                for (InstitutionData institutionData : institutionDataList){
+                    if (institutionData.getTicketId()!=null){
+                        adultCount+=institutionData.getTeacher();
+                        childCount+=institutionData.getStudent();
+                        count++;
+
+                        Double disAmount = institutionData.getDiscountAmount()*100;
+                        if (flag<disAmount){
+                            discountNumber++;
+                            discountPercentage+=disAmount;
+                        }
+                        adultGrandTotals+=institutionData.getTeacherTicketCharge();
+                        childGrandTotals+=institutionData.getPayableStudentCharge();
+                    }
+                }
+                totalCount+=count;
+                overAllGrandTotal=adultGrandTotals+childGrandTotals;
+                visitsCountDto.setTeacherCount(adultCount);
+                visitsCountDto.setStudentCount(childCount);
+                visitsCountDto.setInstitutionTicketCount(count);
+                visitsCountDto.setInstitutionGrandTotal(overAllGrandTotal);
+                visitsCountDto.setTeacherGrandTotal(adultGrandTotals);
+                visitsCountDto.setStudentGrandTotal(childGrandTotals);
+                visitsCountDto.setNo_Of_Discount(discountNumber);
+                visitsCountDto.setOverAllDiscountPercentage(discountPercentage);
+                overAllIncome+=overAllGrandTotal;
+                //visitsCountDtoList.add(visitsCountDto);
+                adultCount=0;childCount=0;count=0;adultGrandTotals=0.0;childGrandTotals=0.0;overAllGrandTotal=0.0;
+            }
+            if (!foreignerDataList.isEmpty()){
+                for (ForeignerData foreignerData : foreignerDataList){
+                    if (foreignerData.getTicketId()!=null){
+                        adultCount+= foreignerData.getAdult();
+                        childCount+= foreignerData.getChild();
+                        count++;
+                        adultGrandTotals+=foreignerData.getAdultGrandTotal();
+                        childGrandTotals+=foreignerData.getChildGrandTotal();
+                    }
+                }
+                totalCount+=count;
+                overAllGrandTotal+=adultGrandTotals+childGrandTotals;
+                visitsCountDto.setForeignerTicketCount(count);
+                visitsCountDto.setForeignAdult(adultCount);
+                visitsCountDto.setForeignChild(childCount);
+                visitsCountDto.setTotalVisitsCount(totalCount);
+                visitsCountDto.setForeignerAdultGrandTotal(adultGrandTotals);
+                visitsCountDto.setForeignerChildGrandTotal(childGrandTotals);
+                visitsCountDto.setForeignerGrandTotal(overAllGrandTotal);
+                overAllIncome+=overAllGrandTotal;
+
+            }
+            visitsCountDto.setOverAllIncome(overAllIncome);
+            visitsCountDtoList.add(visitsCountDto);
+            return visitsCountDtoList;
+        }
+    }
+
+    private List<VisitsCountDto> getForeignerSpotBookingVisitorsCountByDateRange(LocalDate startDate, LocalDate endDate) {
+        List<VisitsCountDto> visitsCountDtoList = new ArrayList<>();
+        VisitsCountDto visitsCountDto = new VisitsCountDto();
+        Integer adultCount =0,childCount=0,seniorCitizenCount=0,count=0,totalCount=0,flag=0,discountNumber=0;
+        Double adultGrandTotals=0.0,childGrandTotals=0.0,seniorCitizenGrandTotal=0.0,overAllGrandTotal=0.0,discountPercentage=0.0;
+        Double overAllIncome=0.0;
+        List<ForeignerData> foreignerDataList = foreignerDataRepo.findByVisitDateBetween(startDate,endDate);
+        if (foreignerDataList.isEmpty()){
+            return visitsCountDtoList;
+        }
+        for (ForeignerData foreignerData : foreignerDataList){
+            if (foreignerData.getTicketId()!=null){
+                adultCount+= foreignerData.getAdult();
+                childCount+= foreignerData.getChild();
+                count++;
+                adultGrandTotals+=foreignerData.getAdultGrandTotal();
+                childGrandTotals+=foreignerData.getChildGrandTotal();
+            }
+        }
+        totalCount+=count;
+        overAllGrandTotal+=adultGrandTotals+childGrandTotals;
+        visitsCountDto.setForeignerTicketCount(count);
+        visitsCountDto.setForeignAdult(adultCount);
+        visitsCountDto.setForeignChild(childCount);
+        visitsCountDto.setTotalVisitsCount(totalCount);
+        visitsCountDto.setForeignerAdultGrandTotal(adultGrandTotals);
+        visitsCountDto.setForeignerChildGrandTotal(childGrandTotals);
+        visitsCountDto.setForeignerGrandTotal(overAllGrandTotal);
+        overAllIncome+=overAllGrandTotal;
+        visitsCountDtoList.add(visitsCountDto);
+        return visitsCountDtoList;
+    }
+
+    private List<VisitsCountDto> getInstitutionSpotBookingVisitorsCountByDateRange(LocalDate startDate, LocalDate endDate) {
+        List<VisitsCountDto> visitsCountDtoList = new ArrayList<>();
+        VisitsCountDto visitsCountDto = new VisitsCountDto();
+        Integer adultCount =0,childCount=0,seniorCitizenCount=0,count=0,totalCount=0,flag=0,discountNumber=0;
+        Double adultGrandTotals=0.0,childGrandTotals=0.0,seniorCitizenGrandTotal=0.0,overAllGrandTotal=0.0,discountPercentage=0.0;
+        Double overAllIncome=0.0;
+        List<InstitutionData> institutionDataList = institutionDataRepo.findByVisitDateBetween(startDate,endDate);
+        if (institutionDataList.isEmpty()){
+            return visitsCountDtoList;
+        }
+        for (InstitutionData institutionData:institutionDataList){
+            if (institutionData.getTicketId()!=null){
+                adultCount+=institutionData.getTeacher();
+                childCount+=institutionData.getStudent();
+                count++;
+                Double disAmount = institutionData.getDiscountAmount()*100;
+                if (flag<disAmount){
+                    discountNumber++;
+                    discountPercentage+=disAmount;
+                }
+
+                adultGrandTotals+=institutionData.getTeacherTicketCharge();
+                childGrandTotals+=institutionData.getPayableStudentCharge();
+                overAllGrandTotal=adultGrandTotals+childGrandTotals;
+                visitsCountDto.setTeacherCount(adultCount);
+                visitsCountDto.setStudentCount(childCount);
+                visitsCountDto.setInstitutionTicketCount(count);
+                visitsCountDto.setInstitutionGrandTotal(overAllGrandTotal);
+                visitsCountDto.setTeacherGrandTotal(adultGrandTotals);
+                visitsCountDto.setStudentGrandTotal(childGrandTotals);
+                visitsCountDto.setNo_Of_Discount(discountNumber);
+                visitsCountDto.setOverAllDiscountPercentage(discountPercentage);
+                visitsCountDtoList.add(visitsCountDto);
+
+            }
+        }
+        return visitsCountDtoList;
+    }
+
+    private List<VisitsCountDto> getPublicSpotBookingVisitorsCountByDateRange(LocalDate startDate, LocalDate endDate) {
+        List<PublicData> publicDataList = publicRepo.findByVisitDateBetween(startDate,endDate);
+        List<VisitsCountDto> visitsCountDtoList = new ArrayList<>();
+        VisitsCountDto visitsCountDto = new VisitsCountDto();
+        Integer adultCount =0,childCount=0,count=0,totalCount=0,flag=0;
+        Double adultGrandTotals=0.0,childGrandTotals=0.0,overAllGrandTotal=0.0,discountPercentage=0.0;
+        Double overAllIncome=0.0;
+        if (publicDataList.isEmpty()){
+            return visitsCountDtoList;
+        }
+        for (PublicData publicData:publicDataList){
+            if (publicData.getTicketId()!=null){
+                adultCount+=publicData.getAdult();
+                childCount+=publicData.getChild();
+                count++;
+                adultGrandTotals += publicData.getAdultGrandTotal();
+                childGrandTotals += publicData.getChildGrandTotal();
+            }
+        }
+        overAllGrandTotal+=adultGrandTotals+childGrandTotals;
+        totalCount+=count;
+        visitsCountDto.setPublicTicketCount(count);
+        visitsCountDto.setAdultCount(adultCount);
+        visitsCountDto.setChildCount(childCount);
+        visitsCountDto.setPublicGrandTotal(overAllGrandTotal);
+        visitsCountDto.setAdultGrandTotal(adultGrandTotals);
+        visitsCountDto.setChildGrandTotal(childGrandTotals);
+        visitsCountDtoList.add(visitsCountDto);
+        return visitsCountDtoList;
+    }
+
+    public List<VisitsCountDto> onlineVisitorsCountByDateRange(LocalDate startDate, LocalDate endDate, Integer categoryId) {
+        List<VisitsCountDto> visitsCountDtoList = new ArrayList<>();
+        String categoryName = categoryRepo.findById(categoryId).map(CategoryData::getCategory).orElse(null);
+        if (publicCategory.equalsIgnoreCase(categoryName)){
+            visitsCountDtoList = getOnlinePublicVisitorsCountByDateRange(startDate,endDate);
+            return visitsCountDtoList;
+        }
+        if (institutionCategory.equalsIgnoreCase(categoryName)){
+            visitsCountDtoList = getOnlineInstitutionVisitorsCountByDateRange(startDate,endDate);
+            return visitsCountDtoList;
+        }
+        if (foreignerCategory.equalsIgnoreCase(categoryName)){
+            visitsCountDtoList = getOnlineForeignerVisitorsCountByDateRange(startDate,endDate);
+            return visitsCountDtoList;
+        }
+        visitsCountDtoList = getOnlineAllVisitorsCountByDateRange(startDate,endDate);
+        return visitsCountDtoList;
+    }
+
+    private List<VisitsCountDto> getOnlineAllVisitorsCountByDateRange(LocalDate startDate, LocalDate endDate) {
+        List<VisitsCountDto> visitsCountDtoList = new ArrayList<>();
+        VisitsCountDto visitsCountDto = new VisitsCountDto();
+        Integer adultCount =0,childCount=0,seniorCitizenCount=0,count=0,totalCount=0,flag=0,discountNumber=0;
+        Double adultGrandTotals=0.0,childGrandTotals=0.0,seniorCitizenGrandTotal=0.0,overAllGrandTotal=0.0,discountPercentage=0.0;
+        Double overAllIncome=0.0;
+
+        List<PublicUserOnline> publicUserOnlineList = publicUserOnlineRepository.findByVisitDateBetween(startDate, endDate);
+        List<InstitutionUserOnline> institutionUserOnlineList = institutionUserOnlineRepository.findByVisitDateBetween(startDate, endDate);
+        List<ForeignerUserOnline> foreignerUserOnlineList = foreignerUserOnlineRepository.findByVisitDateBetween(startDate, endDate);
+
+        if (publicUserOnlineList.isEmpty() && institutionUserOnlineList.isEmpty() && foreignerUserOnlineList.isEmpty()){
+            return visitsCountDtoList;
+        }
+        if (publicUserOnlineList.isEmpty()){
+            for (PublicUserOnline userOnline:publicUserOnlineList){
+                if (userOnline.getTicketId()!=null){
+                    adultCount+=userOnline.getAdult();
+                    childCount+=userOnline.getChild();
+                    count++;
+
+                    adultGrandTotals +=userOnline.getAdultGrandTotal();
+                    childGrandTotals +=userOnline.getChildGrandTotal();
+                }
+            }
+            overAllGrandTotal +=adultGrandTotals + childGrandTotals;
+            totalCount +=count;
+            visitsCountDto.setPublicTicketCount(count);
+            visitsCountDto.setAdultCount(adultCount);
+            visitsCountDto.setChildCount(childCount);
+            visitsCountDto.setPublicGrandTotal(overAllGrandTotal);
+            visitsCountDto.setAdultGrandTotal(adultGrandTotals);
+            visitsCountDto.setChildGrandTotal(childGrandTotals);
+            overAllIncome +=overAllGrandTotal;
+            adultCount=0;childCount=0;count=0;adultGrandTotals=0.0;childGrandTotals=0.0;overAllGrandTotal=0.0;
+        }
+        if (!institutionUserOnlineList.isEmpty()){
+            for (InstitutionUserOnline userOnline:institutionUserOnlineList){
+                if (userOnline.getTicketId()!=null){
+                    adultCount += userOnline.getTeacher();
+                    childCount +=userOnline.getStudent();
+                    count++;
+
+                    adultGrandTotals += userOnline.getTeacherTicketCharge();
+                    childGrandTotals += userOnline.getStudentTicketCharge();
+
+                }
+            }
+            totalCount += count;
+            overAllGrandTotal = adultGrandTotals + childGrandTotals;
+            visitsCountDto.setTeacherCount(adultCount);
+            visitsCountDto.setStudentCount(childCount);
+            visitsCountDto.setInstitutionTicketCount(count);
+            visitsCountDto.setInstitutionGrandTotal(overAllGrandTotal);
+            visitsCountDto.setTeacherGrandTotal(adultGrandTotals);
+            visitsCountDto.setStudentGrandTotal(childGrandTotals);
+            overAllIncome += overAllGrandTotal;
+            adultCount=0;childCount=0;count=0;adultGrandTotals=0.0;childGrandTotals=0.0;overAllGrandTotal=0.0;
+
+        }
+
+        if (!foreignerUserOnlineList.isEmpty()){
+            for (ForeignerUserOnline userOnline : foreignerUserOnlineList){
+                if (userOnline.getTicketId()!=null){
+                    adultCount += userOnline.getAdult();
+                    childCount += userOnline.getChild();
+                    count++;
+                    adultGrandTotals += userOnline.getAdultGrandTotal();
+                    childGrandTotals += userOnline.getChildGrandTotal();
+                }
+            }
+            totalCount+=count;
+            overAllGrandTotal += adultGrandTotals = childGrandTotals;
+            visitsCountDto.setForeignerTicketCount(count);
+            visitsCountDto.setForeignAdult(adultCount);
+            visitsCountDto.setForeignChild(childCount);
+            visitsCountDto.setTotalVisitsCount(totalCount);
+            visitsCountDto.setForeignerAdultGrandTotal(adultGrandTotals);
+            visitsCountDto.setForeignerChildGrandTotal(childGrandTotals);
+            visitsCountDto.setForeignerGrandTotal(overAllGrandTotal);
+            overAllIncome += overAllGrandTotal;
+        }
+        visitsCountDto.setOverAllIncome(overAllIncome);
+        visitsCountDtoList.add(visitsCountDto);
+        return visitsCountDtoList;
+    }
+
+    private List<VisitsCountDto> getOnlineForeignerVisitorsCountByDateRange(LocalDate startDate, LocalDate endDate) {
+        List<VisitsCountDto> visitsCountDtoList = new ArrayList<>();
+        VisitsCountDto visitsCountDto = new VisitsCountDto();
+        Integer adultCount =0,childCount=0,seniorCitizenCount=0,count=0,totalCount=0,flag=0,discountNumber=0;
+        Double adultGrandTotals=0.0,childGrandTotals=0.0,seniorCitizenGrandTotal=0.0,overAllGrandTotal=0.0,discountPercentage=0.0;
+        Double overAllIncome=0.0;
+
+        List<ForeignerUserOnline> foreignerUserOnlineList = foreignerUserOnlineRepository.findByVisitDateBetween(startDate, endDate);
+        if (foreignerUserOnlineList.isEmpty()){
+            return visitsCountDtoList;
+        }
+        for (ForeignerUserOnline userOnline:foreignerUserOnlineList){
+            if (userOnline.getTicketId()!=null){
+                adultCount+=userOnline.getAdult();
+                childCount+=userOnline.getChild();
+                count++;
+                adultGrandTotals+=userOnline.getAdultGrandTotal();
+                childGrandTotals+=userOnline.getChildGrandTotal();
+            }
+        }
+        totalCount+=count;
+        overAllGrandTotal+=adultGrandTotals+childGrandTotals;
+        visitsCountDto.setForeignerTicketCount(count);
+        visitsCountDto.setForeignAdult(adultCount);
+        visitsCountDto.setForeignChild(childCount);
+        visitsCountDto.setTotalVisitsCount(totalCount);
+        visitsCountDto.setForeignerAdultGrandTotal(adultGrandTotals);
+        visitsCountDto.setForeignerChildGrandTotal(childGrandTotals);
+        visitsCountDto.setForeignerGrandTotal(overAllGrandTotal);
+        visitsCountDtoList.add(visitsCountDto);
+        return visitsCountDtoList;
+    }
+
+    private List<VisitsCountDto> getOnlineInstitutionVisitorsCountByDateRange(LocalDate startDate, LocalDate endDate) {
+        List<VisitsCountDto> visitsCountDtoList = new ArrayList<>();
+        VisitsCountDto visitsCountDto = new VisitsCountDto();
+        Integer adultCount =0,childCount=0,seniorCitizenCount=0,count=0,totalCount=0,flag=0,discountNumber=0;
+        Double adultGrandTotals=0.0,childGrandTotals=0.0,seniorCitizenGrandTotal=0.0,overAllGrandTotal=0.0,discountPercentage=0.0;
+        Double overAllIncome=0.0;
+        List<InstitutionUserOnline> institutionUserOnlineList = institutionUserOnlineRepository.findByVisitDateBetween(startDate, endDate);
+        if (institutionUserOnlineList.isEmpty()){
+            return visitsCountDtoList;
+        }
+        for (InstitutionUserOnline userOnline:institutionUserOnlineList){
+            if (userOnline.getTicketId()!=null){
+                adultCount+=userOnline.getTeacher();
+                childCount+=userOnline.getStudent();
+                count++;
+                adultGrandTotals+=userOnline.getTeacherTicketCharge();
+                childGrandTotals+=userOnline.getStudentTicketCharge();
+                overAllGrandTotal=adultGrandTotals +childGrandTotals;
+
+                visitsCountDto.setTeacherCount(adultCount);
+                visitsCountDto.setStudentCount(childCount);
+                visitsCountDto.setInstitutionTicketCount(count);
+                visitsCountDto.setInstitutionGrandTotal(overAllGrandTotal);
+                visitsCountDto.setTeacherGrandTotal(adultGrandTotals);
+                visitsCountDto.setStudentGrandTotal(childGrandTotals);
+                visitsCountDtoList.add(visitsCountDto);
+            }
+        }
+        return visitsCountDtoList;
+    }
+
+    private List<VisitsCountDto> getOnlinePublicVisitorsCountByDateRange(LocalDate startDate, LocalDate endDate) {
+        List<VisitsCountDto> visitsCountDtoList = new ArrayList<>();
+        VisitsCountDto visitsCountDto = new VisitsCountDto();
+        Integer adultCount =0,childCount=0,seniorCitizenCount=0,count=0,totalCount=0,flag=0,discountNumber=0;
+        Double adultGrandTotals=0.0,childGrandTotals=0.0,seniorCitizenGrandTotal=0.0,overAllGrandTotal=0.0,discountPercentage=0.0;
+        Double overAllIncome=0.0;
+
+        List<PublicUserOnline>  publicUserOnlineList = publicUserOnlineRepository.findByVisitDateBetween(startDate,endDate);
+        if (publicUserOnlineList.isEmpty()){
+            return visitsCountDtoList;
+        }
+        for (PublicUserOnline userOnline:publicUserOnlineList){
+            if (userOnline.getTicketId()!=null){
+                adultCount+=userOnline.getAdult();
+                childCount+=userOnline.getChild();
+                count++;
+                adultGrandTotals+=userOnline.getAdultGrandTotal();
+                childGrandTotals+=userOnline.getChildGrandTotal();
+            }
+        }
+        overAllGrandTotal+=adultGrandTotals+childGrandTotals;
+        visitsCountDto.setPublicTicketCount(count);
+        visitsCountDto.setAdultCount(adultCount);
+        visitsCountDto.setChildCount(childCount);
+        visitsCountDto.setPublicGrandTotal(overAllGrandTotal);
+        visitsCountDto.setAdultGrandTotal(adultGrandTotals);
+        visitsCountDto.setChildGrandTotal(childGrandTotals);
+        visitsCountDtoList.add(visitsCountDto);
+        return visitsCountDtoList;
+    }
+
+    public List<VisitorsAmountDto> spotVisitsIncomeAndTotalCountUpToNow(Integer categoryId) {
+        List<VisitorsAmountDto> visitorsAmountDtoList = new ArrayList<>();
+        String categoryName = categoryRepo.findById(categoryId).map(CategoryData::getCategory).orElse(null);
+        if (publicCategory.equalsIgnoreCase(categoryName)){
+            visitorsAmountDtoList = getPublicSpotVisitsIncomeAndTotalCountUpToNow();
+            return visitorsAmountDtoList;
+        }
+        if (institutionCategory.equalsIgnoreCase(categoryName)){
+            visitorsAmountDtoList = getInstitutionSpotVisitsIncomeAndTotalCountUpToNow();
+            return visitorsAmountDtoList;
+        }
+        if (foreignerCategory.equalsIgnoreCase(categoryName)){
+            visitorsAmountDtoList = getForeignerSpotVisitsIncomeAndTotalCountUpToNow();
+            return visitorsAmountDtoList;
+        }
+        visitorsAmountDtoList = getAllSpotVisitsIncomeAndTotalCountUpToNow();
+        return visitorsAmountDtoList;
+    }
+
+    private List<VisitorsAmountDto> getAllSpotVisitsIncomeAndTotalCountUpToNow() {
+        List<VisitorsAmountDto> visitorsAmountDtoList = new ArrayList<>();
+
+        List<VisitorsAmountDto> visitorsAmountDtoListPublic = getPublicSpotVisitsIncomeAndTotalCountUpToNow();
+        visitorsAmountDtoList.addAll(visitorsAmountDtoListPublic);
+
+        List<VisitorsAmountDto> visitorsAmountDtoListInstitution = getInstitutionSpotVisitsIncomeAndTotalCountUpToNow();
+        visitorsAmountDtoList.addAll(visitorsAmountDtoListInstitution);
+
+        List<VisitorsAmountDto> visitorsAmountDtoListForeigner = getForeignerSpotVisitsIncomeAndTotalCountUpToNow();
+        visitorsAmountDtoList.addAll(visitorsAmountDtoListForeigner);
+
+        return visitorsAmountDtoList;
+    }
+
+    private List<VisitorsAmountDto> getForeignerSpotVisitsIncomeAndTotalCountUpToNow() {
+        List<VisitorsAmountDto> visitorsAmountDtoList = new ArrayList<>();
+        Double incomeData=0.0;Integer ticketCount=0;
+        VisitorsAmountDto visitorsAmountDto = new VisitorsAmountDto();
+        List<ForeignerData> foreignerDataList = foreignerDataRepo.findAll();
+        if (foreignerDataList.isEmpty()){
+            return visitorsAmountDtoList;
+        }
+        for (ForeignerData foreignerData:foreignerDataList){
+            if (foreignerData.getTicketId()!=null){
+                Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(foreignerData.getPaymentStatusId());
+                if (paymentStatusOptional.isPresent()){
+                    PaymentStatus paymentStatus = paymentStatusOptional.get();
+                    if ("Received".equalsIgnoreCase(paymentStatus.getStatusName())){
+                        incomeData+=foreignerData.getGrandTotal();
+                        ticketCount+=(foreignerData.getAdult()+foreignerData.getChild());
+                    }
+                }
+            }
+        }
+        visitorsAmountDto.setForeignerIncome(incomeData);
+        visitorsAmountDto.setForeignerTicketCount(ticketCount);
+        visitorsAmountDtoList.add(visitorsAmountDto);
+        return visitorsAmountDtoList;
+    }
+
+    private List<VisitorsAmountDto> getInstitutionSpotVisitsIncomeAndTotalCountUpToNow() {
+        List<VisitorsAmountDto> visitorsAmountDtoList = new ArrayList<>();
+        List<InstitutionData> institutionDataList = institutionDataRepo.findAll();
+        if (institutionDataList.isEmpty()){
+            return visitorsAmountDtoList;
+        }
+        Double incomeData=0.0;Integer ticketCount=0;
+        VisitorsAmountDto visitorsAmountDto = new VisitorsAmountDto();
+        for (InstitutionData institutionData : institutionDataList){
+            if (institutionData.getTicketId()!=null){
+                Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(institutionData.getPaymentStatusId());
+                if (paymentStatusOptional.isPresent()){
+                    PaymentStatus paymentStatus = paymentStatusOptional.get();
+                    if ("Received".equalsIgnoreCase(paymentStatus.getStatusName())){
+                        incomeData+=institutionData.getGrandTotal();
+                        ticketCount+=(institutionData.getTeacher()+institutionData.getStudent());
+                    }
+                }
+            }
+        }
+        visitorsAmountDto.setInstitutionIncome(incomeData);
+        visitorsAmountDto.setInstitutionTicketCount(ticketCount);
+        visitorsAmountDtoList.add(visitorsAmountDto);
+        return visitorsAmountDtoList;
+    }
+
+    private List<VisitorsAmountDto> getPublicSpotVisitsIncomeAndTotalCountUpToNow() {
+        List<VisitorsAmountDto> visitorsAmountDtoList = new ArrayList<>();
+        List<PublicData> publicDataList = publicRepo.findAll();
+        if(publicDataList.isEmpty()){
+            return visitorsAmountDtoList;
+        }
+        Double incomeData=0.0;Integer ticketCount=0;
+        VisitorsAmountDto visitorsAmountDto = new VisitorsAmountDto();
+        for (PublicData publicData:publicDataList){
+            if (publicData.getTicketId()!=null){
+                Optional<PaymentStatus> paymentStatusOptional = paymentStatusRepo.findById(publicData.getPaymentStatusId());
+                if (paymentStatusOptional.isPresent()){
+                    PaymentStatus paymentStatus = paymentStatusOptional.get();
+                    if ("Received".equalsIgnoreCase(paymentStatus.getStatusName())){
+                        incomeData+=publicData.getGrandTotal();
+                        ticketCount+=(publicData.getAdult()+publicData.getChild()+publicData.getSeniorCitizen());
+                    }
+                }
+            }
+        }
+        visitorsAmountDto.setPublicIncome(incomeData);
+        visitorsAmountDto.setPublicTicketCount(ticketCount);
+        visitorsAmountDtoList.add(visitorsAmountDto);
+        return visitorsAmountDtoList;
+    }
+
+    public List<VisitorsAmountDto> onlineVisitsIncomeAndTotalCountUpToNow(Integer categoryId) {
+        String categoryName = categoryRepo.findById(categoryId).map(CategoryData::getCategory).orElse(null);
+        List<VisitorsAmountDto> visitorsAmountDtoList = new ArrayList<>();
+        if (publicCategory.equalsIgnoreCase(categoryName)){
+            visitorsAmountDtoList = getPublicOnlineVisitsIncomeAndTotalCountUpToNow();
+            return visitorsAmountDtoList;
+        }
+        if (institutionCategory.equalsIgnoreCase(categoryName)){
+            visitorsAmountDtoList =  getInstitutionOnlineVisitsIncomeAndTotalCountUpToNow();
+            return visitorsAmountDtoList;
+        }
+        if (foreignerCategory.equalsIgnoreCase(categoryName)){
+            visitorsAmountDtoList = getForeignerOnlineVisitsIncomeAndTotalCountUpToNow();
+            return visitorsAmountDtoList;
+        }
+        visitorsAmountDtoList = getAllCategoryOnlineVisitsIncomeAndTotalCountUpToNow();
+        return visitorsAmountDtoList;
+    }
+
+    private List<VisitorsAmountDto> getAllCategoryOnlineVisitsIncomeAndTotalCountUpToNow() {
+        List<VisitorsAmountDto> visitorsAmountDtoList = new ArrayList<>();
+
+        List<VisitorsAmountDto> visitorsAmountDtoListPubic = getPublicOnlineVisitsIncomeAndTotalCountUpToNow();
+        visitorsAmountDtoList.addAll(visitorsAmountDtoListPubic);
+
+        List<VisitorsAmountDto> visitorsAmountDtoListInstitution = getInstitutionOnlineVisitsIncomeAndTotalCountUpToNow();
+        visitorsAmountDtoList.addAll(visitorsAmountDtoListInstitution);
+
+        List<VisitorsAmountDto> visitorsAmountDtoListForeigner = getForeignerOnlineVisitsIncomeAndTotalCountUpToNow();
+        visitorsAmountDtoList.addAll(visitorsAmountDtoListForeigner);
+
+        return visitorsAmountDtoList;
+    }
+
+    private List<VisitorsAmountDto> getForeignerOnlineVisitsIncomeAndTotalCountUpToNow() {
+        List<VisitorsAmountDto> visitorsAmountDtoList = new ArrayList<>();
+        Double incomeData=0.0;Integer ticketCount=0;
+        VisitorsAmountDto visitorsAmountDto = new VisitorsAmountDto();
+        List<ForeignerUserOnline> foreignerUserOnlineList = foreignerUserOnlineRepository.findAll();
+        if (foreignerUserOnlineList.isEmpty()){
+            return visitorsAmountDtoList;
+        }
+        for (ForeignerUserOnline userOnline : foreignerUserOnlineList){
+            if (userOnline.getTicketId() !=null){
+                incomeData+=userOnline.getGrandTotal();
+                ticketCount += (userOnline.getAdult() +userOnline.getChild());
+            }
+        }
+        visitorsAmountDto.setInstitutionIncome(incomeData);
+        visitorsAmountDto.setInstitutionTicketCount(ticketCount);
+        visitorsAmountDtoList.add(visitorsAmountDto);
+        return visitorsAmountDtoList;
+    }
+
+    private List<VisitorsAmountDto> getInstitutionOnlineVisitsIncomeAndTotalCountUpToNow() {
+        List<VisitorsAmountDto> visitorsAmountDtoList = new ArrayList<>();
+        List<InstitutionUserOnline> institutionUserOnlineList = institutionUserOnlineRepository.findAll();
+        if (institutionUserOnlineList.isEmpty()){
+            return visitorsAmountDtoList;
+        }
+        Double incomeData=0.0;Integer ticketCount=0;
+        VisitorsAmountDto visitorsAmountDto = new VisitorsAmountDto();
+        for (InstitutionUserOnline userOnline : institutionUserOnlineList){
+            if (userOnline.getTicketId()!=null){
+                incomeData+=userOnline.getGrandTotal();
+                ticketCount += (userOnline.getTeacher() +userOnline.getStudent());
+            }
+        }
+        visitorsAmountDto.setInstitutionIncome(incomeData);
+        visitorsAmountDto.setInstitutionTicketCount(ticketCount);
+        visitorsAmountDtoList.add(visitorsAmountDto);
+        return visitorsAmountDtoList;
+    }
+
+    private List<VisitorsAmountDto> getPublicOnlineVisitsIncomeAndTotalCountUpToNow() {
+        List<VisitorsAmountDto> visitorsAmountDtoList = new ArrayList<>();
+        List<PublicUserOnline> publicUserOnlineList =publicUserOnlineRepository.findAll();
+        if (publicUserOnlineList.isEmpty()){
+            return visitorsAmountDtoList;
+        }
+
+        Double incomeData=0.0;Integer ticketCount=0;
+        VisitorsAmountDto visitorsAmountDto = new VisitorsAmountDto();
+
+        for (PublicUserOnline userOnline : publicUserOnlineList){
+            if (userOnline.getTicketId() !=null){
+                incomeData+=userOnline.getGrandTotal();
+                ticketCount += (userOnline.getAdult() +userOnline.getChild());
+            }
+        }
+        visitorsAmountDto.setPublicTicketCount(ticketCount);
+        visitorsAmountDtoList.add(visitorsAmountDto);
+        return visitorsAmountDtoList;
+    }
+
+    public Map<String, Map<String, Object>> getMonthlyDataByYearSpotBooking(int year, Integer categoryId) {
+        String categoryName = categoryRepo.findById(categoryId).map(CategoryData::getCategory).orElse(null);
+        Map<String,Map<String,Object>> response = new HashMap<>();
+        if (publicCategory.equalsIgnoreCase(categoryName)){
+            response = getMonthlyDataByYearPublicSpotBooking(year);
+            return response;
+        }
+        if (institutionCategory.equalsIgnoreCase(categoryName)){
+            response = getMonthlyDataByYearInstitutionSpotBooking(year);
+            return response;
+        }
+        if (foreignerCategory.equalsIgnoreCase(categoryName)){
+            response = getMonthlyDataByYearForeignerSpotBooking(year);
+            return response;
+        }
+        response = getMonthlyDataByYearAllCategorySpotBooking(year);
+        return response;
+    }
+
+    private Map<String, Map<String, Object>> getMonthlyDataByYearAllCategorySpotBooking(int year) {
+        List<Object[]> publicResults = publicRepo.findMonthlyDataByYear(year);
+        List<Object[]> institutionResult = institutionDataRepo.findMonthlyDataByYear(year);
+        List<Object[]> foreignerResult = foreignerDataRepo.findMonthlyDataByYear(year);
+
+        Map<String,Map<String,Object>> monthlyData = new LinkedHashMap<>();
+
+        for (int month =1; month<=12;month++){
+            String monthName = getMonthName(month);
+            Map<String,Object> monthData = new HashMap<>();
+
+            monthData.put("PublicGrandTotal",0.0);
+            monthData.put("PublicCountOfPeople",0);
+            monthData.put("InstitutionGrandTotal",0.0);
+            monthData.put("InstitutionCountOfPeople",0);
+            monthData.put("ForeignerGrandTotal",0.0);
+            monthData.put("ForeignerCountOfPeople",0);
+
+            monthlyData.put(monthName,monthData);
+        }
+
+        for (Object[] result : publicResults){
+            Integer monthInteger = (Integer) result[0];
+            double publicGrandTotal = ((Number) result[1]).doubleValue();
+            int publicCountOfPeople =((Number) result[2]).intValue();
+
+            String monthName = getMonthName(monthInteger);
+            Map<String,Object> monthData = monthlyData.get(monthName);
+            if (monthData!=null){
+                monthData.put("PublicGrandTotal",publicGrandTotal);
+                monthData.put("PublicCountOfPeople",publicCountOfPeople);
+            }
+        }
+        for (Object[] result:institutionResult){
+            Integer monthInteger = (Integer) result[0];
+            double institutionGrandTotal = ((Number) result[1]).doubleValue();
+            int institutionCountOfPeople = ((Number) result[2]).intValue();
+            String monthName = getMonthName(monthInteger);
+            Map<String,Object> monthData = monthlyData.get(monthName);
+            if (monthData!=null){
+                monthData.put("InstitutionGrandTotal",institutionGrandTotal);
+                monthData.put("InstitutionCountOfPeople",institutionCountOfPeople);
+            }
+        }
+        for (Object[] result:foreignerResult){
+            Integer monthInteger =(Integer) result[0];
+            double foreignerGrandTotal =((Number) result[1]).doubleValue();
+            int foreignerCountOfPeople =((Number) result[2]).intValue();
+
+            String monthName = getMonthName(monthInteger);
+            Map<String,Object> monthData = monthlyData.get(monthName);
+            if (monthData!=null){
+                monthData.put("ForeignerGrandTotal",foreignerGrandTotal);
+                monthData.put("ForeignerCountOfPeople",foreignerCountOfPeople);
+            }
+        }
+        return monthlyData;
+    }
+
+    private Map<String, Map<String, Object>> getMonthlyDataByYearForeignerSpotBooking(int year) {
+        List<Object[]> results = foreignerDataRepo.findMonthlyDataByYear(year);
+        Map<String,Map<String,Object>> monthlyData = new LinkedHashMap<>();
+        for (int month=1;month<=12;month++){
+            monthlyData.put(getMonthName(month),new HashMap<String,Object>(){{
+                put("grandTotal",0.0);
+                put("countOfPeople",0);
+            }});
+        }
+        for (Object[] result:results){
+            Integer monthInteger =(Integer) result[0];
+            int month = monthInteger;
+            double grandTotal = ((Number) result[1]).doubleValue();
+            int countOfPeople = ((Number) result[2]).intValue();
+            Map<String,Object> monthData = monthlyData.get(getMonthName(month));
+            if (monthData!=null){
+                monthData.put("grandTotal",grandTotal);
+                monthData.put("countOfPeople",countOfPeople);
+            }
+        }
+        return monthlyData;
+    }
+
+    private Map<String, Map<String, Object>> getMonthlyDataByYearInstitutionSpotBooking(int year) {
+        List<Object[]> results = institutionDataRepo.findMonthlyDataByYear(year);
+        Map<String,Map<String,Object>> monthlyData = new LinkedHashMap<>();
+        for (int month=1;month<=12;month++){
+            monthlyData.put(getMonthName(month),new HashMap<String,Object>(){{
+                put("grandTotal",0.0);
+                put("countOfPeople",0);
+            }});
+        }
+        for (Object[] result:results){
+            Integer monthInteger=(Integer) result[0];
+            int month = monthInteger;
+            double grandTotal= ((Number) result[1]).doubleValue();
+            int countOfPeople = ((Number) result[2]).intValue();
+            Map<String, Object> monthData = monthlyData.get(getMonthName(month));
+            if (monthData!=null){
+                monthData.put("grandTotal",grandTotal);
+                monthData.put("countOfPeople",countOfPeople);
+            }
+        }
+        return monthlyData;
+    }
+
+    private Map<String, Map<String, Object>> getMonthlyDataByYearPublicSpotBooking(int year) {
+        List<Object[]> results = publicRepo.findMonthlyDataByYear(year);
+
+        Map<String, Map<String, Object>> monthlyData = new LinkedHashMap<>();
+        for (int month=1;month<=12;month++){
+            monthlyData.put(getMonthName(month),new HashMap<String,Object>() {{
+                put("grandTotal",0.0);
+                put("countOfPeople",0);
+            }});
+        }
+        for (Object[] result : results){
+            Integer monthInteger = (Integer) result[0];
+            int month = monthInteger;
+            double grandTotal = ((Number) result[1]).doubleValue();
+            int countOfPeople = ((Number) result[2]).intValue();
+
+            Map<String, Object> monthData =monthlyData.get(getMonthName(month));
+            if (monthData!=null){
+                monthData.put("grandTotal",grandTotal);
+                monthData.put("countOfPeople",countOfPeople);
+            }
+        }
+        return monthlyData;
+    }
+
+    public Map<String, Map<String, Object>> getMonthlyDataByYearOnineBooking(int year, Integer categoryId) {
+        String categoryName = categoryRepo.findById(categoryId).map(CategoryData::getCategory).orElse(null);
+        Map<String,Map<String,Object>> response = new HashMap<>();
+        if (publicCategory.equalsIgnoreCase(categoryName)){
+            response = getMonthlyDataByYearPublicOnlineBooking(year);
+            return response;
+        }
+        if (institutionCategory.equalsIgnoreCase(categoryName)){
+            response= getMonthlyDataByYearInstitutionOnlineBooking(year);
+            return response;
+        }
+        if (foreignerCategory.equalsIgnoreCase(categoryName)){
+            response =  getMonthlyDataByYearForeignerOnlineBooking(year);
+            return response;
+        }
+        response =  getMonthlyDataByYearAllCategoryOnlineBooking(year);
+        return response;
+    }
+
+    private Map<String, Map<String, Object>> getMonthlyDataByYearAllCategoryOnlineBooking(int year) {
+        List<Object[]> publicResults = publicUserOnlineRepository.findMonthlyDataByYear(year);
+        List<Object[]> institutionResults = institutionUserOnlineRepository.findMonthlyDataByYear(year);
+        List<Object[]> foreignerResults = foreignerUserOnlineRepository.findMonthlyDataByYear(year);
+
+        Map<String,Map<String,Object>> monthlyData = new LinkedHashMap<>();
+
+        for (int month =1; month<=12;month++){
+            String monthName = getMonthName(month);
+            Map<String,Object> monthData = new HashMap<>();
+
+            monthData.put("PublicGrandTotal",0.0);
+            monthData.put("PublicCountOfPeople",0);
+            monthData.put("InstitutionGrandTotal",0.0);
+            monthData.put("InstitutionCountOfPeople",0);
+            monthData.put("ForeignerGrandTotal",0.0);
+            monthData.put("ForeignerCountOfPeople",0);
+
+            monthlyData.put(monthName,monthData);
+        }
+
+        for (Object[] result : publicResults){
+            Integer monthInteger = (Integer) result[0];
+            double publicGrandTotal = ((Number) result[1]).doubleValue();
+            int publicCountOfPeople =((Number) result[2]).intValue();
+
+            String monthName = getMonthName(monthInteger);
+            Map<String,Object> monthData = monthlyData.get(monthName);
+            if (monthData!=null){
+                monthData.put("PublicGrandTotal",publicGrandTotal);
+                monthData.put("PublicCountOfPeople",publicCountOfPeople);
+            }
+        }
+        for (Object[] result:institutionResults){
+            Integer monthInteger = (Integer) result[0];
+            double institutionGrandTotal = ((Number) result[1]).doubleValue();
+            int institutionCountOfPeople = ((Number) result[2]).intValue();
+            String monthName = getMonthName(monthInteger);
+            Map<String,Object> monthData = monthlyData.get(monthName);
+            if (monthData!=null){
+                monthData.put("InstitutionGrandTotal",institutionGrandTotal);
+                monthData.put("InstitutionCountOfPeople",institutionCountOfPeople);
+            }
+        }
+        for (Object[] result:foreignerResults){
+            Integer monthInteger =(Integer) result[0];
+            double foreignerGrandTotal =((Number) result[1]).doubleValue();
+            int foreignerCountOfPeople =((Number) result[2]).intValue();
+
+            String monthName = getMonthName(monthInteger);
+            Map<String,Object> monthData = monthlyData.get(monthName);
+            if (monthData!=null){
+                monthData.put("ForeignerGrandTotal",foreignerGrandTotal);
+                monthData.put("ForeignerCountOfPeople",foreignerCountOfPeople);
+            }
+        }
+        return monthlyData;
+    }
+
+    private Map<String, Map<String, Object>> getMonthlyDataByYearForeignerOnlineBooking(int year) {
+        List<Object[]> results = foreignerUserOnlineRepository.findMonthlyDataByYear(year);
+        Map<String,Map<String,Object>> monthlyData = new LinkedHashMap<>();
+        for (int month=1;month<=12;month++){
+            monthlyData.put(getMonthName(month),new HashMap<String,Object>(){{
+                put("grandTotal",0.0);
+                put("countOfPeople",0);
+            }});
+        }
+        for (Object[] result:results){
+            Integer monthInteger =(Integer) result[0];
+            int month = monthInteger;
+            double grandTotal = ((Number) result[1]).doubleValue();
+            int countOfPeople = ((Number) result[2]).intValue();
+            Map<String,Object> monthData = monthlyData.get(getMonthName(month));
+            if (monthData!=null){
+                monthData.put("grandTotal",grandTotal);
+                monthData.put("countOfPeople",countOfPeople);
+            }
+        }
+        return monthlyData;
+    }
+
+    private Map<String, Map<String, Object>> getMonthlyDataByYearInstitutionOnlineBooking(int year) {
+        List<Object[]> results = institutionUserOnlineRepository.findMonthlyDataByYear(year);
+        Map<String,Map<String,Object>> monthlyData = new LinkedHashMap<>();
+        for (int month=1;month<=12;month++){
+            monthlyData.put(getMonthName(month),new HashMap<String,Object>(){{
+                put("grandTotal",0.0);
+                put("countOfPeople",0);
+            }});
+        }
+        for (Object[] result:results){
+            Integer monthInteger=(Integer) result[0];
+            int month = monthInteger;
+            double grandTotal= ((Number) result[1]).doubleValue();
+            int countOfPeople = ((Number) result[2]).intValue();
+            Map<String, Object> monthData = monthlyData.get(getMonthName(month));
+            if (monthData!=null){
+                monthData.put("grandTotal",grandTotal);
+                monthData.put("countOfPeople",countOfPeople);
+            }
+        }
+        return monthlyData;
+    }
+
+    private Map<String, Map<String, Object>> getMonthlyDataByYearPublicOnlineBooking(int year) {
+        List<Object[]> results = publicUserOnlineRepository.findMonthlyDataByYear(year);
+
+        Map<String, Map<String, Object>> monthlyData = new LinkedHashMap<>();
+        for (int month=1;month<=12;month++){
+            monthlyData.put(getMonthName(month),new HashMap<String,Object>(){{
+                put("grandTotal",0.0);
+                put("countOfPeople",0);
+            }});
+        }
+        for (Object[] result : results){
+            Integer monthInteger = (Integer) result[0];
+
+            int month = monthInteger;
+            double grandTotal = ((Number) result[1]).doubleValue();
+            int countOfPeople = ((Number) result[2]).intValue();
+
+            Map<String, Object> monthData =monthlyData.get(getMonthName(month));
+            if (monthData!=null){
+                monthData.put("grandTotal",grandTotal);
+                monthData.put("countOfPeople",countOfPeople);
+            }
+        }
+        return monthlyData;
     }
 }

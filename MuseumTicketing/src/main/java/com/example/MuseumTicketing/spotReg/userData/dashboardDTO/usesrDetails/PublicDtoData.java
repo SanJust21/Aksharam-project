@@ -15,6 +15,7 @@ public class PublicDtoData {
     private Integer childCount;
     private Integer seniorCitizenCount;
     private LocalDate visitDate;
+    private LocalDate bookDate;
     private LocalTime slotTime;
     private Double grandTotal;
     private String paymentModeName;

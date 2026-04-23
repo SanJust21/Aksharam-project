@@ -16,6 +16,7 @@ public class ForeignerDtoData {
     private Double childCharge;
 
     private LocalDate visitDate;
+    private LocalDate bookDate;
     private LocalTime slotTime;
     private Double grandTotal;
     private String paymentModeName;

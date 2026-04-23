@@ -25,6 +25,7 @@ public class AllUserDataDto {
     private Double payableStudentCharge;
     private Double discountAmount;
     private LocalDate visitDate;
+    private LocalDate bookDate;
     private LocalTime slotTime;
     private Double grandTotal;
     private String paymentModeName;
