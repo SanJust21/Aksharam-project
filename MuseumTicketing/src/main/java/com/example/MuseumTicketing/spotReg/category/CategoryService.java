@@ -322,8 +322,8 @@ public class CategoryService {
 
     public ResponseEntity<?> updatePriceData(Integer id, PriceData priceData) {
         Optional<PriceData> priceDataOptional1 = priceDataRepo.findByCategoryIdAndTypeId(priceData.getCategoryId(), priceData.getTypeId());
-        if (priceDataOptional1.isPresent()){
-            return new ResponseEntity<>("This detail is already present",HttpStatus.CONFLICT);
+        if (priceDataOptional1.isEmpty()){
+            return new ResponseEntity<>("The detail is not present.",HttpStatus.NOT_FOUND);
         }else {
             Optional<PriceData>priceDataOptional=priceDataRepo.findById(id);
             if (priceDataOptional.isPresent()){

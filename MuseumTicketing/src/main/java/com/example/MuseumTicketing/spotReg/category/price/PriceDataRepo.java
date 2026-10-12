@@ -11,4 +11,6 @@ public interface PriceDataRepo extends JpaRepository<PriceData,Integer> {
     List<PriceData> findByCategoryId(Integer categoryId);
 
     Optional<PriceData> findByIdAndTypeId(Integer id, Integer typeId);
+
+    Optional<PriceData> findByCategoryIdAndTypeIdAndPrice(Integer categoryId, Integer typeId, Double priceValue);
 }
